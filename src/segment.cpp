@@ -51,8 +51,20 @@ SegmentImpl::SegmentImpl(QString value, QString source, int startLine, int start
 
 }
 
+SegmentImpl::SegmentImpl(QString value)
+    : SegmentImpl(SegmentPtr(), -1, value, QString(), 0, 0)
+{
+
+}
+
 Segment::Segment(SegmentPtr impl)
     : _impl(impl)
+{
+
+}
+
+Segment::Segment(QString value)
+    : Segment(SegmentPtr(new SegmentImpl(value)))
 {
 
 }

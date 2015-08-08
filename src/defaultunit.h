@@ -33,7 +33,7 @@ template<class T>
 inline DefaultUnit<T>::DefaultUnit(QString name, const T *type, long double quantity, const DefaultUnit<T> *inTermsOf) :
     Unit<T>(name, type),
     _toBase(quantity * inTermsOf->_toBase),
-    _fromBase(quantity * inTermsOf->_fromBase)
+    _fromBase(inTermsOf->_fromBase / quantity)
 {
 
 }

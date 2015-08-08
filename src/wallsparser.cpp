@@ -295,6 +295,12 @@ WallsParser::WallsParser()
 
 }
 
+WallsParser::WallsParser(QString line)
+    : WallsParser(Segment(line))
+{
+
+}
+
 WallsParser::WallsParser(Segment segment)
     : LineParser(segment),
       _visitor(NULL),
@@ -491,13 +497,13 @@ UAngle WallsParser::nonQuadrantAzimuth(AngleUnit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::quadrantAzimuth(AngleUnit defaultUnit)
+UAngle WallsParser::quadrantAzimuth()
 {
     CardinalDirection::CardinalDirection from = oneOfMap(cardinalDirections);
 
     int start = _i;
     UAngle angle;
-    if (maybe(angle, [&]() { return this->nonQuadrantAzimuth(defaultUnit); }))
+    if (maybe(angle, [&]() { return this->nonQuadrantAzimuth(Angle::degrees()); }))
     {
         if (approx(angle.get(Angle::degrees())) > 90.0)
         {
@@ -517,7 +523,7 @@ UAngle WallsParser::quadrantAzimuth(AngleUnit defaultUnit)
 UAngle WallsParser::azimuth(AngleUnit defaultUnit)
 {
     UAngle result;
-    oneOfR(result, [&]() { return this->quadrantAzimuth(defaultUnit); },
+    oneOfR(result, [&]() { return this->quadrantAzimuth(); },
                    [&]() { return this->nonQuadrantAzimuth(defaultUnit); });
     return result;
 }

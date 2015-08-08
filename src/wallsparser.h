@@ -32,6 +32,7 @@ public:
     typedef void (WallsParser::*OwnProduction)();
 
     WallsParser();
+    WallsParser(QString line);
     WallsParser(Segment segment);
 
     WallsVisitor* visitor() const;
@@ -52,7 +53,7 @@ public:
     UAngle longitude();
 
     UAngle nonQuadrantAzimuth(AngleUnit defaultUnit);
-    UAngle quadrantAzimuth(AngleUnit defaultUnit);
+    UAngle quadrantAzimuth();
     UAngle azimuth(AngleUnit defaultUnit);
     UAngle azimuthOffset(AngleUnit defaultUnit);
 

@@ -27,15 +27,15 @@ Project {
         type: "application"
 
         Depends { name: "cpp" }
-
-        Depends { name: "Qt"; submodules: ["core", "testlib"] }
+        Depends { name: "Qt"; submodules: ["core"] }
 
         cpp.includePaths: ["src"]
 
         files: [
-            "main.cpp",
             "src/*.cpp",
             "src/*.h",
+            "test/*.cpp",
+            "test/*.h",
         ]
     }
 }

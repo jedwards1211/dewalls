@@ -21,8 +21,8 @@ class SegmentImpl
 {
 public:
     friend class Segment;
-
     SegmentImpl(QString value, QString source, int startLine, int startCol);
+    SegmentImpl(QString value);
 protected:
     SegmentImpl(SegmentPtr sourceSegment, int sourceIndex, QString value, QString source,
             int startLine, int startCol);
@@ -59,6 +59,7 @@ class Segment
 {
 public:
     Segment();
+    Segment(QString value);
     Segment(QString value, QString source, int startLine, int startCol);
     Segment(Segment&& other);
 
