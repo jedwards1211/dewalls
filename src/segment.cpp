@@ -166,7 +166,7 @@ QString Segment::underlineInContext() const
 
     for (auto line = lines.cbegin(); line < lines.cend(); line++)
     {
-        if (line->startLine() < startLine() || line ->startLine() > endLine())
+        if (line->startLine() < startLine() || line->startLine() > endLine())
         {
             continue;
         }
@@ -174,12 +174,14 @@ QString Segment::underlineInContext() const
         int k = 0;
         if (startLine() == line->startLine())
         {
-            result.append(QString(startCol() - k, ' '));
+            result.append(line->value().mid(k, startCol() - k).replace(QRegExp("[^\t]"), " "));
+            //result.append(QString(startCol() - k, ' '));
             k = startCol();
         }
         if (line->startLine() < endLine())
         {
-            result.append(QString(line->length() - k, '^'));
+//            result.append(QString(line->length() - k, '^'));
+            result.append(line->value().right(k).replace(QRegExp("[^\t]"), "^"));
             k = line->length();
         }
         else if (endLine() == line->startLine())
@@ -190,7 +192,8 @@ QString Segment::underlineInContext() const
             }
             else
             {
-                result.append(QString(endCol() + 1 - k, '^'));
+//                result.append(QString(endCol() + 1 - k, '^'));
+                result.append(line->value().mid(k, endCol() + 1 - k).replace(QRegExp("[^\t]"), "^"));
                 k = endCol() + 1;
             }
         }
