@@ -1,20 +1,10 @@
 #include "../lib/catch.hpp"
 #include "../src/wallsparser.h"
+#include "approx.h"
 
 using namespace dewalls;
 
 typedef UnitizedDouble<Angle> UAngle;
-
-double approx(double val)
-{
-    return floor(val * 1e6) * 1e-6;
-}
-
-template<class T>
-bool approxEquals(UnitizedDouble<T> a, UnitizedDouble<T> b)
-{
-    return floor(a.get(a.unit()) * 1e6) == floor(b.get(b.unit()) * 1e6);
-}
 
 TEST_CASE( "azimuth parsing tests" , "[dewalls, azimuth]" ) {
     SECTION( "defaultUnit works") {
@@ -69,5 +59,13 @@ TEST_CASE( "azimuth parsing tests" , "[dewalls, azimuth]" ) {
         CHECK_THROWS( WallsParser(".").azimuth(Angle::deg()) );
         CHECK_THROWS( WallsParser("+2").azimuth(Angle::deg()) );
         CHECK_THROWS( WallsParser(" ").azimuth(Angle::deg()) );
+    }
+    SECTION( "out of range values throw" ) {
+        CHECK_THROWS( WallsParser("360").azimuth(Angle::deg()) );
+        CHECK_THROWS( WallsParser("-0.00001").azimuth(Angle::deg()) );
+        CHECK_THROWS( WallsParser("400g").azimuth(Angle::deg()) );
+        CHECK_THROWS( WallsParser("-0.00001g").azimuth(Angle::deg()) );
+        CHECK_THROWS( WallsParser("N90E").azimuth(Angle::deg()) );
+        CHECK_THROWS( WallsParser("N100gE").azimuth(Angle::deg()) );
     }
 }

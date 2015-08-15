@@ -489,7 +489,7 @@ UAngle WallsParser::nonQuadrantAzimuth(AngleUnit defaultUnit)
 
     UAngle result = unsignedAngle(azmUnitSuffixes, defaultUnit);
 
-    if (approx(result.get(Angle::degrees())) > 360.0)
+    if (approx(result.get(Angle::degrees())) >= 360.0)
     {
         throw SegmentParseException(_line.mid(start, _i), "azimuth out of range");
     }
@@ -505,7 +505,7 @@ UAngle WallsParser::quadrantAzimuth()
     UAngle angle;
     if (maybe(angle, [&]() { return this->nonQuadrantAzimuth(Angle::degrees()); }))
     {
-        if (approx(angle.get(Angle::degrees())) > 90.0)
+        if (approx(angle.get(Angle::degrees())) >= 90.0)
         {
             throw SegmentParseException(_line.mid(start, _i), "azimuth out of range");
         }
@@ -637,6 +637,12 @@ QString WallsParser::movePastEndQuote()
     }
 
     return _line.value().mid(start, _i);
+}
+
+void WallsParser::parseLine(QString line)
+{
+    reset(line);
+    parseLine();
 }
 
 void WallsParser::parseLine()
@@ -1462,7 +1468,7 @@ void WallsParser::azimuth()
     if (maybeChar('/'))
     {
         UAngle bsAzm;
-        if (optional(bsAzm, [&]() { return this->azimuth(_units->a_unit); }))
+        if (optional(bsAzm, [&]() { return this->azimuth(_units->ab_unit); }))
         {
             _visitor->visitBacksightAzimuth(bsAzm);
         }

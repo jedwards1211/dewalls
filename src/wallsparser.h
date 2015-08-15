@@ -79,6 +79,7 @@ public:
     template<typename T>
     QList<T> elementChars(QHash<QChar, T> elements, QSet<T> requiredElements);
 
+    void parseLine(QString line);
     void parseLine();
 
     void beginBlockCommentLine();

@@ -20,6 +20,14 @@ LineParser::LineParser(Segment line)
 
 }
 
+void LineParser::reset(QString newLine)
+{
+    _line = Segment(newLine);
+    _i = 0;
+    _expectedIndex = 0;
+    _expectedItems.clear();
+}
+
 void LineParser::reset(Segment newLine)
 {
     _line = newLine;

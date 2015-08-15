@@ -22,6 +22,7 @@ public:
     LineParser();
     LineParser(Segment line);
 
+    virtual void reset(QString newLine);
     virtual void reset(Segment newLine);
 
     bool isAtEnd() const;
