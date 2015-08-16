@@ -46,6 +46,7 @@ void WallsVisitor::visitBlockCommentLine( QString string ){}
 void WallsVisitor::visitNoteLine( QString station , QString note ){}
 void WallsVisitor::visitDateLine( QDate date ){}
 void WallsVisitor::visitFixedStation( QString string ){}
+void WallsVisitor::warn( QString warning ){}
 
 void PrintingWallsVisitor::beginFile( QString source )
 {
@@ -257,6 +258,11 @@ void PrintingWallsVisitor::visitFixedStation( QString station )
     cout << "  fixed station:" << station.toStdString() << endl;
 }
 
+void PrintingWallsVisitor::warn( QString warning )
+{
+    cout << "*** WARNING: " << warning.toStdString() << endl;
+}
+
 void CapturingWallsVisitor::beginFile( QString source )
 {
 }
@@ -464,6 +470,11 @@ void CapturingWallsVisitor::visitFixedStation( QString station )
     fixedStation = station;
 }
 
+void CapturingWallsVisitor::warn( QString warning )
+{
+    warnings << warning;
+}
+
 MultiWallsVisitor::MultiWallsVisitor(QList<WallsVisitor*> visitors)
     : _visitors(visitors)
 {
@@ -511,6 +522,7 @@ void MultiWallsVisitor::visitBlockCommentLine( QString string ){  multicast(&Wal
 void MultiWallsVisitor::visitNoteLine( QString station , QString note ){  multicast(&WallsVisitor::visitNoteLine, station, note); }
 void MultiWallsVisitor::visitDateLine( QDate date ){  multicast(&WallsVisitor::visitDateLine, date); }
 void MultiWallsVisitor::visitFixedStation( QString string ){  multicast(&WallsVisitor::visitFixedStation, string); }
+void MultiWallsVisitor::warn( QString warning ){  multicast(&WallsVisitor::warn, warning); }
 
 } // namespace dewalls
 

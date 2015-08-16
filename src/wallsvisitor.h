@@ -62,6 +62,7 @@ public:
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitFixedStation( QString string );
+    virtual void warn( QString warning );
 };
 
 class PrintingWallsVisitor : public WallsVisitor
@@ -109,6 +110,7 @@ public:
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
+    virtual void warn( QString warning );
 };
 
 class CapturingWallsVisitor : public WallsVisitor
@@ -151,6 +153,7 @@ public:
     QString note;
     QString fixedStation;
     QDate date;
+    QStringList warnings;
 
     virtual void beginFile( QString source );
     virtual void endFile( QString source );
@@ -194,6 +197,7 @@ public:
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
+    virtual void warn( QString warning );
 };
 
 class MultiWallsVisitor : public WallsVisitor
@@ -269,6 +273,7 @@ public:
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
+    virtual void warn( QString warning );
 
 private:
     QList<WallsVisitor*> _visitors;

@@ -144,6 +144,11 @@ private:
     const QHash<QString, OwnProduction> unitsOptionMap;
     const QHash<QString, OwnProduction> directivesMap;
 
+    static const UAngle oneEighty;
+
+    UAngle azmDifference(UAngle fs, UAngle bs);
+    UAngle incDifference(UAngle fs, UAngle bs);
+
     void replaceMacros();
     QString movePastEndQuote();
     QString replaceMacro();

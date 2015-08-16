@@ -1,4 +1,5 @@
 #include "wallsparser.h"
+#include "unitizedmath.h"
 
 namespace dewalls {
 
@@ -242,6 +243,8 @@ QHash<QString, OwnProduction> WallsParser::createDirectivesMap()
             result["#prefix3"] = result["#prefix"] = &WallsParser::prefixLine;
     return result;
 }
+
+const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::degrees());
 
 double WallsParser::approx(double val)
 {
@@ -1164,16 +1167,22 @@ void WallsParser::typeab()
 {
     expect('=');
     _units->typeab_corrected = oneOfMapLowercase(wordRx, correctedValues);
-    _units->typeab_no_average = false;
-    _units->typeab_tolerance = NAN;
     if (maybeChar(','))
     {
-        _units->typeab_tolerance = unsignedDoubleLiteral();
+        _units->typeab_tolerance = UAngle(unsignedDoubleLiteral(), Angle::degrees());
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
             _units->typeab_no_average = true;
         }
+        else
+        {
+            _units->typeab_no_average = false;
+        }
+    }
+    else
+    {
+        _units->typeab_tolerance = UAngle(2.0, Angle::degrees());
     }
 }
 
@@ -1181,16 +1190,22 @@ void WallsParser::typevb()
 {
     expect('=');
     _units->typevb_corrected = oneOfMapLowercase(wordRx, correctedValues);
-    _units->typevb_no_average = false;
-    _units->typevb_tolerance = NAN;
     if (maybeChar(','))
     {
-        _units->typevb_tolerance = unsignedDoubleLiteral();
+        _units->typevb_tolerance = UAngle(unsignedDoubleLiteral(), Angle::degrees());
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
             _units->typevb_no_average = true;
         }
+        else
+        {
+            _units->typevb_no_average = false;
+        }
+    }
+    else
+    {
+        _units->typevb_tolerance = UAngle(2.0, Angle::degrees());
     }
 }
 
@@ -1375,10 +1390,7 @@ void WallsParser::afterToStation()
             throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
 
-        if (maybeWhitespace())
-        {
-            maybe([&]() { this->tapingMethodElements();});
-        }
+        tapingMethodElements();
     }
 
     maybeWhitespace();
@@ -1436,6 +1448,21 @@ void WallsParser::distance()
     _visitor->visitDistance(unsignedLength(_units->d_unit));
 }
 
+UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
+    if (!_units->typeab_corrected) {
+        if (bs < oneEighty)
+        {
+            bs += oneEighty;
+        }
+        else
+        {
+            bs -= oneEighty;
+        }
+    }
+    UAngle diff = uabs(fs - bs);
+    return diff > oneEighty ? UAngle(360.0, Angle::degrees()) - diff : diff;
+}
+
 void WallsParser::azimuth()
 {
     int start = _i;
@@ -1453,6 +1480,22 @@ void WallsParser::azimuth()
         }
     }
     _azmSegment = _line.mid(start, _i - start);
+
+    if (_azmFs.isValid() && _azmBs.isValid())
+    {
+        UAngle diff = azmDifference(_azmFs, _azmBs);
+        if (diff > _units->typeab_tolerance)
+        {
+            _visitor->warn(SegmentParseException(_azmSegment,
+                                                     QString("difference between frontsight/backsight azimuth (%1) exceeds tolerance (%2)")
+                                                       .arg(diff.toString())
+                                                       .arg(_units->typeab_tolerance.toString())).message());
+        }
+    }
+}
+
+UAngle WallsParser::incDifference(UAngle fs, UAngle bs) {
+    return _units->typevb_corrected ? uabs(fs - bs) : uabs(fs + bs);
 }
 
 void WallsParser::inclination()
@@ -1475,19 +1518,29 @@ void WallsParser::inclination()
     if (!_incFs.isValid() && !_incBs.isValid()) {
         throw SegmentParseException(_incSegment, "inclination can't be omitted if ORDER includes V");
     }
+
+    if (_incFs.isValid() && _incBs.isValid())
+    {
+        UAngle diff = incDifference(_incFs, _incBs);
+        if (diff > _units->typevb_tolerance)
+        {
+            _visitor->warn(SegmentParseException(_incSegment,
+                                                 QString("difference between frontsight/backsight inclination (%1) exceeds tolerance (%2)")
+                                                   .arg(diff.toString())
+                                                   .arg(_units->typevb_tolerance.toString())).message());
+        }
+    }
 }
 
 void WallsParser::tapingMethodElements()
 {
-    bool first = true;
     foreach(TapingMethodElement elem, _units->tape)
     {
-        if (!first)
+        if (!maybeWhitespace() ||
+            !maybe([&]() { this->tapingMethodElement(elem); }))
         {
-            whitespace();
+            break;
         }
-        first = false;
-        tapingMethodElement(elem);
     }
 }
 

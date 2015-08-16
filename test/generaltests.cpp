@@ -139,6 +139,32 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::gradians()) );
                 REQUIRE( visitor.backsightAzimuth == UAngle(3, Angle::gradians()) );
             }
+
+            SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
+                parser.parseLine("A B 1 1/179 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("A B 1 1/183 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("A B 1 1/184 4");
+                REQUIRE( visitor.warnings.size() == 1 );
+                REQUIRE( visitor.warnings[0].contains("exceeds") );
+
+                parser.parseLine("#units typeab=c");
+                parser.parseLine("A B 1 1/3 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+                parser.parseLine("A B 1 1/359 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+                parser.parseLine("A B 1 359/1 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("#units typeab=c,5");
+                parser.parseLine("A B 1 1/6 4");
+                REQUIRE( visitor.warnings.size() == 0 );
+                parser.parseLine("A B 1 1/7 4");
+                REQUIRE( visitor.warnings.size() == 1 );
+            }
         }
 
         SECTION( "inclination" ) {
@@ -166,6 +192,30 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 parser.parseLine("A B 1 2 3/4");
                 REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::gradians()) );
                 REQUIRE( visitor.backsightInclination == UAngle(4, Angle::gradians()) );
+            }
+
+            SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
+                parser.parseLine("A B 1 2 4/-6");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("A B 1 2 4/-2");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("A B 1 2 4/-7");
+                REQUIRE( visitor.warnings.size() == 1 );
+                REQUIRE( visitor.warnings[0].contains("exceeds") );
+
+                parser.parseLine("#units typevb=c");
+                parser.parseLine("A B 1 2 1/3");
+                REQUIRE( visitor.warnings.size() == 0 );
+                parser.parseLine("A B 1 2 1/-1");
+                REQUIRE( visitor.warnings.size() == 0 );
+
+                parser.parseLine("#units typevb=c,5");
+                parser.parseLine("A B 1 2 1/6");
+                REQUIRE( visitor.warnings.size() == 0 );
+                parser.parseLine("A B 1 2 1/7");
+                REQUIRE( visitor.warnings.size() == 1 );
             }
         }
 

@@ -44,10 +44,10 @@ public:
     ULength incs;
     ULength inch;
     bool typeab_corrected;
-    double typeab_tolerance;
+    UAngle typeab_tolerance;
     bool typeab_no_average;
     bool typevb_corrected;
-    double typevb_tolerance;
+    UAngle typevb_tolerance;
     bool typevb_no_average;
     CaseType case_;
     LrudType lrud;
