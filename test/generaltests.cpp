@@ -100,10 +100,18 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         SECTION( "azimuth" ) {
             SECTION( "azimuth can be omitted for vertical shots" ) {
                 parser.parseLine("A B 2.5 -- 90");
+                parser.parseLine("A B 2.5 -- 90/-90");
+                parser.parseLine("A B 2.5 -- --/90");
+                parser.parseLine("A B 2.5 -- --/-90");
+                parser.parseLine("A B 2.5 -- 90/-90");
                 parser.parseLine("A B 2.5 --/-- 90");
                 parser.parseLine("A B 2.5 -- -90");
                 parser.parseLine("A B 2.5 -- 100g");
                 parser.parseLine("A B 2.5 -- -100g");
+
+                parser.parseLine("#units typevb=c");
+                parser.parseLine("A B 2.5 -- 90/90");
+                CHECK_THROWS( parser.parseLine("A B 2.5 -- 90/-90") );
             }
 
             SECTION( "azimuth can't be omitted for non-vertical shots" ) {
@@ -161,13 +169,38 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             }
         }
 
+        SECTION( "rect data lines" ) {
+            parser.parseLine("#units rect");
+            parser.parseLine("A B 1 2 3");
+            REQUIRE( visitor.east == ULength(1, Length::meters()) );
+            REQUIRE( visitor.north == ULength(2, Length::meters()) );
+            REQUIRE( visitor.rectUp == ULength(3, Length::meters()) );
+
+            REQUIRE_THROWS( parser.parseLine("A B 1 2") );
+
+            SECTION( "measurements can be reordered" ) {
+                parser.parseLine("#units order=nue");
+                parser.parseLine("A B 1 2 3");
+                REQUIRE( visitor.north == ULength(1, Length::meters()) );
+                REQUIRE( visitor.rectUp == ULength(2, Length::meters()) );
+                REQUIRE( visitor.east == ULength(3, Length::meters()) );
+            }
+
+            SECTION( "up can be omitted" ) {
+                parser.parseLine("#units order=ne");
+                parser.parseLine("A B 1 2");
+                REQUIRE( visitor.north == ULength(1, Length::meters()) );
+                REQUIRE( visitor.east == ULength(2, Length::meters()) );
+            }
+        }
+
         SECTION( "splay shots" ) {
             parser.parseLine("A - 2.5 350 5");
             parser.parseLine("- B 2.5 350 5");
             REQUIRE_THROWS( parser.parseLine("- - 2.5 350 5") );
         }
 
-        SECTION( "measurements can be reordered" ) {
+        SECTION( "compass/tape measurements can be reordered" ) {
             parser.parseLine("#units order=avd");
             parser.parseLine("A B 1 2 3");
             REQUIRE( visitor.frontsightAzimuth == UAngle(1, Angle::degrees()) );
@@ -181,6 +214,72 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             REQUIRE( visitor.distance == ULength(1, Length::meters()) );
             REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::degrees()) );
             REQUIRE( !visitor.frontsightInclination.isValid() );
+        }
+
+        SECTION( "instrument and target heights" ) {
+            parser.parseLine("A B 1 2 3 4 5");
+            REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
+            REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
+
+            SECTION( "are affected by s_unit" ) {
+                parser.parseLine("#units s=feet");
+                parser.parseLine("A B 1 2 3 4 5");
+                REQUIRE( visitor.instrumentHeight == ULength(4, Length::feet()) );
+                REQUIRE( visitor.targetHeight == ULength(5, Length::feet()) );
+            }
+
+            SECTION( "are not affected by d_unit" ) {
+                parser.parseLine("#units d=feet");
+                parser.parseLine("A B 1 2 3 4 5");
+                REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
+                REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
+            }
+
+            SECTION( "target only" ) {
+                parser.parseLine("#units tape=st");
+                parser.parseLine("A B 1 2 3 4");
+                REQUIRE( !visitor.instrumentHeight.isValid() );
+                REQUIRE( visitor.targetHeight == ULength(4, Length::meters()) );
+                REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4 5") );
+            }
+
+            SECTION( "disabled" ) {
+                parser.parseLine("#units tape=ss");
+                REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4") );
+            }
+
+            SECTION( "aren't allowed for rect data lines" ) {
+                parser.parseLine("#units rect");
+                REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4 5") );
+            }
+        }
+
+        SECTION( "variance overrides" ) {
+            SECTION( "both can't be omitted" )  {
+               REQUIRE_THROWS( parser.parseLine("A B 1 2 3 (,)") );
+            }
+
+            SECTION( "one can be omitted" ) {
+                parser.parseLine("A B 1 2 3 (?,)");
+                CHECK( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
+                CHECK( visitor.verticalVarianceOverride.isNull() );
+
+                parser.parseLine("A B 1 2 3 (,?)");
+                CHECK( visitor.horizontalVarianceOverride.isNull() );
+                CHECK( visitor.verticalVarianceOverride == VarianceOverride::FLOATED );
+            }
+
+            SECTION( "various types" ) {
+                parser.parseLine("A B 1 2 3 (?,*)");
+                CHECK( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
+                CHECK( visitor.verticalVarianceOverride == VarianceOverride::FLOATED_TRAVERSE );
+
+                parser.parseLine("A B 1 2 3 (1000f,r4.5f)");
+                REQUIRE( visitor.horizontalVarianceOverride->type() == VarianceOverride::Type::LENGTH_OVERRIDE );
+                CHECK( visitor.horizontalVarianceOverride.staticCast<LengthOverride>()->lengthOverride() == ULength(1000, Length::feet()) );
+                REQUIRE( visitor.verticalVarianceOverride->type() == VarianceOverride::Type::RMS_ERROR );
+                CHECK( visitor.verticalVarianceOverride.staticCast<RMSError>()->error() == ULength(4.5, Length::feet()) );
+            }
         }
 
         SECTION( "lruds" ) {
@@ -267,5 +366,22 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( visitor.down == ULength(7, Length::meters()) );
             }
         }
+    }
+
+    SECTION( "prefixes" ) {
+        parser.parseLine("#units prefix=a");
+        CHECK( parser.units()->processStationName("b") == "a:b" );
+        CHECK( parser.units()->processStationName("d:b") == "d:b" );
+        CHECK( parser.units()->processStationName(":b") == "b" );
+
+        parser.parseLine("#units prefix2=c");
+        CHECK( parser.units()->processStationName("b") == "c:a:b" );
+        CHECK( parser.units()->processStationName(":b") == "c::b" );
+        CHECK( parser.units()->processStationName("d:b") == "c:d:b" );
+        CHECK( parser.units()->processStationName("::b") == "b" );
+        CHECK( parser.units()->processStationName(":::::b") == "b" );
+
+        parser.parseLine("#units prefix1");
+        CHECK( parser.units()->processStationName("b") == "c::b" );
     }
 }

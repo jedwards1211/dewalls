@@ -67,7 +67,7 @@ public:
     void rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const;
     void applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const;
     UAngle avgInc(UAngle fsInc, UAngle bsInc) const;
-    bool isVertical(UAngle angle) const;
+    static bool isVertical(UAngle angle);
 };
 
 } // namespace dewalls

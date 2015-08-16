@@ -60,16 +60,10 @@ public:
     V oneOfMap(QHash<QChar, V> map, V elseValue);
 
     template<typename V>
-    void minMaxLength(QHash<QString, V> map, int& min, int& max);
-
-    template<typename V>
     V oneOfMapLowercase(const QRegExp& rx, QHash<QString, V> map);
 
     template<typename V>
     V oneOfMapLowercase(QRegExp& rx, QHash<QString, V> map);
-
-    template<typename V>
-    V oneOfList(QList<QPair<QString, V>> list, Qt::CaseSensitivity cs = Qt::CaseSensitive);
 
     template<typename F>
     void throwAllExpected(F production);
@@ -80,49 +74,11 @@ public:
     template<typename F, typename... Args>
     void oneOf(F production, Args... args);
 
-    template<typename R, class O>
-    void oneOfOwn(R (O::*production)())
-    {
-        try
-        {
-            (this->*production)();
-        }
-        catch (const SegmentParseExpectedException& ex)
-        {
-            throwAllExpected(ex);
-        }
-    }
-
-    template<typename R, class O, typename... Args>
-    void oneOfOwn(R (O::*production)(), Args... args)
-    {
-        int start = _i;
-        try
-        {
-            (this->*production)();
-        }
-        catch (const SegmentParseExpectedException& ex)
-        {
-            if (_i > start)
-            {
-                throwAllExpected(ex);
-            }
-            addExpected(ex);
-            oneOfOwn(args...);
-        }
-    }
-
     template<typename R, typename F>
     void oneOfR(R& result, F production);
 
     template<typename R, typename F, typename... Args>
     void oneOfR(R& result, F production, Args... args);
-
-    template<typename R, class O>
-    void oneOfOwnR(R& result, R (O::*production)());
-
-    template<typename R, class O, typename... Args>
-    void oneOfOwnR(R& result, R (O::*production)(), Args... args);
 
     template<typename F>
     void oneOfWithLookahead(F production);
@@ -328,18 +284,6 @@ V LineParser::oneOfMap(QHash<QChar, V> map, V elseValue)
 }
 
 template<typename V>
-void LineParser::minMaxLength(QHash<QString, V> map, int& min, int& max)
-{
-    min = INT_MAX;
-    max = 0;
-    foreach (QString s, map.keys())
-    {
-        min = std::min(min, s.length());
-        max = std::max(max, s.length());
-    }
-}
-
-template<typename V>
 V LineParser::oneOfMapLowercase(const QRegExp& rx, QHash<QString, V> map)
 {
     QRegExp rxCopy = rx;
@@ -358,20 +302,6 @@ V LineParser::oneOfMapLowercase(QRegExp& rx, QHash<QString, V> map)
         throw SegmentParseExpectedException(seg, map.keys());
     }
     return map[str];
-}
-
-template<typename V>
-V LineParser::oneOfList(QList<QPair<QString, V>> list, Qt::CaseSensitivity cs)
-{
-    QPair<QString, V> pair;
-    foreach(pair, list)
-    {
-        if (maybe([&]() { return this->expect(pair.first, cs);} ))
-        {
-            return pair.second;
-        }
-    }
-    throw allExpected();
 }
 
 template<typename F>

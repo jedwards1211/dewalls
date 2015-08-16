@@ -25,9 +25,6 @@ public:
     typedef UnitizedDouble<Angle>  UAngle;
     typedef const Unit<Length> * LengthUnit;
     typedef const Unit<Angle>  * AngleUnit;
-    typedef QHash<QChar, LengthUnit> LengthUnitSuffixMap;
-    typedef QHash<QChar, AngleUnit>  AngleUnitSuffixMap;
-    typedef QHash<QChar, CardinalDirection::CardinalDirection> CardinalDirectionCharMap;
     typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
     typedef void (WallsParser::*OwnProduction)();
 
@@ -46,7 +43,7 @@ public:
     ULength unsignedLength(LengthUnit defaultUnit);
     ULength length(LengthUnit defaultUnit);
 
-    UAngle unsignedAngle(AngleUnitSuffixMap unitSuffixes, AngleUnit defaultUnit);
+    UAngle unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUnit defaultUnit);
     UAngle unsignedDmsAngle();
 
     UAngle latitude();
@@ -79,8 +76,9 @@ public:
     template<typename T>
     QList<T> elementChars(QHash<QChar, T> elements, QSet<T> requiredElements);
 
-    void parseLine(QString line);
     void parseLine();
+    void parseLine(QString line);
+    void parseLine(Segment line);
 
     void beginBlockCommentLine();
     void endBlockCommentLine();
@@ -106,15 +104,15 @@ private:
     static QHash<QString, OwnProduction> createUnitsOptionMap();
     static QHash<QString, OwnProduction> createDirectivesMap();
 
-    const QList<QPair<QString, LengthUnit>> lengthUnits;
-    const QList<QPair<QString, AngleUnit>> azmUnits;
-    const QList<QPair<QString, AngleUnit>> incUnits;
-    const LengthUnitSuffixMap lengthUnitSuffixes;
-    const AngleUnitSuffixMap azmUnitSuffixes;
-    const AngleUnitSuffixMap incUnitSuffixes;
-    const CardinalDirectionCharMap cardinalDirections;
-    const CardinalDirectionCharMap northSouth;
-    const CardinalDirectionCharMap eastWest;
+    const QHash<QString, LengthUnit> lengthUnits;
+    const QHash<QString, AngleUnit> azmUnits;
+    const QHash<QString, AngleUnit> incUnits;
+    const QHash<QChar, LengthUnit> lengthUnitSuffixes;
+    const QHash<QChar, AngleUnit> azmUnitSuffixes;
+    const QHash<QChar, AngleUnit> incUnitSuffixes;
+    const QHash<QChar, CardinalDirection> cardinalDirections;
+    const QHash<QChar, CardinalDirection> northSouth;
+    const QHash<QChar, CardinalDirection> eastWest;
     const QHash<QChar, QChar> escapedChars;
     const QHash<QChar, CtElement> ctElements;
     const QSet<CtElement> requiredCtElements;
@@ -122,13 +120,14 @@ private:
     const QSet<RectElement> requiredRectElements;
     const QHash<QChar, LrudElement> lrudElements;
     const QSet<LrudElement> requiredLrudElements;
-    const QList<QPair<QString, bool>> correctedValues;
-    const QList<QPair<QString, CaseType>> caseTypes;
-    const QList<QPair<QString, LrudType>> lrudTypes;
-    const QList<QPair<QString, QList<TapingMethodElement>>> tapingMethods;
-    const QList<QPair<QString, int>> prefixDirectives;
+    const QHash<QString, bool> correctedValues;
+    const QHash<QString, CaseType> caseTypes;
+    const QHash<QString, LrudType> lrudTypes;
+    const QHash<QString, QList<TapingMethodElement>> tapingMethods;
+    const QHash<QString, int> prefixDirectives;
 
-    const QRegExp notSemicolon;
+    const QRegExp wordRx;
+    const QRegExp notSemicolonRx;
     const QRegExp unitsOptionRx;
     const QRegExp directiveRx;
     const QRegExp macroNameRx;
@@ -220,6 +219,7 @@ private:
     void distance();
     void azimuth();
     void inclination();
+    void tapingMethodElements();
     void tapingMethodElement(TapingMethodElement elem);
     void instrumentHeight();
     void targetHeight();
@@ -263,6 +263,19 @@ private:
     QSharedPointer<WallsUnits> _units;
     QStack<QSharedPointer<WallsUnits>> _stack;
     QHash<QString, QString> _macros;
+
+    Segment _fromStationSegment;
+    QString _fromStation;
+    Segment _toStationSegment;
+    QString _toStation;
+
+    Segment _azmSegment;
+    UAngle  _azmFs;
+    UAngle  _azmBs;
+
+    Segment _incSegment;
+    UAngle  _incFs;
+    UAngle  _incBs;
 };
 
 inline WallsVisitor* WallsParser::visitor() const

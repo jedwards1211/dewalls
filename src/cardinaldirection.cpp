@@ -2,72 +2,42 @@
 
 namespace dewalls {
 
-namespace CardinalDirection {
+typedef UnitizedDouble<Angle> UAngle;
 
-CardinalDirection opposite(CardinalDirection d)
+const CardinalDirection CardinalDirection::North(0);
+const CardinalDirection CardinalDirection::East(1);
+const CardinalDirection CardinalDirection::South(2);
+const CardinalDirection CardinalDirection::West(3);
+
+const QString CardinalDirection::names[4] = {"North", "East", "South", "West"};
+const UAngle CardinalDirection::angles[4] = {
+    UAngle(0, Angle::deg()),
+    UAngle(90, Angle::deg()),
+    UAngle(180, Angle::deg()),
+    UAngle(270, Angle::deg())
+};
+
+UAngle CardinalDirection::nonnorm_quadrant(CardinalDirection to, UAngle rotation) const
 {
-    switch (d)
+    if (to._ordinal == (_ordinal + 1) % 4)
     {
-    case North:
-        return South;
-    case South:
-        return North;
-    case East:
-        return West;
-    case West:
-        return East;
+        return angle() + rotation;
     }
-    return d;
-}
-
-UnitizedDouble<Angle> angle(CardinalDirection d)
-{
-    return UnitizedDouble<Angle>(90 * d, Angle::deg());
-}
-
-CardinalDirection fromChar(char c)
-{
-    switch(c)
+    else if (_ordinal == (to._ordinal + 1) % 4)
     {
-    case 'n':
-    case 'N':
-        return North;
-    case 's':
-    case 'S':
-        return South;
-    case 'e':
-    case 'E':
-        return East;
-    case 'w':
-    case 'W':
-        return West;
-    }
-    throw std::invalid_argument("invalid character");
-}
-
-UnitizedDouble<Angle> nonnorm_quadrant(CardinalDirection from, CardinalDirection to, UnitizedDouble<Angle> rotation)
-{
-    if (to == (from + 1) % 4)
-    {
-        return angle(from) + rotation;
-    }
-    else if (from == (to + 1) % 4)
-    {
-        return angle(from) - rotation;
+        return angle() - rotation;
     }
     throw std::invalid_argument("invalid from/to combination");
 }
 
-UnitizedDouble<Angle> quadrant(CardinalDirection from, CardinalDirection to, UnitizedDouble<Angle> rotation)
+UAngle CardinalDirection::quadrant(CardinalDirection to, UAngle rotation) const
 {
-    UnitizedDouble<Angle> result = nonnorm_quadrant(from, to, rotation) % UnitizedDouble<Angle>(360.0, Angle::deg());
-    if (result < angle(North)) {
-        result += UnitizedDouble<Angle>(360.0, Angle::deg());
+    UAngle result = nonnorm_quadrant(to, rotation) % UAngle(360.0, Angle::deg());
+    if (result < North.angle()) {
+        result += UAngle(360.0, Angle::deg());
     }
     return result;
 }
-
-} // namespace CardinalDirection
 
 } // namespace dewalls
 

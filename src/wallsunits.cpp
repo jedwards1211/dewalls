@@ -79,7 +79,7 @@ QString WallsUnits::processStationName(QString name)
     {
         name.prepend(':').prepend(prefix[i]);
     }
-    return name;
+    return name.replace(QRegExp("^:+"), "");
 }
 
 void WallsUnits::rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const
@@ -142,9 +142,9 @@ UAngle WallsUnits::avgInc(UAngle fsInc, UAngle bsInc) const
     return (fsInc + bsInc) * 0.5;
 }
 
-bool WallsUnits::isVertical(UAngle angle) const
+bool WallsUnits::isVertical(UAngle angle)
 {
-    return abs(abs(angle.get(Angle::degrees())) - 90.0) < 0.0001;
+    return abs(abs(angle.get(Angle::degrees())) - 90.0) < 1e-4;
 }
 
 } // namespace dewalls

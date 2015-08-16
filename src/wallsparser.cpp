@@ -6,85 +6,57 @@ typedef UnitizedDouble<Length> ULength;
 typedef UnitizedDouble<Angle>  UAngle;
 typedef const Unit<Length> * LengthUnit;
 typedef const Unit<Angle>  * AngleUnit;
-typedef QHash<QChar, LengthUnit> LengthUnitSuffixMap;
-typedef QHash<QChar, AngleUnit>  AngleUnitSuffixMap;
-typedef QHash<QChar, CardinalDirection::CardinalDirection> CardinalDirectionCharMap;
 typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
 typedef void (WallsParser::*OwnProduction)();
 
-QList<QPair<QString, LengthUnit>> createLengthUnits()
+QHash<QString, LengthUnit> createLengthUnits()
 {
-    typedef QPair<QString, LengthUnit> Pair;
-    QList<Pair> result;
-    result << Pair("meters", Length::meters());
-    result << Pair("meter", Length::meters());
-    result << Pair("m", Length::meters());
-    result << Pair("feet", Length::feet());
-    result << Pair("foot", Length::feet());
-    result << Pair("ft", Length::feet());
-    result << Pair("f", Length::feet());
+    QHash<QString, LengthUnit> result;
+    result["meters"] = result["meter"] = result["m"] = Length::meters();
+    result["feet"] = result["foot"] = result["ft"] = result["f"] = Length::feet();
     return result;
 }
 
-QList<QPair<QString, AngleUnit>> createAzmUnits()
+QHash<QString, AngleUnit> createAzmUnits()
 {
-    typedef QPair<QString, AngleUnit> Pair;
-    QList<Pair> result;
-    result << Pair("degrees", Angle::degrees());
-    result << Pair("degree", Angle::degrees());
-    result << Pair("deg", Angle::degrees());
-    result << Pair("d", Angle::degrees());
-    result << Pair("mills", Angle::milsNATO());
-    result << Pair("mils", Angle::milsNATO());
-    result << Pair("mil", Angle::milsNATO());
-    result << Pair("m", Angle::milsNATO());
-    result << Pair("grads", Angle::gradians());
-    result << Pair("grad", Angle::gradians());
-    result << Pair("g", Angle::gradians());
+    QHash<QString, AngleUnit> result;
+    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
+    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::milsNATO();
+    result["grads"] = result["grad"] = result["g"] = Angle::gradians();
     return result;
 }
 
-QList<QPair<QString, AngleUnit>> createIncUnits()
+QHash<QString, AngleUnit> createIncUnits()
 {
-    typedef QPair<QString, AngleUnit> Pair;
-    QList<Pair> result;
-    result << Pair("degrees", Angle::degrees());
-    result << Pair("degree", Angle::degrees());
-    result << Pair("deg", Angle::degrees());
-    result << Pair("d", Angle::degrees());
-    result << Pair("mills", Angle::milsNATO());
-    result << Pair("mils", Angle::milsNATO());
-    result << Pair("mil", Angle::milsNATO());
-    result << Pair("m", Angle::milsNATO());
-    result << Pair("grads", Angle::gradians());
-    result << Pair("grad", Angle::gradians());
-    result << Pair("g", Angle::gradians());
-    result << Pair("percent", Angle::percentGrade());
-    result << Pair("p", Angle::percentGrade());
+    QHash<QString, AngleUnit> result;
+    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
+    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::milsNATO();
+    result["grads"] = result["grad"] = result["g"] = Angle::gradians();
+    result["percent"] = result["p"] = Angle::percentGrade();
     return result;
 }
 
-LengthUnitSuffixMap createLengthUnitSuffixes()
+QHash<QChar, LengthUnit> createLengthUnitSuffixes()
 {
-    LengthUnitSuffixMap result;
+    QHash<QChar, LengthUnit> result;
     result['m'] = result['M'] = Length::meters();
     result['f'] = result['F'] = Length::feet();
     result['i'] = result['I'] = Length::inches();
     return result;
 }
 
-AngleUnitSuffixMap createAzmUnitSuffixes()
+QHash<QChar, AngleUnit> createAzmUnitSuffixes()
 {
-    AngleUnitSuffixMap result;
+    QHash<QChar, AngleUnit> result;
     result['d'] = result['D'] = Angle::degrees();
     result['g'] = result['G'] = Angle::gradians();
     result['m'] = result['M'] = Angle::milsNATO();
     return result;
 }
 
-AngleUnitSuffixMap createIncUnitSuffixes()
+QHash<QChar, AngleUnit> createIncUnitSuffixes()
 {
-    AngleUnitSuffixMap result;
+    QHash<QChar, AngleUnit> result;
     result['d'] = result['D'] = Angle::degrees();
     result['g'] = result['G'] = Angle::gradians();
     result['m'] = result['M'] = Angle::milsNATO();
@@ -92,9 +64,9 @@ AngleUnitSuffixMap createIncUnitSuffixes()
     return result;
 }
 
-CardinalDirectionCharMap createCardinalDirections()
+QHash<QChar, CardinalDirection> createCardinalDirections()
 {
-    CardinalDirectionCharMap result;
+    QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
     result['s'] = result['S'] = CardinalDirection::South;
     result['e'] = result['E'] = CardinalDirection::East;
@@ -103,17 +75,17 @@ CardinalDirectionCharMap createCardinalDirections()
 }
 
 
-CardinalDirectionCharMap createNorthSouth()
+QHash<QChar, CardinalDirection> createNorthSouth()
 {
-    CardinalDirectionCharMap result;
+    QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
     result['s'] = result['S'] = CardinalDirection::South;
     return result;
 }
 
-CardinalDirectionCharMap createEastWest()
+QHash<QChar, CardinalDirection> createEastWest()
 {
-    CardinalDirectionCharMap result;
+    QHash<QChar, CardinalDirection> result;
     result['e'] = result['E'] = CardinalDirection::East;
     result['w'] = result['W'] = CardinalDirection::West;
     return result;
@@ -159,63 +131,50 @@ QHash<QChar, LrudElement> createLrudElements()
     return result;
 }
 
-QList<QPair<QString, bool>> createCorrectedValues()
+QHash<QString, bool> createCorrectedValues()
 {
-    typedef QPair<QString, bool> Pair;
-    QList<Pair> result;
-    result << Pair("corrected", true);
-    result << Pair("c", true);
-    result << Pair("normal", false);
-    result << Pair("n", false);
+    QHash<QString, bool> result;
+    result["corrected"] = result["c"] = true;
+    result["normal"] = result["n"] = false;
     return result;
 }
 
-QList<QPair<QString, CaseType>> createCaseTypes()
+QHash<QString, CaseType> createCaseTypes()
 {
-    typedef QPair<QString, CaseType> Pair;
-    QList<Pair> result;
-    result << Pair("upper", CaseType::Upper);
-    result << Pair("u", CaseType::Upper);
-    result << Pair("lower", CaseType::Lower);
-    result << Pair("l", CaseType::Lower);
-    result << Pair("mixed", CaseType::Mixed);
-    result << Pair("m", CaseType::Mixed);
+    QHash<QString, CaseType> result;
+    result["upper"] = result["u"] = CaseType::Upper;
+    result["lower"] = result["l"] = CaseType::Lower;
+    result["mixed"] = result["m"] = CaseType::Mixed;
     return result;
 }
 
-QList<QPair<QString, LrudType>> createLrudTypes()
+QHash<QString, LrudType> createLrudTypes()
 {
-    typedef QPair<QString, LrudType> Pair;
-    QList<Pair> result;
-    result << Pair("from", LrudType::From);
-    result << Pair("fb", LrudType::FB);
-    result << Pair("f", LrudType::From);
-    result << Pair("to", LrudType::To);
-    result << Pair("tb", LrudType::TB);
-    result << Pair("t", LrudType::To);
+    QHash<QString, LrudType> result;
+    result["from"] = result["f"] = LrudType::From;
+    result["fb"] = LrudType::FB;
+    result["to"] = result["t"] = LrudType::To;
+    result["tb"] = LrudType::TB;
     return result;
 }
 
-QList<QPair<QString, QList<TapingMethodElement>>> createTapingMethods()
+QHash<QString, QList<TapingMethodElement>> createTapingMethods()
 {
     typedef QList<TapingMethodElement> Method;
-    typedef QPair<QString, Method> Pair;
-    QList<Pair> result;
-    result << Pair("IT", Method({TapingMethodElement::InstrumentHeight, TapingMethodElement::TargetHeight}));
-    result << Pair("IS", Method({TapingMethodElement::InstrumentHeight}));
-    result << Pair("ST", Method({TapingMethodElement::TargetHeight}));
-    result << Pair("SS", Method());
+    QHash<QString, QList<TapingMethodElement>> result;
+    result["it"] = Method({TapingMethodElement::InstrumentHeight, TapingMethodElement::TargetHeight});
+    result["is"] = Method({TapingMethodElement::InstrumentHeight});
+    result["st"] = Method({TapingMethodElement::TargetHeight});
+    result["ss"] = Method();
     return result;
 }
 
-QList<QPair<QString, int>> createPrefixDirectives()
+QHash<QString, int> createPrefixDirectives()
 {
-    typedef QPair<QString, int> Pair;
-    QList<Pair> result;
-    result << Pair("#prefix1", 0) ;
-    result << Pair("#prefix2", 1) ;
-    result << Pair("#prefix3", 2) ;
-    result << Pair("#prefix", 0) ;
+    QHash<QString, int> result;
+    result["#prefix1"] = result["#prefix"] = 0;
+    result["#prefix2"] = 1;
+    result["#prefix3"] = 2;
     return result;
 }
 
@@ -331,7 +290,8 @@ WallsParser::WallsParser(Segment segment)
     prefixDirectives(createPrefixDirectives()),
     unitsOptionMap(createUnitsOptionMap()),
     directivesMap(createDirectivesMap()),
-    notSemicolon(QRegExp("[^;]+")),
+    wordRx(QRegExp("\\w+")),
+    notSemicolonRx(QRegExp("[^;]+")),
     unitsOptionRx(QRegExp("[a-zA-Z_0-9/]*")),
     macroNameRx(QRegExp("[^()=,,# \t]*")),
     stationRx(QRegExp("[^<*,,#/ \t][^,,#/ \t]{0,7}")),
@@ -395,7 +355,7 @@ ULength WallsParser::length(LengthUnit defaultUnit)
     return negate ? -length : length;
 }
 
-UAngle WallsParser::unsignedAngle(AngleUnitSuffixMap unitSuffixes, AngleUnit defaultUnit)
+UAngle WallsParser::unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUnit defaultUnit)
 {
     auto this_expectColon = [&]() { this->expect(':'); };
 
@@ -450,7 +410,7 @@ UAngle WallsParser::unsignedDmsAngle()
 UAngle WallsParser::latitude()
 {
     int start = _i;
-    CardinalDirection::CardinalDirection side = oneOfMap(northSouth);
+    CardinalDirection side = oneOfMap(northSouth);
     UAngle latitude = unsignedDmsAngle();
 
     if (approx(latitude.get(Angle::degrees())) > 90.0)
@@ -468,7 +428,7 @@ UAngle WallsParser::latitude()
 UAngle WallsParser::longitude()
 {
     int start = _i;
-    CardinalDirection::CardinalDirection side = oneOfMap(eastWest);
+    CardinalDirection side = oneOfMap(eastWest);
     UAngle longitude = unsignedDmsAngle();
 
     if (approx(longitude.get(Angle::degrees())) > 180.0)
@@ -499,7 +459,7 @@ UAngle WallsParser::nonQuadrantAzimuth(AngleUnit defaultUnit)
 
 UAngle WallsParser::quadrantAzimuth()
 {
-    CardinalDirection::CardinalDirection from = oneOfMap(cardinalDirections);
+    CardinalDirection from = oneOfMap(cardinalDirections);
 
     int start = _i;
     UAngle angle;
@@ -510,14 +470,14 @@ UAngle WallsParser::quadrantAzimuth()
             throw SegmentParseException(_line.mid(start, _i), "azimuth out of range");
         }
 
-        CardinalDirection::CardinalDirection to = oneOfMap(
+        CardinalDirection to = oneOfMap(
                     from == CardinalDirection::North ||
                     from == CardinalDirection::South ?
                         eastWest : northSouth);
 
-        return CardinalDirection::quadrant(from, to, angle);
+        return from.quadrant(to, angle);
     }
-    return CardinalDirection::angle(from);
+    return from.angle();
 }
 
 UAngle WallsParser::azimuth(AngleUnit defaultUnit)
@@ -645,6 +605,12 @@ void WallsParser::parseLine(QString line)
     parseLine();
 }
 
+void WallsParser::parseLine(Segment line)
+{
+    reset(line);
+    parseLine();
+}
+
 void WallsParser::parseLine()
 {
     maybeWhitespace();
@@ -762,7 +728,7 @@ void WallsParser::insideBlockCommentLine()
 
 Segment WallsParser::untilComment(std::initializer_list<QString> expectedItems)
 {
-    return expect(notSemicolon, expectedItems);
+    return expect(notSemicolonRx, expectedItems);
 }
 
 void WallsParser::segmentLine()
@@ -804,7 +770,7 @@ QString WallsParser::combineSegments(QString base, Segment offset)
         {
             if (baseParts.isEmpty())
             {
-                throw new SegmentParseException(part, "already at root segment, can't go up");
+                throw SegmentParseException(part, "already at root segment, can't go up");
             }
             baseParts.removeLast();
         }
@@ -827,7 +793,7 @@ void WallsParser::prefixLine()
 
 void WallsParser::prefixDirective()
 {
-    int prefixIndex = oneOfList(prefixDirectives, Qt::CaseInsensitive);
+    int prefixIndex = oneOfMapLowercase(nonwhitespaceRx, prefixDirectives);
 
     QString prefix;
 
@@ -918,7 +884,7 @@ void WallsParser::flagDirective()
 QString WallsParser::slashPrefixedFlag()
 {
     expect('/');
-    return expect(notSemicolon, {"<FLAG>"}).value();
+    return expect(notSemicolonRx, {"<FLAG>"}).value();
 }
 
 void WallsParser::symbolLine()
@@ -1066,49 +1032,49 @@ void WallsParser::ct()
 void WallsParser::d()
 {
     expect('=');
-    _units->d_unit = oneOfList(lengthUnits, Qt::CaseInsensitive);
+    _units->d_unit = oneOfMapLowercase(nonwhitespaceRx, lengthUnits);
 }
 
 void WallsParser::s()
 {
     expect('=');
-    _units->s_unit = oneOfList(lengthUnits, Qt::CaseInsensitive);
+    _units->s_unit = oneOfMapLowercase(nonwhitespaceRx, lengthUnits);
 }
 
 void WallsParser::a()
 {
     expect('=');
-    _units->a_unit = oneOfList(azmUnits, Qt::CaseInsensitive);
+    _units->a_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
 }
 
 void WallsParser::ab()
 {
     expect('=');
-    _units->ab_unit = oneOfList(azmUnits, Qt::CaseInsensitive);
+    _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
 }
 
 void WallsParser::a_ab()
 {
     expect('=');
-    _units->a_unit = _units->ab_unit = oneOfList(azmUnits, Qt::CaseInsensitive);
+    _units->a_unit = _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
 }
 
 void WallsParser::v()
 {
     expect('=');
-    _units->v_unit = oneOfList(incUnits, Qt::CaseInsensitive);
+    _units->v_unit = _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
 }
 
 void WallsParser::vb()
 {
     expect('=');
-    _units->vb_unit = oneOfList(incUnits, Qt::CaseInsensitive);
+    _units->vb_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
 }
 
 void WallsParser::v_vb()
 {
     expect('=');
-    _units->v_unit = _units->vb_unit = oneOfList(incUnits, Qt::CaseInsensitive);
+    _units->v_unit = _units->vb_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
 }
 
 void WallsParser::order()
@@ -1197,7 +1163,7 @@ void WallsParser::incvb()
 void WallsParser::typeab()
 {
     expect('=');
-    _units->typeab_corrected = oneOfList(correctedValues, Qt::CaseInsensitive);
+    _units->typeab_corrected = oneOfMapLowercase(wordRx, correctedValues);
     _units->typeab_no_average = false;
     _units->typeab_tolerance = NAN;
     if (maybeChar(','))
@@ -1214,7 +1180,7 @@ void WallsParser::typeab()
 void WallsParser::typevb()
 {
     expect('=');
-    _units->typevb_corrected = oneOfList(correctedValues, Qt::CaseInsensitive);
+    _units->typevb_corrected = oneOfMapLowercase(wordRx, correctedValues);
     _units->typevb_no_average = false;
     _units->typevb_tolerance = NAN;
     if (maybeChar(','))
@@ -1231,13 +1197,13 @@ void WallsParser::typevb()
 void WallsParser::case_()
 {
     expect('=');
-    _units->case_ = oneOfList(caseTypes, Qt::CaseInsensitive);
+    _units->case_ = oneOfMapLowercase(nonwhitespaceRx, caseTypes);
 }
 
 void WallsParser::lrud()
 {
     expect('=');
-    _units->lrud = oneOfList(lrudTypes, Qt::CaseInsensitive);
+    _units->lrud = oneOfMapLowercase(wordRx, lrudTypes);
     if (maybeChar(':'))
     {
         lrudOrder();
@@ -1282,7 +1248,7 @@ void WallsParser::prefix(int index)
 void WallsParser::tape()
 {
     expect('=');
-    _units->tape = oneOfList(tapingMethods, Qt::CaseInsensitive);
+    _units->tape = oneOfMapLowercase(nonwhitespaceRx, tapingMethods);
 }
 
 void WallsParser::uvh()
@@ -1337,12 +1303,13 @@ void WallsParser::vectorLine()
 
 void WallsParser::fromStation()
 {
-    QString from = expect(stationRx, {"<STATION NAME>"}).value();
-    if (optionalStationRx.indexIn(from) >= 0) {
-        from.clear();
+    _fromStationSegment = expect(stationRx, {"<STATION NAME>"}).value();
+    _fromStation = _fromStationSegment.value();
+    if (optionalStationRx.indexIn(_fromStation) >= 0) {
+        _fromStation.clear();
     }
     _visitor->beginVectorLine();
-    _visitor->visitFrom(from);
+    _visitor->visitFrom(_fromStation);
 }
 
 void WallsParser::afterFromStation()
@@ -1359,12 +1326,16 @@ void WallsParser::afterFromStation()
 
 void WallsParser::toStation()
 {
-    QString to = expect(stationRx, {"<STATION NAME>"}).value();
-    if (optionalStationRx.indexIn(to) >= 0)
+    _toStationSegment = expect(stationRx, {"<STATION NAME>"});
+    _toStation = _toStationSegment.value();
+    if (optionalStationRx.indexIn(_toStation) >= 0)
     {
-        to.clear();
+        _toStation.clear();
     }
-    _visitor->visitTo(to);
+    if (_fromStation.isEmpty() && _toStation.isEmpty()) {
+        throw SegmentParseException(_toStationSegment, "from and to station can't both be omitted");
+    }
+    _visitor->visitTo(_toStation);
 }
 
 void WallsParser::afterToStation()
@@ -1392,17 +1363,22 @@ void WallsParser::afterToStation()
             ctElement(elem);
         }
     }
-    foreach(TapingMethodElement elem, _units->tape)
+
+    using namespace std;
+
+    if (_units->vectorType == VectorType::CT)
     {
-        if (!maybeWhitespace())
+        if (!_azmFs.isValid() && !_azmBs.isValid() && !WallsUnits::isVertical(_units->avgInc(_incFs, _incBs)))
         {
-            break;
+            throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
-        if (!maybe([&]() { this->tapingMethodElement(elem); }))
+
+        if (maybeWhitespace())
         {
-            break;
+            maybe([&]() { this->tapingMethodElements();});
         }
     }
+
     maybeWhitespace();
     afterVectorMeasurements();
 }
@@ -1460,35 +1436,56 @@ void WallsParser::distance()
 
 void WallsParser::azimuth()
 {
-    UAngle fsAzm;
-    if (optional(fsAzm, [&]() { return this->azimuth(_units->a_unit); }))
+    int start = _i;
+    _azmFs.clear();
+    _azmBs.clear();
+    if (optional(_azmFs, [&]() { return this->azimuth(_units->a_unit); }))
     {
-        _visitor->visitFrontsightAzimuth(fsAzm);
+        _visitor->visitFrontsightAzimuth(_azmFs);
     }
     if (maybeChar('/'))
     {
-        UAngle bsAzm;
-        if (optional(bsAzm, [&]() { return this->azimuth(_units->ab_unit); }))
+        if (optional(_azmBs, [&]() { return this->azimuth(_units->ab_unit); }))
         {
-            _visitor->visitBacksightAzimuth(bsAzm);
+            _visitor->visitBacksightAzimuth(_azmBs);
         }
     }
+    _azmSegment = _line.mid(start, _i - start);
 }
 
 void WallsParser::inclination()
 {
-    UAngle fsInc;
-    if (optional(fsInc, [&]() { return this->inclination(_units->v_unit); }))
+    _incFs.clear();
+    _incBs.clear();
+    int start = _i;
+    if (optional(_incFs, [&]() { return this->inclination(_units->v_unit); }))
     {
-        _visitor->visitFrontsightInclination(fsInc);
+        _visitor->visitFrontsightInclination(_incFs);
     }
     if (maybeChar('/'))
     {
-        UAngle bsInc;
-        if (optional(bsInc, [&]() { return this->inclination(_units->vb_unit); }))
+        if (optional(_incBs, [&]() { return this->inclination(_units->vb_unit); }))
         {
-            _visitor->visitBacksightInclination(bsInc);
+            _visitor->visitBacksightInclination(_incBs);
         }
+    }
+    _incSegment = _line.mid(start, _i - start);
+    if (!_incFs.isValid() && !_incBs.isValid()) {
+        throw SegmentParseException(_incSegment, "inclination can't be omitted if ORDER includes V");
+    }
+}
+
+void WallsParser::tapingMethodElements()
+{
+    bool first = true;
+    foreach(TapingMethodElement elem, _units->tape)
+    {
+        if (!first)
+        {
+            whitespace();
+        }
+        first = false;
+        tapingMethodElement(elem);
     }
 }
 
@@ -1592,7 +1589,10 @@ void WallsParser::varianceOverrides()
     expect('(');
     maybeWhitespace();
     VarianceOverridePtr horizontal = varianceOverride(_units->d_unit);
-    _visitor->visitHorizontalVarianceOverride(horizontal);
+    if (!horizontal.isNull())
+    {
+        _visitor->visitHorizontalVarianceOverride(horizontal);
+    }
     maybeWhitespace();
     if (maybeChar(','))
     {
@@ -1602,9 +1602,11 @@ void WallsParser::varianceOverrides()
         {
             throw allExpected();
         }
-        _visitor->visitVerticalVarianceOverride(vertical);
+        if (!vertical.isNull()) {
+            _visitor->visitVerticalVarianceOverride(vertical);
+        }
     }
-    else
+    else if (!horizontal.isNull())
     {
         _visitor->visitVerticalVarianceOverride(horizontal);
     }

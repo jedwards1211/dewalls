@@ -6,22 +6,42 @@
 
 namespace dewalls {
 
-namespace CardinalDirection {
+class CardinalDirection {
+public:
+    typedef UnitizedDouble<Angle> UAngle;
 
-enum CardinalDirection
-{
-    North = 0,
-    East = 1,
-    South = 2,
-    West = 3
+    inline CardinalDirection() : _ordinal(0) {}
+
+    inline QString name() const { return names[_ordinal]; }
+    inline int ordinal() const { return _ordinal; }
+    inline UAngle angle() const { return angles[_ordinal]; }
+    inline CardinalDirection opposite() const { return CardinalDirection((_ordinal + 2) % 4); }
+    UAngle quadrant(CardinalDirection to, UAngle angle) const;
+
+    static const CardinalDirection North;
+    static const CardinalDirection East;
+    static const CardinalDirection South;
+    static const CardinalDirection West;
+
+    inline bool operator ==(const CardinalDirection& rhs) const {
+        return _ordinal == rhs._ordinal;
+    }
+
+    inline CardinalDirection& operator =(CardinalDirection rhs) {
+        this->_ordinal = rhs._ordinal;
+        return *this;
+    }
+
+private:
+    inline CardinalDirection(int ordinal) : _ordinal(ordinal) {}
+
+    UAngle nonnorm_quadrant(CardinalDirection to, UAngle angle) const;
+
+    static const QString names[4];
+    static const UAngle angles[4];
+
+    int _ordinal;
 };
-
-CardinalDirection opposite(CardinalDirection d);
-UnitizedDouble<Angle> angle(CardinalDirection d);
-CardinalDirection fromChar(char c);
-UnitizedDouble<Angle> quadrant(CardinalDirection from, CardinalDirection to, UnitizedDouble<Angle> angle);
-
-} // namespace CardinalDirection
 
 } // namespace dewalls
 
