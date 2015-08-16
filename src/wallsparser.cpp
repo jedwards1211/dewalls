@@ -585,13 +585,13 @@ QString WallsParser::quotedText()
 
 QString WallsParser::movePastEndQuote()
 {
-    int start = _i;
+    int start = _i++;
     while (_i < _line.length())
     {
         QChar c = _line.at(_i++);
         if (c == '\\')
         {
-            _i++;
+            if (_i < _line.length()) _i++;
         }
         else if (c == '"')
         {
@@ -599,7 +599,7 @@ QString WallsParser::movePastEndQuote()
         }
     }
 
-    return _line.value().mid(start, _i);
+    return _line.value().mid(start, _i - start);
 }
 
 void WallsParser::parseLine(QString line)

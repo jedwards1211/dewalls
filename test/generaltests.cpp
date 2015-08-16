@@ -477,4 +477,29 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f(?,*)/Entrance#s blah;dms with ft elevations");
         }
     }
+
+    SECTION( "Walls' crazy macros" ) {
+        parser.parseLine("#units $hello=\"der=vad pre\" $world=\"fix1=hello feet\"");
+        REQUIRE( parser.macros()["hello"] == "der=vad pre" );
+        REQUIRE( parser.macros()["world"] == "fix1=hello feet" );
+
+        parser.parseLine("#units or$(hello)$(world)");
+
+        REQUIRE( parser.units()->ctOrder.size() == 3 );
+        REQUIRE( parser.units()->prefix.size() >= 1 );
+
+        CHECK( parser.units()->ctOrder[0] == CtElement::V );
+        CHECK( parser.units()->ctOrder[1] == CtElement::A );
+        CHECK( parser.units()->ctOrder[2] == CtElement::D );
+
+        CHECK( parser.units()->prefix[0] == "hello" );
+        CHECK( parser.units()->d_unit == Length::feet() );
+        CHECK( parser.units()->s_unit == Length::feet() );
+
+        parser.parseLine("#units $hello $world");
+        CHECK( parser.macros()["hello"] == "" );
+        CHECK( parser.macros()["world"] == "" );
+
+        CHECK_THROWS( parser.parseLine("#units $(undefined)") );
+    }
 }
