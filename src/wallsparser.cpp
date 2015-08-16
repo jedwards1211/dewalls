@@ -749,7 +749,7 @@ Segment WallsParser::segmentDirective()
     {
         Segment result;
         maybe(result, [&]() { return this->untilComment({"<SEGMENT>"}); });
-        return result;
+        return result.trimmed();
     }
     return _line.mid(_i, 0);
 }
@@ -1287,6 +1287,8 @@ void WallsParser::vectorLine()
     {
         whitespace();
         afterFromStation();
+        maybeWhitespace();
+        endOfLine();
         _visitor->endVectorLine();
     }
     catch (const SegmentParseExpectedException& ex)
@@ -1736,7 +1738,7 @@ void WallsParser::inlineDirective()
 
 void WallsParser::inlineSegmentDirective()
 {
-    _visitor->visitInlineSegment(segmentDirective());
+    _visitor->visitInlineSegment(segmentDirective().value());
 }
 
 void WallsParser::fixLine()
@@ -1749,6 +1751,8 @@ void WallsParser::fixLine()
     {
         whitespace();
         afterFixedStation();
+        maybeWhitespace();
+        endOfLine();
         _visitor->endFixLine();
     }
     catch (const SegmentParseExpectedException& ex)
@@ -1781,10 +1785,8 @@ void WallsParser::afterFixedStation()
         }
         fixRectElement(elem);
     }
-    if (maybeWhitespace())
-    {
-        afterFixMeasurements();
-    }
+    maybeWhitespace();
+    afterFixMeasurements();
 }
 
 void WallsParser::fixRectElement(RectElement elem)
@@ -1841,7 +1843,7 @@ void WallsParser::afterFixVarianceOverrides()
 void WallsParser::inlineNote()
 {
     expect('/');
-    _visitor->visitInlineNote(escapedText([](QChar c) { return c != ';' && c != '#'; }, {"<NOTE>"}));
+    _visitor->visitInlineNote(escapedText([](QChar c) { return c != ';' && c != '#'; }, {"<NOTE>"}).trimmed());
 }
 
 void WallsParser::afterFixInlineNote()

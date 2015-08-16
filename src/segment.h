@@ -291,7 +291,7 @@ inline Segment Segment::trimmed() const
     auto start = val.begin();
     auto end   = val.end();
     while (start < end && start->isSpace()) start++;
-    while (end > start && end  ->isSpace()) end--;
+    while (end > start && (end - 1)->isSpace()) end--;
     return mid(start - val.begin(), end - start);
 }
 inline QString Segment::toUpper() const

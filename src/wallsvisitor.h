@@ -53,7 +53,7 @@ public:
     virtual void visitCFlag( );
     virtual void visitHorizontalVarianceOverride( VarianceOverridePtr variance );
     virtual void visitVerticalVarianceOverride( VarianceOverridePtr variance );
-    virtual void visitInlineSegment( Segment segment );
+    virtual void visitInlineSegment( QString segment );
     virtual void visitInlineNote( QString note );
     virtual void visitInlineComment( QString string );
     virtual void visitCommentLine( QString comment );
@@ -100,7 +100,7 @@ public:
     virtual void visitCFlag( );
     virtual void visitHorizontalVarianceOverride( VarianceOverridePtr variance );
     virtual void visitVerticalVarianceOverride( VarianceOverridePtr variance );
-    virtual void visitInlineSegment( Segment segment );
+    virtual void visitInlineSegment( QString segment );
     virtual void visitInlineNote( QString note );
     virtual void visitInlineComment( QString string );
     virtual void visitCommentLine( QString comment );
@@ -140,7 +140,7 @@ public:
     bool cflag;
     VarianceOverridePtr horizontalVarianceOverride;
     VarianceOverridePtr verticalVarianceOverride;
-    Segment inlineSegment;
+    QString inlineSegment;
     QString inlineNote;
     QString inlineComment;
     QString comment;
@@ -185,7 +185,7 @@ public:
     virtual void visitCFlag( );
     virtual void visitHorizontalVarianceOverride( VarianceOverridePtr variance );
     virtual void visitVerticalVarianceOverride( VarianceOverridePtr variance );
-    virtual void visitInlineSegment( Segment segment );
+    virtual void visitInlineSegment( QString segment );
     virtual void visitInlineNote( QString note );
     virtual void visitInlineComment( QString string );
     virtual void visitCommentLine( QString comment );
@@ -260,7 +260,7 @@ public:
     virtual void visitCFlag( );
     virtual void visitHorizontalVarianceOverride( VarianceOverridePtr variance );
     virtual void visitVerticalVarianceOverride( VarianceOverridePtr variance );
-    virtual void visitInlineSegment( Segment segment );
+    virtual void visitInlineSegment( QString segment );
     virtual void visitInlineNote( QString note );
     virtual void visitInlineComment( QString string );
     virtual void visitCommentLine( QString comment );

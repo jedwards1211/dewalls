@@ -366,6 +366,10 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( visitor.down == ULength(7, Length::meters()) );
             }
         }
+
+        SECTION( "valid spacing" ) {
+            parser.parseLine("   A B 1 2 3(?,?)*4,5,6,7*#s blah;test");
+        }
     }
 
     SECTION( "prefixes" ) {
@@ -383,5 +387,44 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
         parser.parseLine("#units prefix1");
         CHECK( parser.units()->processStationName("b") == "c::b" );
+    }
+
+    SECTION( "fixed stations" ) {
+        parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f (?,*) /Entrance #s blah ;dms with ft elevations");
+        REQUIRE( visitor.fixedStation == "A1" );
+        REQUIRE( visitor.longitude == UAngle(-97 - (43 + 52.5 / 60.0) / 60.0, Angle::degrees()) );
+        REQUIRE( visitor.latitude == UAngle(31 + (16 + 45 / 60.0) / 60.0, Angle::degrees()) );
+        REQUIRE( visitor.rectUp == ULength(323, Length::feet()) );
+        REQUIRE( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
+        REQUIRE( visitor.verticalVarianceOverride == VarianceOverride::FLOATED_TRAVERSE );
+        REQUIRE( visitor.inlineNote == "Entrance" );
+        REQUIRE( visitor.inlineSegment == "blah" );
+        REQUIRE( visitor.inlineComment == "dms with ft elevations");
+
+        parser.parseLine("#FIX A4 620775.38 3461050.67 98.45");
+        REQUIRE( visitor.fixedStation == "A4" );
+        REQUIRE( visitor.east == ULength(620775.38, Length::meters()) );
+        REQUIRE( visitor.north == ULength(3461050.67, Length::meters()) );
+        REQUIRE( visitor.rectUp == ULength(98.45, Length::meters()) );
+
+        SECTION( "measurements can be reordered" ) {
+            parser.parseLine("#units order=nue");
+            parser.parseLine("#fix a 1 2 3");
+            REQUIRE( visitor.north == ULength(1, Length::meters()) );
+            REQUIRE( visitor.rectUp == ULength(2, Length::meters()) );
+            REQUIRE( visitor.east == ULength(3, Length::meters()) );
+        }
+
+        SECTION( "affected by d_unit" ) {
+            parser.parseLine("#units d=feet");
+            parser.parseLine("#fix a 1 2 3");
+            REQUIRE( visitor.east == ULength(1, Length::feet()) );
+            REQUIRE( visitor.north == ULength(2, Length::feet()) );
+            REQUIRE( visitor.rectUp == ULength(3, Length::feet()) );
+        }
+
+        SECTION( "valid spacing" ) {
+            parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f(?,*)/Entrance#s blah;dms with ft elevations");
+        }
     }
 }

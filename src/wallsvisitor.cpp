@@ -37,7 +37,7 @@ void WallsVisitor::visitLrudFacingAngle( UAngle facingAngle ){}
 void WallsVisitor::visitCFlag( ){}
 void WallsVisitor::visitHorizontalVarianceOverride( VarianceOverridePtr variance ){}
 void WallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr variance ){}
-void WallsVisitor::visitInlineSegment( Segment segment ){}
+void WallsVisitor::visitInlineSegment( QString segment ){}
 void WallsVisitor::visitInlineNote( QString note ){}
 void WallsVisitor::visitInlineComment( QString string ){}
 void WallsVisitor::visitCommentLine( QString comment ){}
@@ -212,7 +212,7 @@ void PrintingWallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr va
     cout << "  v:            " << variance->toString().toStdString() << endl;
 }
 
-void PrintingWallsVisitor::visitInlineSegment( Segment segment )
+void PrintingWallsVisitor::visitInlineSegment( QString segment )
 {
     cout << "  segment:      " << segment.toStdString() << endl;
 }
@@ -417,7 +417,7 @@ void CapturingWallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr v
     verticalVarianceOverride = variance;
 }
 
-void CapturingWallsVisitor::visitInlineSegment( Segment segment )
+void CapturingWallsVisitor::visitInlineSegment( QString segment )
 {
     inlineSegment = segment;
 }
@@ -502,7 +502,7 @@ void MultiWallsVisitor::visitLrudFacingAngle( UAngle facingAngle ){  multicast(&
 void MultiWallsVisitor::visitCFlag( ){  multicast(&WallsVisitor::visitCFlag); }
 void MultiWallsVisitor::visitHorizontalVarianceOverride( VarianceOverridePtr variance ){  multicast(&WallsVisitor::visitHorizontalVarianceOverride, variance); }
 void MultiWallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr variance ){  multicast(&WallsVisitor::visitVerticalVarianceOverride, variance); }
-void MultiWallsVisitor::visitInlineSegment( Segment segment ){  multicast(&WallsVisitor::visitInlineSegment, segment); }
+void MultiWallsVisitor::visitInlineSegment( QString segment ){  multicast(&WallsVisitor::visitInlineSegment, segment); }
 void MultiWallsVisitor::visitInlineNote( QString note ){  multicast(&WallsVisitor::visitInlineNote, note); }
 void MultiWallsVisitor::visitInlineComment( QString string ){  multicast(&WallsVisitor::visitInlineComment, string); }
 void MultiWallsVisitor::visitCommentLine( QString comment ){  multicast(&WallsVisitor::visitCommentLine, comment); }
