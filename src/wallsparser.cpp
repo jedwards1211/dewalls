@@ -1281,7 +1281,7 @@ void WallsParser::uvv()
 void WallsParser::uv()
 {
     expect('=');
-    _units->uv = unsignedDoubleLiteral();
+    _units->uvv = _units->uvh = unsignedDoubleLiteral();
 }
 
 void WallsParser::flag()

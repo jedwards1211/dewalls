@@ -59,7 +59,6 @@ public:
     QString segment;
     double uvh;
     double uvv;
-    double uv;
 
     void setPrefix(int index, QString newPrefix);
     QString processStationName(QString name);

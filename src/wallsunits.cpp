@@ -43,8 +43,7 @@ WallsUnits::WallsUnits()
       date(QDate()),
       segment(QString()),
       uvh(1.0),
-      uvv(1.0),
-      uv(1.0)
+      uvv(1.0)
 {
 
 }
