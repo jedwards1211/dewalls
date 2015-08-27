@@ -32,10 +32,10 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.units()->incv.isZero() );
     REQUIRE( parser.units()->incvb.isZero() );
     REQUIRE( parser.units()->inch.isZero() );
-    REQUIRE( parser.units()->date.isNull() );
+    REQUIRE( parser.date().isNull() );
     REQUIRE( parser.units()->case_ == CaseType::Mixed );
     REQUIRE( parser.units()->flag.isNull() );
-    REQUIRE( parser.units()->segment.isNull() );
+    REQUIRE( parser.segment().isNull() );
     REQUIRE( parser.units()->uvh == 1.0 );
     REQUIRE( parser.units()->uvv == 1.0 );
 
@@ -480,8 +480,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
     SECTION( "Walls' crazy macros" ) {
         parser.parseLine("#units $hello=\"der=vad pre\" $world=\"fix1=hello feet\"");
-        REQUIRE( parser.macros()["hello"] == "der=vad pre" );
-        REQUIRE( parser.macros()["world"] == "fix1=hello feet" );
+        REQUIRE( parser.units()->macros["hello"] == "der=vad pre" );
+        REQUIRE( parser.units()->macros["world"] == "fix1=hello feet" );
 
         parser.parseLine("#units or$(hello)$(world)");
 
@@ -497,8 +497,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         CHECK( parser.units()->s_unit == Length::feet() );
 
         parser.parseLine("#units $hello $world");
-        CHECK( parser.macros()["hello"] == "" );
-        CHECK( parser.macros()["world"] == "" );
+        CHECK( parser.units()->macros["hello"] == "" );
+        CHECK( parser.units()->macros["world"] == "" );
 
         CHECK_THROWS( parser.parseLine("#units $(undefined)") );
     }

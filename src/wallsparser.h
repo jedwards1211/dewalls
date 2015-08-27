@@ -36,7 +36,8 @@ public:
     void setVisitor(WallsVisitor* visitor);
 
     QSharedPointer<WallsUnits> units() const;
-    QHash<QString, QString> macros() const;
+    QDate date() const;
+    QString segment() const;
 
     ULength unsignedLengthInches();
     ULength unsignedLengthNonInches(LengthUnit defaultUnit);
@@ -162,7 +163,7 @@ private:
     void flagDirective();
     QString slashPrefixedFlag();
 
-    void dateDirective();
+    QDate dateDirective();
     QDate isoDate();
     QDate usDate1();
     QDate usDate2();
@@ -267,7 +268,8 @@ private:
     bool _inBlockComment;
     QSharedPointer<WallsUnits> _units;
     QStack<QSharedPointer<WallsUnits>> _stack;
-    QHash<QString, QString> _macros;
+    QString _segment;
+    QDate _date;
 
     Segment _fromStationSegment;
     QString _fromStation;
@@ -298,9 +300,14 @@ inline QSharedPointer<WallsUnits> WallsParser::units() const
     return _units;
 }
 
-inline QHash<QString, QString> WallsParser::macros() const
+inline QDate WallsParser::date() const
 {
-    return _macros;
+    return _date;
+}
+
+inline QString WallsParser::segment() const
+{
+    return _segment;
 }
 
 template<typename F>

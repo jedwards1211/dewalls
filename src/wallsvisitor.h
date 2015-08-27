@@ -58,6 +58,7 @@ public:
     virtual void visitInlineComment( QString string );
     virtual void visitCommentLine( QString comment );
     virtual void visitDateLine(QDate date);
+    virtual void visitSegmentLine(QString segment);
     virtual void visitFlaggedStations( QString flag , QStringList stations );
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
@@ -109,6 +110,7 @@ public:
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitDateLine(QDate date);
+    virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
 };
@@ -153,6 +155,7 @@ public:
     QString note;
     QString fixedStation;
     QDate date;
+    QString segment;
     QStringList warnings;
 
     virtual void beginFile( QString source );
@@ -196,6 +199,7 @@ public:
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitDateLine(QDate date);
+    virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
 };
@@ -271,6 +275,7 @@ public:
     virtual void visitFlaggedStations( QString flag , QStringList stations );
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
+    virtual void visitSegmentLine(QString segment);
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );

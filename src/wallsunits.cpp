@@ -40,10 +40,9 @@ WallsUnits::WallsUnits()
       tape(QList<TapingMethodElement>({TapingMethodElement::InstrumentHeight, TapingMethodElement::TargetHeight})),
       flag(QString()),
       prefix(QStringList()),
-      date(QDate()),
-      segment(QString()),
       uvh(1.0),
-      uvv(1.0)
+      uvv(1.0),
+      macros()
 {
 
 }

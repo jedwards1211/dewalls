@@ -55,10 +55,9 @@ public:
     QList<TapingMethodElement> tape;
     QString flag;
     QStringList prefix;
-    QDate date;
-    QString segment;
     double uvh;
     double uvv;
+    QHash<QString, QString> macros;
 
     void setPrefix(int index, QString newPrefix);
     QString processStationName(QString name);

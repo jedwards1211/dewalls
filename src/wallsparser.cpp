@@ -21,7 +21,7 @@ QHash<QString, LengthUnit> createLengthUnits()
 QHash<QString, AngleUnit> createAzmUnits()
 {
     QHash<QString, AngleUnit> result;
-    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
+    result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
     result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::milsNATO();
     result["grads"] = result["grad"] = result["g"] = Angle::gradians();
     return result;
@@ -269,7 +269,8 @@ WallsParser::WallsParser(Segment segment)
       _inBlockComment(false),
       _units(QSharedPointer<WallsUnits>(new WallsUnits())),
       _stack(QStack<QSharedPointer<WallsUnits>>()),
-      _macros(QHash<QString, QString>()),
+      _segment(),
+      _date(),
     lengthUnits(createLengthUnits()),
     azmUnits(createAzmUnits()),
     incUnits(createIncUnits()),
@@ -319,7 +320,8 @@ WallsParser& WallsParser::operator =(const WallsParser& rhs)
     {
         _stack.push(QSharedPointer<WallsUnits>(new WallsUnits(*stackItem)));
     }
-    _macros = rhs._macros;
+    _segment = rhs._segment;
+    _date = rhs._date;
     return *this;
 }
 
@@ -644,7 +646,7 @@ void WallsParser::directiveLine()
     int start = _i;
     OwnProduction directive = oneOfMapLowercase(directiveRx, directivesMap);
     _i = start;
-    replaceMacros();
+    if (directive != &WallsParser::fixLine) replaceMacros();
     (this->*directive)();
 }
 
@@ -658,11 +660,11 @@ QString WallsParser::replaceMacro()
         if (c == ')')
         {
             Segment macroName = _line.mid(start, _i - 1 - start);
-            if (!_macros.contains(macroName.value()))
+            if (!_units->macros.contains(macroName.value()))
             {
                 throw SegmentParseException(macroName, "macro not defined");
             }
-            return _macros[macroName.value()];
+            return _units->macros[macroName.value()];
         }
         else if (c.isSpace())
         {
@@ -737,7 +739,7 @@ Segment WallsParser::untilComment(std::initializer_list<QString> expectedItems)
 void WallsParser::segmentLine()
 {
     maybeWhitespace();
-    _units->segment = combineSegments(_units->segment, segmentDirective());
+    _segment = combineSegments(_segment, segmentDirective());
     maybeWhitespace();
     inlineCommentOrEndOfLine();
 }
@@ -904,19 +906,20 @@ void WallsParser::symbolLine()
 void WallsParser::dateLine()
 {
     maybeWhitespace();
-    dateDirective();
+    _visitor->visitDateLine(dateDirective());
     maybeWhitespace();
     inlineCommentOrEndOfLine();
 }
 
-void WallsParser::dateDirective()
+QDate WallsParser::dateDirective()
 {
     expect("#date", Qt::CaseInsensitive);
     whitespace();
-    oneOfR(_units->date,
+    oneOfR(_date,
     [&]() { return this->isoDate(); },
     [&]() { return this->usDate1(); },
     [&]() { return this->usDate2(); });
+    return _date;
 }
 
 QDate WallsParser::isoDate()
@@ -991,7 +994,7 @@ void WallsParser::macroOption()
     {
         macroValue = quotedTextOrNonwhitespace();
     }
-    _macros[macroName] = macroValue;
+    _units->macros[macroName] = macroValue;
 }
 
 void WallsParser::save()
