@@ -142,37 +142,32 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
                 parser.parseLine("A B 1 1/179 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("A B 1 1/183 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("A B 1 1/184 4");
-                REQUIRE( visitor.warnings.size() == 1 );
-                REQUIRE( visitor.warnings[0].contains("exceeds") );
+                REQUIRE( visitor.messages.size() == 1 );
+                REQUIRE( visitor.messages[0].message.contains("exceeds") );
 
                 parser.parseLine("#units typeab=c");
                 parser.parseLine("A B 1 1/3 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
                 parser.parseLine("A B 1 1/359 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
                 parser.parseLine("A B 1 359/1 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("#units typeab=c,5");
                 parser.parseLine("A B 1 1/6 4");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
                 parser.parseLine("A B 1 1/7 4");
-                REQUIRE( visitor.warnings.size() == 1 );
+                REQUIRE( visitor.messages.size() == 1 );
             }
         }
 
         SECTION( "inclination" ) {
-            SECTION( "inclination can't be omitted" ) {
-                CHECK_THROWS( parser.parseLine("A B 2.5 350 --") );
-                CHECK_THROWS( parser.parseLine("A B 2.5 350 --/--") );
-            }
-
             SECTION( "v_unit" ) {
                 parser.parseLine("#units v=grads");
                 parser.parseLine("A B 1 2 3/4");
@@ -196,26 +191,26 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
                 parser.parseLine("A B 1 2 4/-6");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("A B 1 2 4/-2");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("A B 1 2 4/-7");
-                REQUIRE( visitor.warnings.size() == 1 );
-                REQUIRE( visitor.warnings[0].contains("exceeds") );
+                REQUIRE( visitor.messages.size() == 1 );
+                REQUIRE( visitor.messages[0].message.contains("exceeds") );
 
                 parser.parseLine("#units typevb=c");
                 parser.parseLine("A B 1 2 1/3");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
                 parser.parseLine("A B 1 2 1/-1");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
 
                 parser.parseLine("#units typevb=c,5");
                 parser.parseLine("A B 1 2 1/6");
-                REQUIRE( visitor.warnings.size() == 0 );
+                REQUIRE( visitor.messages.size() == 0 );
                 parser.parseLine("A B 1 2 1/7");
-                REQUIRE( visitor.warnings.size() == 1 );
+                REQUIRE( visitor.messages.size() == 1 );
             }
         }
 

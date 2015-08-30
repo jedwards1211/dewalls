@@ -73,7 +73,7 @@ void LineParser::throwAllExpected()
     if (!_expectedItems.isEmpty())
     {
         throw SegmentParseExpectedException(
-                    _line.atAsSegment(_i), _expectedItems);
+                    _line.atAsSegment(_expectedIndex), _expectedItems);
     }
 }
 

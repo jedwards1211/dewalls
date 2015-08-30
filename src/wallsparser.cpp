@@ -1511,36 +1511,39 @@ void WallsParser::inclination()
     _incFs.clear();
     _incBs.clear();
     int start = _i;
-    if (optional(_incFs, [&]() { return this->inclination(_units->v_unit); }))
-    {
-        _visitor->visitFrontsightInclination(_incFs);
-    }
+    optional(_incFs, [&]() { return this->inclination(_units->v_unit); });
     if (maybeChar('/'))
     {
-        if (optional(_incBs, [&]() { return this->inclination(_units->vb_unit); }))
-        {
-            _visitor->visitBacksightInclination(_incBs);
-        }
+        optional(_incBs, [&]() { return this->inclination(_units->vb_unit); });
     }
     _incSegment = _line.mid(start, _i - start);
-    if (!_incFs.isValid() && !_incBs.isValid()) {
-        throw SegmentParseException(_incSegment, "inclination can't be omitted if ORDER includes V");
-    }
 
-    if (_incFs.isValid() && _incBs.isValid())
-    {
-        UAngle diff = incDifference(_incFs, _incBs);
-        if (diff > _units->typevb_tolerance)
+    if (!_incFs.isValid() && !_incBs.isValid()) {
+        _incFs = UAngle(0, _units->v_unit);
+        _visitor->visitFrontsightInclination(_incFs);
+    }
+    else {
+        if (_incFs.isValid()) {
+            _visitor->visitFrontsightInclination(_incFs);
+        }
+        if (_incBs.isValid()) {
+            _visitor->visitBacksightInclination(_incBs);
+        }
+        if (_incFs.isValid() && _incBs.isValid())
         {
-            _visitor->message({QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
-                               .arg(diff.toString())
-                               .arg(_units->typevb_tolerance.toString()),
-                               WallsMessage::Warning,
-                               _incSegment.source(),
-                               _incSegment.startLine(),
-                               _incSegment.startCol(),
-                               _incSegment.endLine(),
-                               _incSegment.endCol()});
+            UAngle diff = incDifference(_incFs, _incBs);
+            if (diff > _units->typevb_tolerance)
+            {
+                _visitor->message({QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
+                                   .arg(diff.toString())
+                                   .arg(_units->typevb_tolerance.toString()),
+                                   WallsMessage::Warning,
+                                   _incSegment.source(),
+                                   _incSegment.startLine(),
+                                   _incSegment.startCol(),
+                                   _incSegment.endLine(),
+                                   _incSegment.endCol()});
+            }
         }
     }
 }
