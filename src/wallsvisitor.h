@@ -13,9 +13,26 @@
 
 namespace dewalls {
 
+struct WallsMessage {
+    enum Severity {
+        Info = 0,
+        Warning = 1,
+        Error = 2
+    };
+
+    QString message;
+    Severity severity;
+    QString source;
+    int startLine;
+    int startColumn;
+    int endLine;
+    int endColumn;
+};
+
 class WallsVisitor
 {
 public:
+
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle> UAngle;
     typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
@@ -64,6 +81,7 @@ public:
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
+    virtual void message( WallsMessage message );
 };
 
 class PrintingWallsVisitor : public WallsVisitor
@@ -113,6 +131,7 @@ public:
     virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
+    virtual void message( WallsMessage message );
 };
 
 class CapturingWallsVisitor : public WallsVisitor
@@ -157,6 +176,7 @@ public:
     QDate date;
     QString segment;
     QStringList warnings;
+    QList<WallsMessage> messages;
 
     virtual void beginFile( QString source );
     virtual void endFile( QString source );
@@ -202,6 +222,7 @@ public:
     virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
+    virtual void message( WallsMessage message );
 };
 
 class MultiWallsVisitor : public WallsVisitor
@@ -279,6 +300,7 @@ public:
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
     virtual void warn( QString warning );
+    virtual void message( WallsMessage message );
 
 private:
     QList<WallsVisitor*> _visitors;

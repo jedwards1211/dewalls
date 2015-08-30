@@ -1489,10 +1489,15 @@ void WallsParser::azimuth()
         UAngle diff = azmDifference(_azmFs, _azmBs);
         if (diff > _units->typeab_tolerance)
         {
-            _visitor->warn(SegmentParseException(_azmSegment,
-                                                     QString("difference between frontsight/backsight azimuth (%1) exceeds tolerance (%2)")
-                                                       .arg(diff.toString())
-                                                       .arg(_units->typeab_tolerance.toString())).message());
+            _visitor->message({QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
+                               .arg(diff.toString())
+                               .arg(_units->typevb_tolerance.toString()),
+                               WallsMessage::Warning,
+                               _azmSegment.source(),
+                               _azmSegment.startLine(),
+                               _azmSegment.startCol(),
+                               _azmSegment.endLine(),
+                               _azmSegment.endCol()});
         }
     }
 }
@@ -1527,10 +1532,15 @@ void WallsParser::inclination()
         UAngle diff = incDifference(_incFs, _incBs);
         if (diff > _units->typevb_tolerance)
         {
-            _visitor->warn(SegmentParseException(_incSegment,
-                                                 QString("difference between frontsight/backsight inclination (%1) exceeds tolerance (%2)")
-                                                   .arg(diff.toString())
-                                                   .arg(_units->typevb_tolerance.toString())).message());
+            _visitor->message({QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
+                               .arg(diff.toString())
+                               .arg(_units->typevb_tolerance.toString()),
+                               WallsMessage::Warning,
+                               _incSegment.source(),
+                               _incSegment.startLine(),
+                               _incSegment.startCol(),
+                               _incSegment.endLine(),
+                               _incSegment.endCol()});
         }
     }
 }
