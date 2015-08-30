@@ -80,7 +80,6 @@ public:
     virtual void visitBlockCommentLine( QString string );
     virtual void visitNoteLine( QString station , QString note );
     virtual void visitFixedStation( QString string );
-    virtual void warn( QString warning );
     virtual void message( WallsMessage message );
 };
 
@@ -130,7 +129,6 @@ public:
     virtual void visitDateLine(QDate date);
     virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
-    virtual void warn( QString warning );
     virtual void message( WallsMessage message );
 };
 
@@ -175,7 +173,6 @@ public:
     QString fixedStation;
     QDate date;
     QString segment;
-    QStringList warnings;
     QList<WallsMessage> messages;
 
     virtual void beginFile( QString source );
@@ -221,7 +218,6 @@ public:
     virtual void visitDateLine(QDate date);
     virtual void visitSegmentLine(QString segment);
     virtual void visitFixedStation( QString string );
-    virtual void warn( QString warning );
     virtual void message( WallsMessage message );
 };
 
@@ -299,7 +295,6 @@ public:
     virtual void visitSegmentLine(QString segment);
     virtual void visitDateLine(QDate date);
     virtual void visitFixedStation( QString string );
-    virtual void warn( QString warning );
     virtual void message( WallsMessage message );
 
 private:

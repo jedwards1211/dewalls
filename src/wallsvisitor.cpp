@@ -47,7 +47,6 @@ void WallsVisitor::visitNoteLine( QString station , QString note ){}
 void WallsVisitor::visitDateLine( QDate date ){}
 void WallsVisitor::visitSegmentLine( QString segment ){}
 void WallsVisitor::visitFixedStation( QString string ){}
-void WallsVisitor::warn( QString warning ){}
 void WallsVisitor::message(WallsMessage message){}
 
 void PrintingWallsVisitor::beginFile( QString source )
@@ -263,11 +262,6 @@ void PrintingWallsVisitor::visitSegmentLine( QString segment )
 void PrintingWallsVisitor::visitFixedStation( QString station )
 {
     cout << "  fixed station:" << station.toStdString() << endl;
-}
-
-void PrintingWallsVisitor::warn( QString warning )
-{
-    cout << "*** WARNING: " << warning.toStdString() << endl;
 }
 
 void PrintingWallsVisitor::message(WallsMessage message)
@@ -500,11 +494,6 @@ void CapturingWallsVisitor::visitFixedStation( QString station )
     fixedStation = station;
 }
 
-void CapturingWallsVisitor::warn( QString warning )
-{
-    warnings << warning;
-}
-
 void CapturingWallsVisitor::message(WallsMessage message)
 {
     messages << message;
@@ -558,7 +547,6 @@ void MultiWallsVisitor::visitNoteLine( QString station , QString note ){  multic
 void MultiWallsVisitor::visitDateLine( QDate date ){  multicast(&WallsVisitor::visitDateLine, date); }
 void MultiWallsVisitor::visitSegmentLine( QString segment ){  multicast(&WallsVisitor::visitSegmentLine, segment); }
 void MultiWallsVisitor::visitFixedStation( QString string ){  multicast(&WallsVisitor::visitFixedStation, string); }
-void MultiWallsVisitor::warn( QString warning ){  multicast(&WallsVisitor::warn, warning); }
 void MultiWallsVisitor::message(WallsMessage message){ multicast(&WallsVisitor::message, message); }
 
 } // namespace dewalls
