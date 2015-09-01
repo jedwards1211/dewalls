@@ -54,7 +54,7 @@ inline UnitizedDouble<T> usqrt(UnitizedDouble<T> x) {
 
 template<class T>
 inline UnitizedDouble<T> uabs(UnitizedDouble<T> x) {
-    return UnitizedDouble<T>(abs(x.get(x.unit())), x.unit());
+    return UnitizedDouble<T>(fabs(x.get(x.unit())), x.unit());
 }
 
 }

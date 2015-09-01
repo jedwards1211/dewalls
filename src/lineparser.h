@@ -191,37 +191,37 @@ void LineParser::oneOfR(R& result, F production, Args... args)
     }
 }
 
-template<typename R, class O>
-void oneOfOwnR(R& result, R (O::*production)())
-{
-    try
-    {
-        return (this->*production)();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        throwAllExpected(ex);
-    }
-}
+//template<typename R, class O>
+//void oneOfOwnR(R& result, R (O::*production)())
+//{
+//    try
+//    {
+//        return (this->*production)();
+//    }
+//    catch (const SegmentParseExpectedException& ex)
+//    {
+//        throwAllExpected(ex);
+//    }
+//}
 
-template<typename R, class O, typename... Args>
-void oneOfOwnR(R& result, R (O::*production)(), Args... args)
-{
-    int start = _i;
-    try
-    {
-        return (this->*production)();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        if (_i > start)
-        {
-            throwAllExpected(ex);
-        }
-        addExpected(ex);
-        oneOfOwnR(result, args...);
-    }
-}
+//template<typename R, class O, typename... Args>
+//void oneOfOwnR(R& result, R (O::*production)(), Args... args)
+//{
+//    int start = _i;
+//    try
+//    {
+//        return (this->*production)();
+//    }
+//    catch (const SegmentParseExpectedException& ex)
+//    {
+//        if (_i > start)
+//        {
+//            throwAllExpected(ex);
+//        }
+//        addExpected(ex);
+//        oneOfOwnR(result, args...);
+//    }
+//}
 
 template<typename F>
 void LineParser::oneOfWithLookahead(F production)

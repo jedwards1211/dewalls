@@ -142,7 +142,7 @@ UAngle WallsUnits::avgInc(UAngle fsInc, UAngle bsInc) const
 
 bool WallsUnits::isVertical(UAngle angle)
 {
-    return abs(abs(angle.get(Angle::degrees())) - 90.0) < 1e-4;
+    return fabs(fabs(angle.get(Angle::degrees())) - 90.0) < 1e-4;
 }
 
 } // namespace dewalls

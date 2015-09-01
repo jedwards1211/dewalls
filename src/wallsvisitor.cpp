@@ -4,8 +4,8 @@ namespace dewalls {
 
 using namespace std;
 
-void WallsVisitor::beginFile( QString source ){}
-void WallsVisitor::endFile( QString source ){}
+void WallsVisitor::beginFile( QString source ){ Q_UNUSED(source); }
+void WallsVisitor::endFile( QString source ){ Q_UNUSED(source); }
 void WallsVisitor::beginVectorLine( ){}
 void WallsVisitor::abortVectorLine( ){}
 void WallsVisitor::endVectorLine( ){}
@@ -15,39 +15,39 @@ void WallsVisitor::endFixLine( ){}
 void WallsVisitor::beginUnitsLine( ){}
 void WallsVisitor::abortUnitsLine( ){}
 void WallsVisitor::endUnitsLine( ){}
-void WallsVisitor::visitFrom( QString from ){}
-void WallsVisitor::visitTo( QString to ){}
-void WallsVisitor::visitDistance( ULength distance ){}
-void WallsVisitor::visitFrontsightAzimuth( UAngle fsAzimuth ){}
-void WallsVisitor::visitBacksightAzimuth( UAngle bsAzimuth ){}
-void WallsVisitor::visitFrontsightInclination( UAngle fsInclination ){}
-void WallsVisitor::visitBacksightInclination( UAngle bsInclination ){}
-void WallsVisitor::visitNorth( ULength north ){}
-void WallsVisitor::visitLatitude( UAngle latitude ){}
-void WallsVisitor::visitEast( ULength east ){}
-void WallsVisitor::visitLongitude( UAngle longitude ){}
-void WallsVisitor::visitRectUp( ULength up ){}
-void WallsVisitor::visitInstrumentHeight( ULength instrumentHeight ){}
-void WallsVisitor::visitTargetHeight( ULength targetHeight ){}
-void WallsVisitor::visitLeft( ULength left ){}
-void WallsVisitor::visitRight( ULength right ){}
-void WallsVisitor::visitUp( ULength up ){}
-void WallsVisitor::visitDown( ULength down ){}
-void WallsVisitor::visitLrudFacingAngle( UAngle facingAngle ){}
+void WallsVisitor::visitFrom( QString from ){ Q_UNUSED(from);}
+void WallsVisitor::visitTo( QString to ){ Q_UNUSED(to); }
+void WallsVisitor::visitDistance( ULength distance ) { Q_UNUSED(distance); }
+void WallsVisitor::visitFrontsightAzimuth( UAngle fsAzimuth ) { Q_UNUSED(fsAzimuth); }
+void WallsVisitor::visitBacksightAzimuth( UAngle bsAzimuth ) { Q_UNUSED(bsAzimuth); }
+void WallsVisitor::visitFrontsightInclination( UAngle fsInclination ) { Q_UNUSED(fsInclination); }
+void WallsVisitor::visitBacksightInclination( UAngle bsInclination ) { Q_UNUSED(bsInclination); }
+void WallsVisitor::visitNorth( ULength north ) { Q_UNUSED(north); }
+void WallsVisitor::visitLatitude( UAngle latitude ) { Q_UNUSED(latitude); }
+void WallsVisitor::visitEast( ULength east ) { Q_UNUSED(east); }
+void WallsVisitor::visitLongitude( UAngle longitude ) { Q_UNUSED(longitude); }
+void WallsVisitor::visitRectUp( ULength up ) { Q_UNUSED(up); }
+void WallsVisitor::visitInstrumentHeight( ULength instrumentHeight ) { Q_UNUSED(instrumentHeight); }
+void WallsVisitor::visitTargetHeight( ULength targetHeight ) { Q_UNUSED(targetHeight); }
+void WallsVisitor::visitLeft( ULength left ) { Q_UNUSED(left); }
+void WallsVisitor::visitRight( ULength right ) { Q_UNUSED(right); }
+void WallsVisitor::visitUp( ULength up ) { Q_UNUSED(up); }
+void WallsVisitor::visitDown( ULength down ) { Q_UNUSED(down); }
+void WallsVisitor::visitLrudFacingAngle( UAngle facingAngle ) { Q_UNUSED(facingAngle); }
 void WallsVisitor::visitCFlag( ){}
-void WallsVisitor::visitHorizontalVarianceOverride( VarianceOverridePtr variance ){}
-void WallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr variance ){}
-void WallsVisitor::visitInlineSegment( QString segment ){}
-void WallsVisitor::visitInlineNote( QString note ){}
-void WallsVisitor::visitInlineComment( QString string ){}
-void WallsVisitor::visitCommentLine( QString comment ){}
-void WallsVisitor::visitFlaggedStations( QString flag , QStringList stations ){}
-void WallsVisitor::visitBlockCommentLine( QString string ){}
-void WallsVisitor::visitNoteLine( QString station , QString note ){}
-void WallsVisitor::visitDateLine( QDate date ){}
-void WallsVisitor::visitSegmentLine( QString segment ){}
-void WallsVisitor::visitFixedStation( QString string ){}
-void WallsVisitor::message(WallsMessage message){}
+void WallsVisitor::visitHorizontalVarianceOverride( VarianceOverridePtr variance ) { Q_UNUSED(variance); }
+void WallsVisitor::visitVerticalVarianceOverride( VarianceOverridePtr variance ) { Q_UNUSED(variance); }
+void WallsVisitor::visitInlineSegment( QString segment ) { Q_UNUSED(segment); }
+void WallsVisitor::visitInlineNote( QString note ) { Q_UNUSED(note); }
+void WallsVisitor::visitInlineComment( QString string ) { Q_UNUSED(string); }
+void WallsVisitor::visitCommentLine( QString comment ) { Q_UNUSED(comment); }
+void WallsVisitor::visitFlaggedStations( QString flag , QStringList stations ) { Q_UNUSED(flag); Q_UNUSED(stations); }
+void WallsVisitor::visitBlockCommentLine( QString string ) { Q_UNUSED(string); }
+void WallsVisitor::visitNoteLine( QString station , QString note ) { Q_UNUSED(station); Q_UNUSED(note); }
+void WallsVisitor::visitDateLine( QDate date ) { Q_UNUSED(date); }
+void WallsVisitor::visitSegmentLine( QString segment ) { Q_UNUSED(segment); }
+void WallsVisitor::visitFixedStation( QString string ) { Q_UNUSED(string); }
+void WallsVisitor::message(WallsMessage message) { Q_UNUSED(message); }
 
 void PrintingWallsVisitor::beginFile( QString source )
 {
@@ -236,6 +236,8 @@ void PrintingWallsVisitor::visitCommentLine( QString comment )
 
 void PrintingWallsVisitor::visitFlaggedStations( QString flag , QStringList stations )
 {
+    Q_UNUSED(flag);
+    Q_UNUSED(stations);
     cout << "flag stations: TODO" << endl;
 }
 
@@ -284,10 +286,12 @@ void PrintingWallsVisitor::message(WallsMessage message)
 
 void CapturingWallsVisitor::beginFile( QString source )
 {
+    Q_UNUSED(source);
 }
 
 void CapturingWallsVisitor::endFile( QString source )
 {
+    Q_UNUSED(source)
 }
 
 void CapturingWallsVisitor::beginVectorLine( )

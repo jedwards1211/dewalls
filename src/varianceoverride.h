@@ -22,6 +22,7 @@ public:
         RMS_ERROR = 3
     };
 
+    virtual ~VarianceOverride() {}
     virtual Type type() const = 0;
     virtual QString toString() const = 0;
 

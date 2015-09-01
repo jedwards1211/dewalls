@@ -13,6 +13,7 @@ public:
     UnitizedDouble();
     UnitizedDouble(double quantity, const Unit<T> *unit);
     UnitizedDouble(UnitizedDouble&& other);
+    UnitizedDouble(const UnitizedDouble& other) = default;
 
     const Unit<T> *unit() const;
     double get(const Unit<T> *toUnit) const;
