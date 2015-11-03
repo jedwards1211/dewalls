@@ -18,7 +18,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("osx") || qbs.targetOS.contains("linux")
             cpp.cxxFlags: [
-                "-stdlib=libc++", //Needed for protoc
+                "-stdlib=libstdc++", //Needed for protoc
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]
@@ -54,7 +54,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("osx") || qbs.targetOS.contains("linux")
             cpp.cxxFlags: [
-                "-stdlib=libc++", //Needed for protoc
+                "-stdlib=libstdc++", //Needed for protoc
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]

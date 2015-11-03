@@ -298,6 +298,7 @@ WallsParser::WallsParser(Segment segment)
       isoDateRx(QRegExp("\\d{4}-\\d{2}-\\d{2}")),
       usDateRx1(QRegExp("\\d{2}-\\d{2}-\\d{2,4}")),
       usDateRx2(QRegExp("\\d{2}/\\d{2}/\\d{2,4}")),
+      usDateRx3(QRegExp("\\d{4}-\\d{1,2}-\\d{1,2}")),
       unitsOptionMap(createUnitsOptionMap()),
       directivesMap(createDirectivesMap()),
       _visitor(NULL),
@@ -918,7 +919,8 @@ QDate WallsParser::dateDirective()
     oneOfR(_date,
     [&]() { return this->isoDate(); },
     [&]() { return this->usDate1(); },
-    [&]() { return this->usDate2(); });
+    [&]() { return this->usDate2(); },
+    [&]() { return this->usDate3(); });
     return _date;
 }
 
@@ -940,6 +942,11 @@ QDate WallsParser::usDate2()
     return QDate::fromString(str, str.length() > 8 ? "MM/dd/yyyy" : "MM/dd/yy");
 }
 
+QDate WallsParser::usDate3()
+{
+    QString str = expect(usDateRx3, {"<DATE>"}).value();
+    return QDate::fromString(str, "yyyy-MM-dd");
+}
 void WallsParser::unitsLine()
 {
     maybeWhitespace();

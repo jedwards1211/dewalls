@@ -141,6 +141,7 @@ private:
     const QRegExp isoDateRx;
     const QRegExp usDateRx1;
     const QRegExp usDateRx2;
+    const QRegExp usDateRx3;
 
     const QHash<QString, OwnProduction> unitsOptionMap;
     const QHash<QString, OwnProduction> directivesMap;
@@ -167,6 +168,7 @@ private:
     QDate isoDate();
     QDate usDate1();
     QDate usDate2();
+    QDate usDate3();
 
     void unitsOptions();
     void unitsOption();
