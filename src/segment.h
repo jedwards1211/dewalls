@@ -62,6 +62,7 @@ public:
     Segment(QString value);
     Segment(QString value, QString source, int startLine, int startCol);
     Segment(Segment&& other);
+    Segment(const Segment& other) = default;
 
     Segment sourceSegment() const;
     int sourceIndex() const;
@@ -79,8 +80,8 @@ public:
     Segment mid(int position, int n = -1) const;
     Segment left(int n) const;
     Segment right(int n) const;
-    QList<Segment> split(const QRegExp& re, QString::SplitBehavior behavior = QString::SplitBehavior::KeepEmptyParts) const;
-    QList<Segment> split(const QString& pattern, QString::SplitBehavior behavior = QString::SplitBehavior::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
+    QList<Segment> split(const QRegExp& re, QString::SplitBehavior behavior = QString::KeepEmptyParts) const;
+    QList<Segment> split(const QString& pattern, QString::SplitBehavior behavior = QString::KeepEmptyParts, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int compare(const QString& other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int compare(const QStringRef& other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool contains(const QString& str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;

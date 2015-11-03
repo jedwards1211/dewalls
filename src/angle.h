@@ -12,17 +12,17 @@ class Angle : public UnitType<Angle>
 public:
     static void init();
 
-    static const Angle * 	   const type() { init(); return _type.data(); }
-    static const Unit<Angle> * const degrees() { init(); return _type->_degrees; }
-    static const Unit<Angle> * const deg() { init(); return _type->_degrees; }
-    static const Unit<Angle> * const radians() { init(); return _type->_radians; }
-    static const Unit<Angle> * const rad() { init(); return _type->_radians; }
-    static const Unit<Angle> * const gradians() { init(); return _type->_gradians; }
-    static const Unit<Angle> * const grad() { init(); return _type->_gradians; }
-    static const Unit<Angle> * const milsNATO() { init(); return _type->_milsNATO; }
-    static const Unit<Angle> * const mil() { init(); return _type->_milsNATO; }
-    static const Unit<Angle> * const percentGrade() { init(); return _type->_percentGrade; }
-    static const Unit<Angle> * const percent() { init(); return _type->_percentGrade; }
+    static const Angle *       type() { init(); return _type.data(); }
+    static const Unit<Angle> * degrees() { init(); return _type->_degrees; }
+    static const Unit<Angle> * deg() { init(); return _type->_degrees; }
+    static const Unit<Angle> * radians() { init(); return _type->_radians; }
+    static const Unit<Angle> * rad() { init(); return _type->_radians; }
+    static const Unit<Angle> * gradians() { init(); return _type->_gradians; }
+    static const Unit<Angle> * grad() { init(); return _type->_gradians; }
+    static const Unit<Angle> * milsNATO() { init(); return _type->_milsNATO; }
+    static const Unit<Angle> * mil() { init(); return _type->_milsNATO; }
+    static const Unit<Angle> * percentGrade() { init(); return _type->_percentGrade; }
+    static const Unit<Angle> * percent() { init(); return _type->_percentGrade; }
 
 private:
     Angle();

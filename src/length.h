@@ -13,19 +13,19 @@ class Length : public UnitType<Length>
 public:
     static void init();
 
-    static const Length * 	   const type() { init(); return _type.data(); }
-    static const Unit<Length> * const meters() { init(); return _type->_meters; }
-    static const Unit<Length> * const m() { init(); return _type->_meters; }
-    static const Unit<Length> * const centimeters() { init(); return _type->_centimeters; }
-    static const Unit<Length> * const cm() { init(); return _type->_centimeters; }
-    static const Unit<Length> * const kilometers() { init(); return _type->_kilometers; }
-    static const Unit<Length> * const km() { init(); return _type->_kilometers; }
-    static const Unit<Length> * const feet() { init(); return _type->_feet; }
-    static const Unit<Length> * const ft() { init(); return _type->_feet; }
-    static const Unit<Length> * const yards() { init(); return _type->_yards; }
-    static const Unit<Length> * const yd() { init(); return _type->_yards; }
-    static const Unit<Length> * const inches() { init(); return _type->_inches; }
-    static const Unit<Length> * const in() { init(); return _type->_inches; }
+    static const Length *       type() { init(); return _type.data(); }
+    static const Unit<Length> * meters() { init(); return _type->_meters; }
+    static const Unit<Length> * m() { init(); return _type->_meters; }
+    static const Unit<Length> * centimeters() { init(); return _type->_centimeters; }
+    static const Unit<Length> * cm() { init(); return _type->_centimeters; }
+    static const Unit<Length> * kilometers() { init(); return _type->_kilometers; }
+    static const Unit<Length> * km() { init(); return _type->_kilometers; }
+    static const Unit<Length> * feet() { init(); return _type->_feet; }
+    static const Unit<Length> * ft() { init(); return _type->_feet; }
+    static const Unit<Length> * yards() { init(); return _type->_yards; }
+    static const Unit<Length> * yd() { init(); return _type->_yards; }
+    static const Unit<Length> * inches() { init(); return _type->_inches; }
+    static const Unit<Length> * in() { init(); return _type->_inches; }
 
 private:
     Length();

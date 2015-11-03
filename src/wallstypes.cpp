@@ -7,10 +7,12 @@ QString applyCaseType(CaseType type, const QString& s)
 {
     switch (type)
     {
-    case CaseType::Lower:
+    case Lower:
         return s.toLower();
-    case CaseType::Upper:
+    case Upper:
         return s.toUpper();
+    default:
+        break;
     }
     return s;
 }

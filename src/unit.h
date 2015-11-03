@@ -1,7 +1,11 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+//Qt includse
 #include <QString>
+
+//Std includes
+#include "math.h"
 
 namespace dewalls {
 
