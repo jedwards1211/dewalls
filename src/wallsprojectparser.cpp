@@ -1,5 +1,8 @@
 #include "wallsprojectparser.h"
 
+#include "segment.h"
+#include "segmentparseexception.h"
+
 namespace dewalls {
 
 // STATUS BITS
@@ -33,11 +36,13 @@ namespace dewalls {
 //     11: North
 //    100: East
 //    101: West
+
+// REFERENCE FIELDS
 //  	northing	easting	   zn conv   el ? d  m  s  lat d  m  s long index/name
 // .REF	2308552.729 324501.432 16 -0.601 27 6 20 52 14.229 88 41 13.085 0 "Adindan"
 
-
 WallsProjectParser::WallsProjectParser()
+    : LineParser()
 {
 
 }
@@ -64,95 +69,264 @@ const int WallsProjectParser::NorthViewBits = 3 << 19;
 const int WallsProjectParser::EastViewBits = 4 << 19;
 const int WallsProjectParser::WestViewBits = 5 << 19;
 
-void WallsProjectParser::parseStatus(int status, WpjEntry destEntry, WpjEntry parentEntry) {
+void WallsProjectParser::parseStatus(int status, WpjEntryPtr destEntry) {
     if (status & BookTypeBit) {
-        destEntry.type = WpjEntry::Book;
+        destEntry->type = WpjEntry::Book;
     }
     else if (status & OtherTypeBit) {
-        destEntry.type = WpjEntry::Other;
-        destEntry.defaultViewAfterCompilationInherited = false;
+        destEntry->type = WpjEntry::Other;
+
+        if (status & EditOnLaunchBit) {
+            destEntry->launchOptions = WpjEntry::Edit;
+        }
+        else if (status & OpenOnLaunchBit) {
+            destEntry->launchOptions = WpjEntry::Open;
+        }
+        else {
+            destEntry->launchOptions = WpjEntry::Properties;
+        }
+    }
+    if (destEntry->type != WpjEntry::Other) {
+        destEntry->defaultViewAfterCompilationInherited = false;
 
         switch (status & DefaultViewAfterCompilationMask) {
         case NorthOrEastViewBits:
-            destEntry.defaultViewAfterCompilation = WpjEntry::NorthOrEast;
+            destEntry->defaultViewAfterCompilation = WpjEntry::NorthOrEast;
             break;
         case NorthOrWestViewBits:
-            destEntry.defaultViewAfterCompilation = WpjEntry::NorthOrWest;
+            destEntry->defaultViewAfterCompilation = WpjEntry::NorthOrWest;
             break;
         case NorthViewBits:
-            destEntry.defaultViewAfterCompilation = WpjEntry::North;
+            destEntry->defaultViewAfterCompilation = WpjEntry::North;
             break;
         case EastViewBits:
-            destEntry.defaultViewAfterCompilation = WpjEntry::East;
+            destEntry->defaultViewAfterCompilation = WpjEntry::East;
             break;
         case WestViewBits:
-            destEntry.defaultViewAfterCompilation = WpjEntry::West;
+            destEntry->defaultViewAfterCompilation = WpjEntry::West;
             break;
         default:
-            destEntry.defaultViewAfterCompilationInherited = true;
-            destEntry.defaultViewAfterCompilation = parentEntry.defaultViewAfterCompilation;
+            if (!destEntry->parent.isNull()) {
+                destEntry->defaultViewAfterCompilationInherited = true;
+            }
             break;
+        }
+
+        if (status & NameDefinesSegmentBit) {
+            destEntry->nameDefinesSegment = true;
+        }
+
+        if (status & FeetBit) {
+            destEntry->reviewUnits = WpjEntry::Feet;
+        } else {
+            destEntry->reviewUnits = WpjEntry::Meters;
         }
     }
 
-    if (status & NameDefinesSegmentBit) {
-        destEntry.nameDefinesSegment = true;
-    }
-
-    if (status & FeetBit) {
-        destEntry.reviewUnits = WpjEntry::Feet;
-    } else {
-        destEntry.reviewUnits = WpjEntry::Meters;
-    }
-
     if (status & ReferenceUnspecifiedBit) {
-        destEntry.referenceUnspecified = true;
-    } else {
-        destEntry.referenceUnspecified = false;
+        destEntry->reference.clear();
+    } else if (!destEntry->parent.isNull()) {
+        destEntry->reference = destEntry->parent->reference;
     }
 
     if (status & DontDeriveDeclBit) {
-        destEntry.deriveDeclFromDate = false;
-        destEntry.deriveDeclFromDateInherited = false;
+        destEntry->deriveDeclFromDate = false;
+        destEntry->deriveDeclFromDateInherited = false;
     } else if (status & DeriveDeclBit) {
-        destEntry.deriveDeclFromDate = true;
-        destEntry.deriveDeclFromDateInherited = false;
-    } else {
-        destEntry.deriveDeclFromDate = parentEntry.deriveDeclFromDate;
-        destEntry.deriveDeclFromDateInherited = true;
+        destEntry->deriveDeclFromDate = true;
+        destEntry->deriveDeclFromDateInherited = false;
+    } else if (!destEntry->parent.isNull()) {
+        destEntry->deriveDeclFromDateInherited = true;
     }
 
     if (status & NotGridRelativeBit) {
-        destEntry.gridRelative = false;
-        destEntry.gridRelativeInherited = false;
+        destEntry->gridRelative = false;
+        destEntry->gridRelativeInherited = false;
     } else if (status & GridRelativeBit) {
-        destEntry.gridRelative = true;
-        destEntry.gridRelativeInherited = false;
-    } else {
-        destEntry.gridRelative = parentEntry.gridRelative;
-        destEntry.gridRelativeInherited = true;
+        destEntry->gridRelative = true;
+        destEntry->gridRelativeInherited = false;
+    } else if (!destEntry->parent.isNull()) {
+        destEntry->gridRelativeInherited = true;
     }
 
     if (status & DontPreserveVertShotOrientationBit) {
-        destEntry.preserveVertShotOrientation = false;
-        destEntry.preserveVertShotOrientationInherited = false;
+        destEntry->preserveVertShotOrientation = false;
+        destEntry->preserveVertShotOrientationInherited = false;
     } else if (status & PreserveVertShotOrientationBit) {
-        destEntry.preserveVertShotOrientation = true;
-        destEntry.preserveVertShotOrientationInherited = false;
-    } else {
-        destEntry.preserveVertShotOrientation = parentEntry.preserveVertShotOrientation;
-        destEntry.preserveVertShotOrientationInherited = true;
+        destEntry->preserveVertShotOrientation = true;
+        destEntry->preserveVertShotOrientationInherited = false;
+    } else if (!destEntry->parent.isNull()) {
+        destEntry->preserveVertShotOrientationInherited = true;
     }
 
     if (status & DontPreserveVertShotLengthBit) {
-        destEntry.preserveVertShotLength = false;
-        destEntry.preserveVertShotLengthInherited = false;
+        destEntry->preserveVertShotLength = false;
+        destEntry->preserveVertShotLengthInherited = false;
     } else if (status & PreserveVertShotLengthBit) {
-        destEntry.preserveVertShotLength = true;
-        destEntry.preserveVertShotLengthInherited = false;
+        destEntry->preserveVertShotLength = true;
+        destEntry->preserveVertShotLengthInherited = false;
+    } else if (!destEntry->parent.isNull()) {
+        destEntry->preserveVertShotLengthInherited = true;
+    }
+}
+
+void WallsProjectParser::parseLine(Segment line) {
+    reset(line);
+
+    if (CurrentEntry.isNull()) {
+        oneOf([&]() { this->bookLine(); },
+        [&]() { this->commentLine(); });
+    } else if (bookAncestor(CurrentEntry)->parent.isNull()) {
+        oneOf([&]() { this->bookLine(); },
+        [&]() { this->surveyLine(); },
+        [&]() { this->nameLine(); },
+        [&]() { this->pathLine(); },
+        [&]() { this->refLine(); },
+        [&]() { this->optionsLine(); },
+        [&]() { this->statusLine(); },
+        [&]() { this->commentLine(); });
     } else {
-        destEntry.preserveVertShotLength = parentEntry.preserveVertShotLength;
-        destEntry.preserveVertShotLengthInherited = true;
+        oneOf([&]() { this->bookLine(); },
+        [&]() { this->endbookLine(); },
+        [&]() { this->surveyLine(); },
+        [&]() { this->nameLine(); },
+        [&]() { this->pathLine(); },
+        [&]() { this->refLine(); },
+        [&]() { this->optionsLine(); },
+        [&]() { this->statusLine(); },
+        [&]() { this->commentLine(); });
+    }
+}
+
+void WallsProjectParser::bookLine() {
+    maybeWhitespace();
+    expect(".BOOK", Qt::CaseInsensitive);
+    whitespace();
+    QString title = remaining().value();
+    WpjEntryPtr newEntry(new WpjEntry);
+    newEntry->type = WpjEntry::Book;
+    newEntry->title = title;
+    newEntry->parent = bookAncestor(CurrentEntry);
+    CurrentEntry->children << newEntry;
+    CurrentEntry = newEntry;
+}
+
+void WallsProjectParser::endbookLine() {
+    maybeWhitespace();
+    expect(".ENDBOOK", Qt::CaseInsensitive);
+    whitespace();
+    endOfLine();
+    CurrentEntry = bookAncestor(CurrentEntry)->parent;
+}
+
+void WallsProjectParser::nameLine() {
+    maybeWhitespace();
+    expect(".NAME", Qt::CaseInsensitive);
+    whitespace();
+    CurrentEntry->name = remaining().value();
+}
+
+void WallsProjectParser::pathLine() {
+    maybeWhitespace();
+    expect(".PATH", Qt::CaseInsensitive);
+    whitespace();
+    CurrentEntry->path = QDir(remaining().value());
+}
+
+void WallsProjectParser::surveyLine() {
+    maybeWhitespace();
+    expect(".SURVEY", Qt::CaseInsensitive);
+    whitespace();
+    QString title = remaining().value();
+    WpjEntryPtr newEntry(new WpjEntry);
+    newEntry->type = WpjEntry::SurveyFile;
+    newEntry->title = title;
+    newEntry->parent = bookAncestor(CurrentEntry);
+    CurrentEntry->children << newEntry;
+    CurrentEntry = newEntry;
+}
+
+void WallsProjectParser::statusLine() {
+    maybeWhitespace();
+    expect(".STATUS", Qt::CaseInsensitive);
+    whitespace();
+    int status = unsignedIntLiteral();
+    parseStatus(status, CurrentEntry);
+}
+
+void WallsProjectParser::optionsLine() {
+    maybeWhitespace();
+    expect(".OPTIONS", Qt::CaseInsensitive);
+    whitespace();
+    CurrentEntry->options = remaining().value();
+}
+
+void WallsProjectParser::commentLine() {
+    maybeWhitespace();
+    expect(";");
+    remaining();
+}
+
+void WallsProjectParser::refLine() {
+    maybeWhitespace();
+    expect(".REF", Qt::CaseInsensitive);
+    whitespace();
+    GeoReference ref;
+    ref.northing = doubleLiteral();
+    whitespace();
+    ref.easting = doubleLiteral();
+    whitespace();
+    ref.zone = intLiteral();
+    whitespace();
+    ref.gridConvergence = doubleLiteral();
+    whitespace();
+    ref.elevation = doubleLiteral();
+    whitespace();
+    doubleLiteral(); // don't know what this field represents
+    whitespace();
+    ref.latitude.degrees = intLiteral();
+    whitespace();
+    ref.latitude.minutes = unsignedIntLiteral();
+    whitespace();
+    ref.latitude.seconds = unsignedDoubleLiteral();
+    whitespace();
+    ref.longitude.degrees = intLiteral();
+    whitespace();
+    ref.longitude.minutes = unsignedIntLiteral();
+    whitespace();
+    ref.longitude.seconds = unsignedDoubleLiteral();
+    whitespace();
+    ref.wallsDatumIndex = unsignedIntLiteral();
+    whitespace();
+    expect('"');
+    ref.datumName = expect(QRegExp("[^\"]+"), {"<DATUM_NAME>"}).value();
+    maybeWhitespace();
+    endOfLine();
+    CurrentEntry->reference = GeoReferencePtr(new GeoReference);
+    *(CurrentEntry->reference) = ref;
+}
+
+void WallsProjectParser::applyInheritedProps(WpjEntryPtr entry) {
+    foreach (WpjEntryPtr child, entry->children) {
+        if (child->referenceInherited) {
+            child->reference = entry->reference;
+        }
+        if (child->defaultViewAfterCompilationInherited) {
+            child->defaultViewAfterCompilation = entry->defaultViewAfterCompilation;
+        }
+        if (child->deriveDeclFromDateInherited) {
+            child->deriveDeclFromDate = entry->deriveDeclFromDate;
+        }
+        if (child->gridRelativeInherited) {
+            child->gridRelative = entry->gridRelative;
+        }
+        if (child->preserveVertShotOrientationInherited) {
+            child->preserveVertShotOrientation = entry->preserveVertShotOrientation;
+        }
+        if (child->preserveVertShotLengthInherited) {
+            child->preserveVertShotLength = entry->preserveVertShotLength;
+        }
+        applyInheritedProps(child);
     }
 }
 

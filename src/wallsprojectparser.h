@@ -5,6 +5,9 @@
 #include <QList>
 #include <QString>
 #include <QDir>
+#include <QSharedPointer>
+
+#include "lineparser.h"
 
 namespace dewalls {
 
@@ -28,6 +31,12 @@ struct GeoReference {
     int wallsDatumIndex;
     QString datumName;
 };
+
+typedef QSharedPointer<GeoReference> GeoReferencePtr;
+
+struct WpjEntry;
+
+typedef QSharedPointer<WpjEntry> WpjEntryPtr;
 
 struct WpjEntry {
     enum Type {
@@ -67,8 +76,7 @@ struct WpjEntry {
     bool nameDefinesSegment;
     // extra #units options
     QString options;
-    GeoReference reference;
-    bool referenceUnspecified;
+    GeoReferencePtr reference;
     bool referenceInherited;
     bool deriveDeclFromDate;
     bool deriveDeclFromDateInherited;
@@ -80,21 +88,34 @@ struct WpjEntry {
     bool preserveVertShotLengthInherited;
     View defaultViewAfterCompilation;
     bool defaultViewAfterCompilationInherited;
-    QList<WpjEntry> children;
+    WpjEntryPtr parent;
+    QList<WpjEntryPtr> children;
 };
 
-class WallsProjectParser
+class WallsProjectParser : public LineParser
 {
 public:
     WallsProjectParser();
 
     void parseLine(Segment line);
 
-    inline WpjEntry result() const {
+    void bookLine();
+    void endbookLine();
+    void surveyLine();
+    void nameLine();
+    void refLine();
+    void optionsLine();
+    void statusLine();
+    void pathLine();
+    void commentLine();
+
+    void applyInheritedProps(WpjEntryPtr entry);
+
+    inline WpjEntryPtr result() const {
         return ProjectRoot;
     }
 
-    static void parseStatus(int status, WpjEntry destEntry, WpjEntry parentEntry);
+    static void parseStatus(int status, WpjEntryPtr destEntry);
 
     static const int BookTypeBit;
     static const int NameDefinesSegmentBit;
@@ -119,8 +140,13 @@ public:
     static const int WestViewBits;
 
 private:
-    WpjEntry CurrentEntry;
-    WpjEntry ProjectRoot;
+    WpjEntryPtr CurrentEntry;
+    WpjEntryPtr ProjectRoot;
+
+    inline WpjEntryPtr bookAncestor(WpjEntryPtr entry) {
+        return (entry.isNull() || entry->type == WpjEntry::Book) ? entry :
+                                                                   bookAncestor(entry->parent);
+    }
 };
 
 } // namespace dewalls
