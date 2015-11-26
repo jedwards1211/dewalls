@@ -47,6 +47,12 @@ public:
 
     bool maybeWhitespace();
 
+    static const QRegExp unsignedIntLiteralRx;
+    uint unsignedIntLiteral();
+
+    static const QHash<QChar, int> intSignSignums;
+    int intLiteral();
+
     static const QRegExp unsignedDoubleLiteralRx;
     double unsignedDoubleLiteral();
 

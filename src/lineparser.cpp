@@ -171,6 +171,33 @@ Segment LineParser::nonwhitespace()
     return expect(nonwhitespaceRx, {"<NONWHITESPACE>"});
 }
 
+const QRegExp LineParser::unsignedIntLiteralRx("\\d+");
+
+uint LineParser::unsignedIntLiteral()
+{
+    return expect(unsignedIntLiteralRx, {"<UNSIGNED_INT_LITERAL>"}).value().toUInt();
+}
+
+QHash<QChar, int> createIntSignSignums()
+{
+    QHash<QChar, int> intSignSignums;
+    intSignSignums['-'] = -1;
+    intSignSignums['+'] = 1;
+    return intSignSignums;
+}
+
+const QHash<QChar, int> LineParser::intSignSignums = createIntSignSignums();
+
+int LineParser::intLiteral()
+{
+    int signum;
+    if (!maybe(signum, [this]() { return this->oneOfMap(intSignSignums); } ))
+    {
+        signum = 1;
+    }
+    return signum * unsignedIntLiteral();
+}
+
 const QRegExp LineParser::unsignedDoubleLiteralRx("\\d+(\\.\\d*)?|\\.\\d+");
 
 double LineParser::unsignedDoubleLiteral()
