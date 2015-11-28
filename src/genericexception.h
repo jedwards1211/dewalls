@@ -10,8 +10,8 @@ class GenericException : public QException
 {
 public:
     inline GenericException(QString message) : Message(message) {}
-    inline virtual void raise() { throw *this; }
-    inline virtual GenericException *clone() { return new GenericException(*this); }
+    inline virtual void raise() const { throw *this; }
+    inline virtual GenericException *clone() const { return new GenericException(*this); }
 
     inline QString message() const { return Message; }
 

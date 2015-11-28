@@ -12,11 +12,13 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
    QObject::connect(&parser,
                     static_cast<void(WallsProjectParser::*)(Severity,QString)>(&WallsProjectParser::message),
                     [=](const Severity& severity, const QString& message) {
+       Q_UNUSED(severity);
        std::cout << message.toStdString() << std::endl;
    });
    QObject::connect(&parser,
                     static_cast<void(WallsProjectParser::*)(Severity,QString,QString)>(&WallsProjectParser::message),
                     [=](const Severity& severity, const QString& message, const QString& source) {
+       Q_UNUSED(severity);
        std::cout << "In file: " << source.toStdString() << std::endl;
        std::cout << message.toStdString() << std::endl;
    });
@@ -25,6 +27,12 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
                         &WallsProjectParser::message),
                     [=](const Severity& severity, const QString& message, const QString& source,
                         int startLine, int startColumn, int endLine, int endColumn) {
+       Q_UNUSED(severity);
+       Q_UNUSED(startColumn);
+       Q_UNUSED(endLine);
+       Q_UNUSED(endColumn);
+       std::cout << "In file: " << source.toStdString() << std::endl;
+       std::cout << "In file: " << source.toStdString() << std::endl;
        std::cout << "In file: " << source.toStdString() << std::endl;
        std::cout << "Line " << startLine << std::endl;
        std::cout << message.toStdString() << std::endl;
