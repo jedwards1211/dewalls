@@ -37,8 +37,6 @@ Project {
         files: [
             "src/*.cpp",
             "src/*.h",
-            "test/approx.h",
-            "test/generaltests.cpp",
         ]
     }
 
