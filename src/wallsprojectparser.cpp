@@ -5,7 +5,6 @@
 
 #include "segment.h"
 #include "segmentparseexception.h"
-#include "genericexception.h"
 
 namespace dewalls {
 
@@ -337,7 +336,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     {
         QString msg = QString("I couldn't open %1").arg(fileName);
         emit message(Severity::Error, msg);
-        throw GenericException(msg);
+        return WpjBookPtr();
     }
 
     int lineNumber = 0;
@@ -352,7 +351,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
                     .arg(lineNumber)
                     .arg(file.errorString());
             emit message(Severity::Error, msg);
-            throw GenericException(msg);
+            return WpjBookPtr();
         }
 
         try {
@@ -360,11 +359,11 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
         }
         catch (const SegmentParseExpectedException& ex) {
             emitMessage(ex);
-            throw;
+            return WpjBookPtr();
         }
         catch (const SegmentParseException& ex) {
             emitMessage(ex);
-            throw;
+            return WpjBookPtr();
         }
 
         lineNumber++;
