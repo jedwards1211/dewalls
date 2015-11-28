@@ -38,46 +38,45 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
        std::cout << message.toStdString() << std::endl;
    });
 
-   WpjEntryPtr projectRoot;
+   WpjBookPtr projectRoot;
 
    projectRoot = parser.parseFile(":/test/Kaua North Maze.wpj");
 
    REQUIRE( !projectRoot.isNull() );
-   CHECK( projectRoot->title == "Actun Kaua - North Maze" );
-   CHECK( projectRoot->name == "KAUA-NM" );
+   CHECK( projectRoot->Title == "Actun Kaua - North Maze" );
+   CHECK( projectRoot->Name == "KAUA-NM" );
 
-   CHECK( !projectRoot->referenceInherited );
-   REQUIRE( !projectRoot->reference.isNull() );
-   CHECK( projectRoot->reference->northing == 2308521.655 );
-   CHECK( projectRoot->reference->easting == 324341.706 );
-   CHECK( projectRoot->reference->zone == 16 );
-   CHECK( projectRoot->reference->gridConvergence == -0.602 );
-   CHECK( projectRoot->reference->elevation == 27 );
+   REQUIRE( !projectRoot->reference().isNull() );
+   CHECK( projectRoot->reference()->northing == 2308521.655 );
+   CHECK( projectRoot->reference()->easting == 324341.706 );
+   CHECK( projectRoot->reference()->zone == 16 );
+   CHECK( projectRoot->reference()->gridConvergence == -0.602 );
+   CHECK( projectRoot->reference()->elevation == 27 );
 
-   REQUIRE( projectRoot->children.size() == 5 );
+   REQUIRE( projectRoot->Children.size() == 5 );
 
-   WpjEntryPtr child0 = projectRoot->children[0];
-   CHECK( child0->title == "SVG Map Info - Please Read First!" );
-   CHECK( child0->name == "SVGINFO.TXT" );
-   CHECK( child0->type == WpjEntry::Other );
+   WpjEntryPtr child0 = projectRoot->Children[0];
+   CHECK( child0->Title == "SVG Map Info - Please Read First!" );
+   CHECK( child0->Name == "SVGINFO.TXT" );
+   CHECK( child0->isOther() );
 
-   WpjEntryPtr child1 = projectRoot->children[1];
-   CHECK( child1->title == "Flags and Notes" );
-   CHECK( child1->name == "NOTES" );
-   CHECK( child1->type == WpjEntry::Survey );
+   WpjEntryPtr child1 = projectRoot->Children[1];
+   CHECK( child1->Title == "Flags and Notes" );
+   CHECK( child1->Name == "NOTES" );
+   CHECK( child1->isSurvey() );
 
-   WpjEntryPtr child2 = projectRoot->children[2];
-   CHECK( child2->title == "SVG Sources" );
-   CHECK( child2->name == QString() );
-   CHECK( child2->type == WpjEntry::Book );
+   WpjEntryPtr child2 = projectRoot->Children[2];
+   CHECK( child2->Title == "SVG Sources" );
+   CHECK( child2->Name == QString() );
+   CHECK( child2->isBook() );
 
-   WpjEntryPtr child3 = projectRoot->children[3];
-   CHECK( child3->title == "Fixed Points" );
-   CHECK( child3->name == QString() );
-   CHECK( child3->type == WpjEntry::Book );
+   WpjEntryPtr child3 = projectRoot->Children[3];
+   CHECK( child3->Title == "Fixed Points" );
+   CHECK( child3->Name == QString() );
+   CHECK( child3->isBook() );
 
-   WpjEntryPtr child4 = projectRoot->children[4];
-   CHECK( child4->title == "North Maze Surveys" );
-   CHECK( child4->name == "NORTH" );
-   CHECK( child4->type == WpjEntry::Book );
+   WpjEntryPtr child4 = projectRoot->Children[4];
+   CHECK( child4->Title == "North Maze Surveys" );
+   CHECK( child4->Name == "NORTH" );
+   CHECK( child4->isBook() );
 }

@@ -51,127 +51,148 @@ WallsProjectParser::WallsProjectParser()
 
 }
 
-const int WallsProjectParser::BookTypeBit = 1;
-const int WallsProjectParser::NameDefinesSegmentBit = 1 << 3;
-const int WallsProjectParser::FeetBit = 1 << 4;
-const int WallsProjectParser::ReferenceUnspecifiedBit = 1 << 6;
-const int WallsProjectParser::DontDeriveDeclBit = 1 << 8;
-const int WallsProjectParser::DeriveDeclBit = 1 << 9;
-const int WallsProjectParser::NotGridRelativeBit = 1 << 10;
-const int WallsProjectParser::GridRelativeBit = 1 << 11;
-const int WallsProjectParser::DontPreserveVertShotOrientationBit = 1 << 12;
-const int WallsProjectParser::PreserveVertShotOrientationBit = 1 << 13;
-const int WallsProjectParser::DontPreserveVertShotLengthBit = 1 << 14;
-const int WallsProjectParser::PreserveVertShotLengthBit = 1 << 15;
-const int WallsProjectParser::OtherTypeBit = 1 << 16;
-const int WallsProjectParser::EditOnLaunchBit = 1 << 17;
-const int WallsProjectParser::OpenOnLaunchBit = 1 << 18;
-const int WallsProjectParser::DefaultViewAfterCompilationMask = 7 << 19;
-const int WallsProjectParser::NorthOrEastViewBits = 1 << 19;
-const int WallsProjectParser::NorthOrWestViewBits = 2 << 19;
-const int WallsProjectParser::NorthViewBits = 3 << 19;
-const int WallsProjectParser::EastViewBits = 4 << 19;
-const int WallsProjectParser::WestViewBits = 5 << 19;
+WpjEntry::WpjEntry(WpjBookPtr parent, QString title)
+    : Parent(parent), Title(title), Name(), Path(), Status(0), Options(), Reference()
+{
 
-void WallsProjectParser::parseStatus(int status, WpjEntryPtr destEntry) {
-    if (status & BookTypeBit) {
-        destEntry->type = WpjEntry::Book;
+}
+
+WpjBook::WpjBook(WpjBookPtr parent, QString title)
+    : WpjEntry(parent, title)
+{
+}
+
+const int WpjEntry::NameDefinesSegmentBit = 1 << 3;
+const int WpjEntry::FeetBit = 1 << 4;
+const int WpjEntry::ReferenceUnspecifiedBit = 1 << 6;
+const int WpjEntry::DontDeriveDeclBit = 1 << 8;
+const int WpjEntry::DeriveDeclBit = 1 << 9;
+const int WpjEntry::NotGridRelativeBit = 1 << 10;
+const int WpjEntry::GridRelativeBit = 1 << 11;
+const int WpjEntry::DontPreserveVertShotOrientationBit = 1 << 12;
+const int WpjEntry::PreserveVertShotOrientationBit = 1 << 13;
+const int WpjEntry::DontPreserveVertShotLengthBit = 1 << 14;
+const int WpjEntry::PreserveVertShotLengthBit = 1 << 15;
+const int WpjEntry::OtherTypeBit = 1 << 16;
+const int WpjEntry::EditOnLaunchBit = 1 << 17;
+const int WpjEntry::OpenOnLaunchBit = 1 << 18;
+const int WpjEntry::DefaultViewAfterCompilationMask = 7 << 19;
+const int WpjEntry::NorthOrEastViewBits = 1 << 19;
+const int WpjEntry::NorthOrWestViewBits = 2 << 19;
+const int WpjEntry::NorthViewBits = 3 << 19;
+const int WpjEntry::EastViewBits = 4 << 19;
+const int WpjEntry::WestViewBits = 5 << 19;
+
+bool WpjEntry::isOther() const {
+    return Status & OtherTypeBit;
+}
+
+bool WpjEntry::isSurvey() const {
+    return !isBook() && !isOther();
+}
+
+bool WpjEntry::nameDefinesSegment() const {
+    return Status & NameDefinesSegmentBit;
+}
+
+GeoReferencePtr WpjEntry::reference() const {
+    if (Status & ReferenceUnspecifiedBit) {
+        return GeoReferencePtr();
     }
-    else if (status & OtherTypeBit) {
-        destEntry->type = WpjEntry::Other;
+    if (!Reference.isNull()) {
+        return Reference;
+    }
+    if (!Parent.isNull()) {
+        return Parent->reference();
+    }
+    return GeoReferencePtr();
+}
 
-        if (status & EditOnLaunchBit) {
-            destEntry->launchOptions = WpjEntry::Edit;
+WpjEntry::ReviewUnits WpjEntry::reviewUnits() const {
+    return Status & FeetBit ? Feet : Meters;
+}
+
+bool WpjEntry::deriveDeclFromDate() const {
+    if (Status & DontDeriveDeclBit) {
+        return false;
+    }
+    if (Status & DeriveDeclBit) {
+        return true;
+    }
+    if (!Parent.isNull()) {
+        return Parent->deriveDeclFromDate();
+    }
+    return false;
+}
+
+bool WpjEntry::gridRelative() const {
+    if (Status & NotGridRelativeBit) {
+        return false;
+    }
+    if (Status & GridRelativeBit) {
+        return true;
+    }
+    if (!Parent.isNull()) {
+        return Parent->gridRelative();
+    }
+    return false;
+}
+
+bool WpjEntry::preserveVertShotOrientation() const {
+    if (Status & DontPreserveVertShotOrientationBit) {
+        return false;
+    }
+    if (Status & PreserveVertShotOrientationBit) {
+        return true;
+    }
+    if (!Parent.isNull()) {
+        return Parent->preserveVertShotOrientation();
+    }
+    return false;
+}
+
+bool WpjEntry::preserveVertShotLength() const {
+    if (Status & DontPreserveVertShotLengthBit) {
+        return false;
+    }
+    if (Status & PreserveVertShotLengthBit) {
+        return true;
+    }
+    if (!Parent.isNull()) {
+        return Parent->preserveVertShotLength();
+    }
+    return false;
+}
+
+WpjEntry::LaunchOptions WpjEntry::launchOptions() const {
+    if (Status & EditOnLaunchBit) {
+        return Edit;
+    }
+    if (Status & OpenOnLaunchBit) {
+        return Open;
+    }
+    return Properties;
+}
+
+WpjEntry::View WpjEntry::defaultViewAfterCompilation() const {
+    switch (Status & DefaultViewAfterCompilationMask) {
+    case NorthOrEastViewBits:
+        return NorthOrEast;
+    case NorthOrWestViewBits:
+        return NorthOrWest;
+    case NorthViewBits:
+        return North;
+    case EastViewBits:
+        return East;
+    case WestViewBits:
+        return West;
+    default:
+        if (!Parent.isNull()) {
+            return Parent->defaultViewAfterCompilation();
         }
-        else if (status & OpenOnLaunchBit) {
-            destEntry->launchOptions = WpjEntry::Open;
-        }
-        else {
-            destEntry->launchOptions = WpjEntry::Properties;
-        }
+        break;
     }
-    if (destEntry->type != WpjEntry::Other) {
-        destEntry->defaultViewAfterCompilationInherited = false;
-
-        switch (status & DefaultViewAfterCompilationMask) {
-        case NorthOrEastViewBits:
-            destEntry->defaultViewAfterCompilation = WpjEntry::NorthOrEast;
-            break;
-        case NorthOrWestViewBits:
-            destEntry->defaultViewAfterCompilation = WpjEntry::NorthOrWest;
-            break;
-        case NorthViewBits:
-            destEntry->defaultViewAfterCompilation = WpjEntry::North;
-            break;
-        case EastViewBits:
-            destEntry->defaultViewAfterCompilation = WpjEntry::East;
-            break;
-        case WestViewBits:
-            destEntry->defaultViewAfterCompilation = WpjEntry::West;
-            break;
-        default:
-            if (!destEntry->parent.isNull()) {
-                destEntry->defaultViewAfterCompilationInherited = true;
-            }
-            break;
-        }
-
-        if (status & NameDefinesSegmentBit) {
-            destEntry->nameDefinesSegment = true;
-        }
-
-        if (status & FeetBit) {
-            destEntry->reviewUnits = WpjEntry::Feet;
-        } else {
-            destEntry->reviewUnits = WpjEntry::Meters;
-        }
-    }
-
-    if (status & ReferenceUnspecifiedBit) {
-        destEntry->reference.clear();
-    } else if (!destEntry->parent.isNull()) {
-        destEntry->reference = destEntry->parent->reference;
-    }
-
-    if (status & DontDeriveDeclBit) {
-        destEntry->deriveDeclFromDate = false;
-        destEntry->deriveDeclFromDateInherited = false;
-    } else if (status & DeriveDeclBit) {
-        destEntry->deriveDeclFromDate = true;
-        destEntry->deriveDeclFromDateInherited = false;
-    } else if (!destEntry->parent.isNull()) {
-        destEntry->deriveDeclFromDateInherited = true;
-    }
-
-    if (status & NotGridRelativeBit) {
-        destEntry->gridRelative = false;
-        destEntry->gridRelativeInherited = false;
-    } else if (status & GridRelativeBit) {
-        destEntry->gridRelative = true;
-        destEntry->gridRelativeInherited = false;
-    } else if (!destEntry->parent.isNull()) {
-        destEntry->gridRelativeInherited = true;
-    }
-
-    if (status & DontPreserveVertShotOrientationBit) {
-        destEntry->preserveVertShotOrientation = false;
-        destEntry->preserveVertShotOrientationInherited = false;
-    } else if (status & PreserveVertShotOrientationBit) {
-        destEntry->preserveVertShotOrientation = true;
-        destEntry->preserveVertShotOrientationInherited = false;
-    } else if (!destEntry->parent.isNull()) {
-        destEntry->preserveVertShotOrientationInherited = true;
-    }
-
-    if (status & DontPreserveVertShotLengthBit) {
-        destEntry->preserveVertShotLength = false;
-        destEntry->preserveVertShotLengthInherited = false;
-    } else if (status & PreserveVertShotLengthBit) {
-        destEntry->preserveVertShotLength = true;
-        destEntry->preserveVertShotLengthInherited = false;
-    } else if (!destEntry->parent.isNull()) {
-        destEntry->preserveVertShotLengthInherited = true;
-    }
+    return NotSpecified;
 }
 
 void WallsProjectParser::parseLine(Segment line) {
@@ -211,13 +232,10 @@ void WallsProjectParser::bookLine() {
     expect(".BOOK", Qt::CaseInsensitive);
     whitespace();
     QString title = remaining().value();
-    WpjEntryPtr newEntry(new WpjEntry);
-    newEntry->type = WpjEntry::Book;
-    newEntry->title = title;
-    if (!CurrentEntry.isNull()) {
-        WpjEntryPtr book = bookAncestor(CurrentEntry);
-        newEntry->parent = book;
-        book->children << newEntry;
+    WpjBookPtr parent = currentBook();
+    WpjBookPtr newEntry(new WpjBook(parent, title));
+    if (!parent.isNull()) {
+        parent->Children << newEntry;
     }
     else {
         ProjectRoot = newEntry;
@@ -229,48 +247,41 @@ void WallsProjectParser::endbookLine() {
     expect(".ENDBOOK", Qt::CaseInsensitive);
     maybeWhitespace();
     endOfLine();
-    if (bookAncestor(CurrentEntry) == ProjectRoot) {
-        applyInheritedProps(ProjectRoot);
-    }
-    CurrentEntry = bookAncestor(CurrentEntry)->parent;
+    CurrentEntry = currentBook()->Parent;
 }
 
 void WallsProjectParser::nameLine() {
     expect(".NAME", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->name = remaining().value();
+    CurrentEntry->Name = remaining().value();
 }
 
 void WallsProjectParser::pathLine() {
     expect(".PATH", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->path = QDir(remaining().value());
+    CurrentEntry->Path = QDir(remaining().value());
 }
 
 void WallsProjectParser::surveyLine() {
     expect(".SURVEY", Qt::CaseInsensitive);
     whitespace();
     QString title = remaining().value();
-    WpjEntryPtr newEntry(new WpjEntry);
-    newEntry->type = WpjEntry::Survey;
-    newEntry->title = title;
-    WpjEntryPtr book = bookAncestor(CurrentEntry);
-    newEntry->parent = book;
-    book->children << newEntry;
+    WpjBookPtr book = currentBook();
+    WpjEntryPtr newEntry(new WpjEntry(book, title));
+    book->Children << newEntry;
     CurrentEntry = newEntry;
 }
 
 void WallsProjectParser::statusLine() {
     expect(".STATUS", Qt::CaseInsensitive);
     whitespace();
-    int status = unsignedIntLiteral();
-    parseStatus(status, CurrentEntry);
+    CurrentEntry->Status = unsignedIntLiteral();
 }
 
 void WallsProjectParser::optionsLine() {
     expect(".OPTIONS", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->options = remaining().value();
+    CurrentEntry->Options = remaining().value();
 }
 
 void WallsProjectParser::commentLine() {
@@ -313,35 +324,11 @@ void WallsProjectParser::refLine() {
     expect('"');
     maybeWhitespace();
     endOfLine();
-    CurrentEntry->reference = GeoReferencePtr(new GeoReference);
-    *(CurrentEntry->reference) = ref;
+    CurrentEntry->Reference = GeoReferencePtr(new GeoReference);
+    *(CurrentEntry->Reference) = ref;
 }
 
-void WallsProjectParser::applyInheritedProps(WpjEntryPtr entry) {
-    foreach (WpjEntryPtr child, entry->children) {
-        if (child->referenceInherited) {
-            child->reference = entry->reference;
-        }
-        if (child->defaultViewAfterCompilationInherited) {
-            child->defaultViewAfterCompilation = entry->defaultViewAfterCompilation;
-        }
-        if (child->deriveDeclFromDateInherited) {
-            child->deriveDeclFromDate = entry->deriveDeclFromDate;
-        }
-        if (child->gridRelativeInherited) {
-            child->gridRelative = entry->gridRelative;
-        }
-        if (child->preserveVertShotOrientationInherited) {
-            child->preserveVertShotOrientation = entry->preserveVertShotOrientation;
-        }
-        if (child->preserveVertShotLengthInherited) {
-            child->preserveVertShotLength = entry->preserveVertShotLength;
-        }
-        applyInheritedProps(child);
-    }
-}
-
-WpjEntryPtr WallsProjectParser::parseFile(QString fileName) {
+WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     QFile file(fileName);
     QDir dir(fileName);
     dir.cdUp();

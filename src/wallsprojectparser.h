@@ -35,17 +35,14 @@ struct GeoReference {
 
 typedef QSharedPointer<GeoReference> GeoReferencePtr;
 
-struct WpjEntry;
+class WpjEntry;
+class WpjBook;
 
 typedef QSharedPointer<WpjEntry> WpjEntryPtr;
+typedef QSharedPointer<WpjBook> WpjBookPtr;
 
-struct WpjEntry {
-    enum Type {
-        Book = 0,
-        Survey = 1,
-        Other = 2
-    };
-
+class WpjEntry {
+public:
     enum ReviewUnits {
         Meters = 0,
         Feet = 1
@@ -58,6 +55,7 @@ struct WpjEntry {
     };
 
     enum View {
+        NotSpecified = 0,
         NorthOrEast = 1,
         NorthOrWest = 2,
         North = 3,
@@ -65,61 +63,35 @@ struct WpjEntry {
         West = 5
     };
 
-    // display name for the file
-    QString title;
+    WpjEntry(WpjBookPtr parent, QString title);
+    virtual ~WpjEntry() {}
+
+    const WpjBookPtr Parent;
+    // display name
+    const QString Title;
     // the file name (relative to path if given)
-    QString name;
+    QString Name;
     // the path in which the file is found
-    QDir path;
-    Type type;
-    ReviewUnits reviewUnits;
-    LaunchOptions launchOptions;
-    bool nameDefinesSegment;
+    QDir Path;
+    int Status;
     // extra #units options
-    QString options;
-    GeoReferencePtr reference;
-    bool referenceInherited;
-    bool deriveDeclFromDate;
-    bool deriveDeclFromDateInherited;
-    bool gridRelative;
-    bool gridRelativeInherited;
-    bool preserveVertShotOrientation;
-    bool preserveVertShotOrientationInherited;
-    bool preserveVertShotLength;
-    bool preserveVertShotLengthInherited;
-    View defaultViewAfterCompilation;
-    bool defaultViewAfterCompilationInherited;
-    WpjEntryPtr parent;
-    QList<WpjEntryPtr> children;
-};
+    QString Options;
+    GeoReferencePtr Reference;
 
-class WallsProjectParser : public AbstractParser, public LineParser
-{
-    Q_OBJECT
-public:
-    WallsProjectParser();
+    bool referenceInherited() const;
+    GeoReferencePtr reference() const;
 
-    void parseLine(Segment line);
-    WpjEntryPtr parseFile(QString file);
-
-    void emptyLine();
-    void bookLine();
-    void endbookLine();
-    void surveyLine();
-    void nameLine();
-    void refLine();
-    void optionsLine();
-    void statusLine();
-    void pathLine();
-    void commentLine();
-
-    void applyInheritedProps(WpjEntryPtr entry);
-
-    inline WpjEntryPtr result() const {
-        return ProjectRoot;
-    }
-
-    static void parseStatus(int status, WpjEntryPtr destEntry);
+    virtual bool isBook() const { return false; }
+    bool isOther() const;
+    bool isSurvey() const;
+    bool nameDefinesSegment() const;
+    ReviewUnits reviewUnits() const;
+    bool deriveDeclFromDate() const;
+    bool gridRelative() const;
+    bool preserveVertShotOrientation() const;
+    bool preserveVertShotLength() const;
+    LaunchOptions launchOptions() const;
+    View defaultViewAfterCompilation() const;
 
     static const int BookTypeBit;
     static const int NameDefinesSegmentBit;
@@ -142,15 +114,55 @@ public:
     static const int NorthViewBits;
     static const int EastViewBits;
     static const int WestViewBits;
+};
+
+class WpjBook : public WpjEntry {
+public:
+    WpjBook(WpjBookPtr parent, QString title);
+    virtual ~WpjBook() {}
+
+    virtual bool isBook() const { return true; }
+
+    QList<WpjEntryPtr> Children;
+};
+
+class WallsProjectParser : public AbstractParser, public LineParser
+{
+    Q_OBJECT
+public:
+    WallsProjectParser();
+
+    void parseLine(Segment line);
+    WpjBookPtr parseFile(QString file);
+
+    void emptyLine();
+    void bookLine();
+    void endbookLine();
+    void surveyLine();
+    void nameLine();
+    void refLine();
+    void optionsLine();
+    void statusLine();
+    void pathLine();
+    void commentLine();
+
+    inline WpjBookPtr result() const {
+        return ProjectRoot;
+    }
+
+    inline WpjBookPtr currentBook() const {
+        if (CurrentEntry.isNull()) {
+            return WpjBookPtr();
+        }
+        if (CurrentEntry->isBook()) {
+            return CurrentEntry.dynamicCast<WpjBook>();
+        }
+        return CurrentEntry->Parent;
+    }
 
 private:
     WpjEntryPtr CurrentEntry;
-    WpjEntryPtr ProjectRoot;
-
-    inline WpjEntryPtr bookAncestor(WpjEntryPtr entry) {
-        return (entry.isNull() || entry->type == WpjEntry::Book) ? entry :
-                                                                   bookAncestor(entry->parent);
-    }
+    WpjBookPtr ProjectRoot;
 };
 
 } // namespace dewalls
