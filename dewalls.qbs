@@ -73,6 +73,7 @@ Project {
         files: [
             "test/*.cpp",
             "test/*.h",
+            "test/dewalls-test.qrc",
         ]
     }
 }

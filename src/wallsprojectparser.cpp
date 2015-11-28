@@ -1,7 +1,11 @@
 #include "wallsprojectparser.h"
 
+#include <QDir>
+#include <QDebug>
+
 #include "segment.h"
 #include "segmentparseexception.h"
+#include "genericexception.h"
 
 namespace dewalls {
 
@@ -42,7 +46,7 @@ namespace dewalls {
 // .REF	2308552.729 324501.432 16 -0.601 27 6 20 52 14.229 88 41 13.085 0 "Adindan"
 
 WallsProjectParser::WallsProjectParser()
-    : LineParser()
+    : AbstractParser(), LineParser()
 {
 
 }
@@ -173,19 +177,18 @@ void WallsProjectParser::parseStatus(int status, WpjEntryPtr destEntry) {
 void WallsProjectParser::parseLine(Segment line) {
     reset(line);
 
-    if (CurrentEntry.isNull()) {
+    maybeWhitespace();
+
+    if (ProjectRoot.isNull()) {
         oneOf([&]() { this->bookLine(); },
-        [&]() { this->commentLine(); });
-    } else if (bookAncestor(CurrentEntry)->parent.isNull()) {
-        oneOf([&]() { this->bookLine(); },
-        [&]() { this->surveyLine(); },
-        [&]() { this->nameLine(); },
-        [&]() { this->pathLine(); },
-        [&]() { this->refLine(); },
-        [&]() { this->optionsLine(); },
-        [&]() { this->statusLine(); },
-        [&]() { this->commentLine(); });
-    } else {
+        [&]() { this->commentLine(); },
+        [&]() { this->emptyLine(); });
+    }
+    else if (CurrentEntry.isNull()) {
+        oneOf([&]() { this->commentLine(); },
+        [&]() { this->emptyLine(); });
+    }
+    else {
         oneOf([&]() { this->bookLine(); },
         [&]() { this->endbookLine(); },
         [&]() { this->surveyLine(); },
@@ -194,60 +197,70 @@ void WallsProjectParser::parseLine(Segment line) {
         [&]() { this->refLine(); },
         [&]() { this->optionsLine(); },
         [&]() { this->statusLine(); },
-        [&]() { this->commentLine(); });
+        [&]() { this->commentLine(); },
+        [&]() { this->emptyLine(); });
     }
 }
 
-void WallsProjectParser::bookLine() {
+void WallsProjectParser::emptyLine() {
     maybeWhitespace();
+    endOfLine();
+}
+
+void WallsProjectParser::bookLine() {
     expect(".BOOK", Qt::CaseInsensitive);
     whitespace();
     QString title = remaining().value();
     WpjEntryPtr newEntry(new WpjEntry);
     newEntry->type = WpjEntry::Book;
     newEntry->title = title;
-    newEntry->parent = bookAncestor(CurrentEntry);
-    CurrentEntry->children << newEntry;
+    if (!CurrentEntry.isNull()) {
+        WpjEntryPtr book = bookAncestor(CurrentEntry);
+        newEntry->parent = book;
+        book->children << newEntry;
+    }
+    else {
+        ProjectRoot = newEntry;
+    }
     CurrentEntry = newEntry;
 }
 
 void WallsProjectParser::endbookLine() {
-    maybeWhitespace();
     expect(".ENDBOOK", Qt::CaseInsensitive);
-    whitespace();
+    maybeWhitespace();
     endOfLine();
+    if (bookAncestor(CurrentEntry) == ProjectRoot) {
+        applyInheritedProps(ProjectRoot);
+    }
     CurrentEntry = bookAncestor(CurrentEntry)->parent;
 }
 
 void WallsProjectParser::nameLine() {
-    maybeWhitespace();
     expect(".NAME", Qt::CaseInsensitive);
     whitespace();
     CurrentEntry->name = remaining().value();
 }
 
 void WallsProjectParser::pathLine() {
-    maybeWhitespace();
     expect(".PATH", Qt::CaseInsensitive);
     whitespace();
     CurrentEntry->path = QDir(remaining().value());
 }
 
 void WallsProjectParser::surveyLine() {
-    maybeWhitespace();
     expect(".SURVEY", Qt::CaseInsensitive);
     whitespace();
     QString title = remaining().value();
     WpjEntryPtr newEntry(new WpjEntry);
-    newEntry->type = WpjEntry::SurveyFile;
+    newEntry->type = WpjEntry::Survey;
     newEntry->title = title;
-    newEntry->parent = bookAncestor(CurrentEntry);
-    CurrentEntry->children << newEntry;
+    WpjEntryPtr book = bookAncestor(CurrentEntry);
+    newEntry->parent = book;
+    book->children << newEntry;
     CurrentEntry = newEntry;
 }
 
 void WallsProjectParser::statusLine() {
-    maybeWhitespace();
     expect(".STATUS", Qt::CaseInsensitive);
     whitespace();
     int status = unsignedIntLiteral();
@@ -255,20 +268,17 @@ void WallsProjectParser::statusLine() {
 }
 
 void WallsProjectParser::optionsLine() {
-    maybeWhitespace();
     expect(".OPTIONS", Qt::CaseInsensitive);
     whitespace();
     CurrentEntry->options = remaining().value();
 }
 
 void WallsProjectParser::commentLine() {
-    maybeWhitespace();
     expect(";");
     remaining();
 }
 
 void WallsProjectParser::refLine() {
-    maybeWhitespace();
     expect(".REF", Qt::CaseInsensitive);
     whitespace();
     GeoReference ref;
@@ -300,6 +310,7 @@ void WallsProjectParser::refLine() {
     whitespace();
     expect('"');
     ref.datumName = expect(QRegExp("[^\"]+"), {"<DATUM_NAME>"}).value();
+    expect('"');
     maybeWhitespace();
     endOfLine();
     CurrentEntry->reference = GeoReferencePtr(new GeoReference);
@@ -328,6 +339,54 @@ void WallsProjectParser::applyInheritedProps(WpjEntryPtr entry) {
         }
         applyInheritedProps(child);
     }
+}
+
+WpjEntryPtr WallsProjectParser::parseFile(QString fileName) {
+    QFile file(fileName);
+    QDir dir(fileName);
+    dir.cdUp();
+
+    if (!file.open(QFile::ReadOnly))
+    {
+        QString msg("I couldn't open %1");
+        msg.arg(fileName);
+        emit message(Severity::Error, msg);
+        throw GenericException(msg);
+    }
+
+    int lineNumber = 0;
+    while (!file.atEnd())
+    {
+        QString line = file.readLine();
+        line = line.trimmed();
+        if (file.error() != QFile::NoError)
+        {
+            QString msg("Error reading from file %1 at line %2: %3");
+            msg.arg(fileName)
+                    .arg(lineNumber)
+                    .arg(file.errorString());
+            emit message(Severity::Error, msg);
+            throw GenericException(msg);
+        }
+
+        try {
+            parseLine(Segment(line, fileName, lineNumber, 0));
+        }
+        catch (const SegmentParseExpectedException& ex) {
+            emitMessage(ex);
+            throw;
+        }
+        catch (const SegmentParseException& ex) {
+            emitMessage(ex);
+            throw;
+        }
+
+        lineNumber++;
+    }
+
+    file.close();
+
+    return ProjectRoot;
 }
 
 } // namespace dewalls

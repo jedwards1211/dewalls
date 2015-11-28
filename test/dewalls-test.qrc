@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/test">
+        <file>Kaua North Maze.wpj</file>
+    </qresource>
+</RCC>

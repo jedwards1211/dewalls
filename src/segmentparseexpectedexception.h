@@ -16,6 +16,8 @@ public:
     SegmentParseExpectedException(Segment segment, std::initializer_list<QString> expectedItems);
     QList<QString> expectedItems() const;
     virtual QString detailMessage() const;
+    virtual void raise() const { throw *this; }
+    virtual SegmentParseException *clone() const { return new SegmentParseExpectedException(*this); }
 private:
     QList<QString> _expectedItems;
 };

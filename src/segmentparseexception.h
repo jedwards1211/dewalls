@@ -1,13 +1,13 @@
 #ifndef DEWALLS_SEGMENTPARSEEXCEPTION_H
 #define DEWALLS_SEGMENTPARSEEXCEPTION_H
 
-#include <exception>
+#include <QException>
 
 #include "segment.h"
 
 namespace dewalls {
 
-class SegmentParseException : public std::exception
+class SegmentParseException : public QException
 {
 public:
     SegmentParseException(Segment segment);
@@ -15,6 +15,8 @@ public:
     Segment segment() const;
     virtual QString detailMessage() const;
     virtual QString message() const;
+    virtual void raise() const { throw *this; }
+    virtual SegmentParseException *clone() const { return new SegmentParseException(*this); }
 private:
     Segment _segment;
     QString _detailMessage;

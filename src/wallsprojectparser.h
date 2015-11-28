@@ -1,12 +1,13 @@
 #ifndef DEWALLS_WALLSPROJECTPARSER_H
 #define DEWALLS_WALLSPROJECTPARSER_H
 
-#include <QObject>
 #include <QList>
 #include <QString>
 #include <QDir>
 #include <QSharedPointer>
+#include <QFile>
 
+#include "abstractparser.h"
 #include "lineparser.h"
 
 namespace dewalls {
@@ -41,7 +42,7 @@ typedef QSharedPointer<WpjEntry> WpjEntryPtr;
 struct WpjEntry {
     enum Type {
         Book = 0,
-        SurveyFile = 1,
+        Survey = 1,
         Other = 2
     };
 
@@ -92,13 +93,16 @@ struct WpjEntry {
     QList<WpjEntryPtr> children;
 };
 
-class WallsProjectParser : public LineParser
+class WallsProjectParser : public AbstractParser, public LineParser
 {
+    Q_OBJECT
 public:
     WallsProjectParser();
 
     void parseLine(Segment line);
+    WpjEntryPtr parseFile(QString file);
 
+    void emptyLine();
     void bookLine();
     void endbookLine();
     void surveyLine();
