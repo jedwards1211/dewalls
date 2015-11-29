@@ -194,6 +194,19 @@ WpjEntry::View WpjEntry::defaultViewAfterCompilation() const {
     return NotSpecified;
 }
 
+QDir WpjEntry::dir() const {
+    if (Parent.isNull()) {
+        return QDir(Path);
+    }
+    QDir dir = Parent->dir();
+    dir.cd(Path);
+    return dir;
+}
+
+QString WpjEntry::absolutePath() const {
+    return QDir::cleanPath(dir().absoluteFilePath(Name));
+}
+
 void WallsProjectParser::parseLine(Segment line) {
     reset(line);
 
@@ -258,7 +271,7 @@ void WallsProjectParser::nameLine() {
 void WallsProjectParser::pathLine() {
     expect(".PATH", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->Path = QDir(remaining().value());
+    CurrentEntry->Path = remaining().value();
 }
 
 void WallsProjectParser::surveyLine() {
@@ -329,8 +342,6 @@ void WallsProjectParser::refLine() {
 
 WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     QFile file(fileName);
-    QDir dir(fileName);
-    dir.cdUp();
 
     if (!file.open(QFile::ReadOnly))
     {
@@ -370,6 +381,10 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     }
 
     file.close();
+
+    if (!ProjectRoot.isNull()) {
+        ProjectRoot->Path = QFileInfo(fileName).dir().canonicalPath();
+    }
 
     return ProjectRoot;
 }

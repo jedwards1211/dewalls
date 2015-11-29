@@ -71,8 +71,8 @@ public:
     const QString Title;
     // the file name (relative to path if given)
     QString Name;
-    // the path in which the file is found
-    QDir Path;
+    // the path of the directory in which the file is found relative to the parent
+    QString Path;
     int Status;
     // extra #units options
     QString Options;
@@ -92,6 +92,8 @@ public:
     bool preserveVertShotLength() const;
     LaunchOptions launchOptions() const;
     View defaultViewAfterCompilation() const;
+    QDir dir() const;
+    QString absolutePath() const;
 
     static const int BookTypeBit;
     static const int NameDefinesSegmentBit;
