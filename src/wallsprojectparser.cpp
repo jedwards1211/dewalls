@@ -1,5 +1,7 @@
 #include "wallsprojectparser.h"
 
+#include <iostream>
+
 #include <QDir>
 #include <QDebug>
 
@@ -189,9 +191,8 @@ WpjEntry::View WpjEntry::defaultViewAfterCompilation() const {
         if (!Parent.isNull()) {
             return Parent->defaultViewAfterCompilation();
         }
-        break;
+        return NorthOrEast;
     }
-    return NotSpecified;
 }
 
 QDir WpjEntry::dir() const {
@@ -205,6 +206,10 @@ QDir WpjEntry::dir() const {
 
 QString WpjEntry::absolutePath() const {
     return QDir::cleanPath(dir().absoluteFilePath(Name));
+}
+
+void WallsProjectParser::parseLine(QString line) {
+    parseLine(Segment(line));
 }
 
 void WallsProjectParser::parseLine(Segment line) {

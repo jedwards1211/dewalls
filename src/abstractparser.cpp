@@ -1,7 +1,6 @@
 #include "abstractparser.h"
 
 #include "segmentparseexception.h"
-#include "segmentparseexpectedexception.h"
 
 namespace dewalls {
 
@@ -15,14 +14,6 @@ void AbstractParser::emitMessage(const SegmentParseException &ex) {
                  ex.segment().startLine(), ex.segment().startCol(),
                  ex.segment().endLine(), ex.segment().endCol());
 }
-
-void AbstractParser::emitMessage(const SegmentParseExpectedException &ex) {
-    emit message(Severity::Error, ex.detailMessage() + '\n' + ex.segment().underlineInContext(),
-                 ex.segment().source(),
-                 ex.segment().startLine(), ex.segment().startCol(),
-                 ex.segment().endLine(), ex.segment().endCol());
-}
-
 
 } // namespace dewalls
 

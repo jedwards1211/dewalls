@@ -55,12 +55,11 @@ public:
     };
 
     enum View {
-        NotSpecified = 0,
-        NorthOrEast = 1,
-        NorthOrWest = 2,
-        North = 3,
-        East = 4,
-        West = 5
+        NorthOrEast = 0,
+        NorthOrWest = 1,
+        North = 2,
+        East = 3,
+        West = 4
     };
 
     WpjEntry(WpjBookPtr parent, QString title);
@@ -134,6 +133,7 @@ class WallsProjectParser : public AbstractParser, public LineParser
 public:
     WallsProjectParser();
 
+    void parseLine(QString line);
     void parseLine(Segment line);
     WpjBookPtr parseFile(QString file);
 

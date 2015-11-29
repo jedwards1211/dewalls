@@ -8,7 +8,6 @@
 namespace dewalls {
 
 class SegmentParseException;
-class SegmentParseExpectedException;
 
 class AbstractParser : public QObject
 {
@@ -18,14 +17,12 @@ public:
     explicit AbstractParser(QObject *parent = 0);
 
 signals:
-    void message(Severity severity, QString message);
-    void message(Severity severity, QString message, QString source);
-    void message(Severity severity, QString message, QString source,
-                 int startLine, int startCol, int endLine, int endCol);
+    void message(Severity severity, QString message, QString source = QString(),
+                 int startLine = -1, int startCol = -1,
+                 int endLine = -1, int endCol = -1);
 
 protected:
     void emitMessage(const SegmentParseException& exception);
-    void emitMessage(const SegmentParseExpectedException& exception);
 };
 
 } // namespace dewalls
