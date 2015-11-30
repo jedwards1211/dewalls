@@ -1531,15 +1531,11 @@ void WallsParser::azimuth()
         UAngle diff = azmDifference(_azmFs, _azmBs);
         if (diff > _units->typeab_tolerance)
         {
-            _visitor->message({QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
-                               .arg(diff.toString())
-                               .arg(_units->typevb_tolerance.toString()),
-                               WallsMessage::Warning,
-                               _azmSegment.source(),
-                               _azmSegment.startLine(),
-                               _azmSegment.startCol(),
-                               _azmSegment.endLine(),
-                               _azmSegment.endCol()});
+            _visitor->message(WallsMessage("warning",
+                                           QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
+                                           .arg(diff.toString())
+                                           .arg(_units->typevb_tolerance.toString()),
+                                           _azmSegment));
         }
     }
 }
@@ -1576,15 +1572,11 @@ void WallsParser::inclination()
             UAngle diff = incDifference(_incFs, _incBs);
             if (diff > _units->typevb_tolerance)
             {
-                _visitor->message({QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
-                                   .arg(diff.toString())
-                                   .arg(_units->typevb_tolerance.toString()),
-                                   WallsMessage::Warning,
-                                   _incSegment.source(),
-                                   _incSegment.startLine(),
-                                   _incSegment.startCol(),
-                                   _incSegment.endLine(),
-                                   _incSegment.endCol()});
+                _visitor->message(WallsMessage("warning",
+                                               QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
+                                               .arg(diff.toString())
+                                               .arg(_units->typevb_tolerance.toString()),
+                                               _incSegment));
             }
         }
     }

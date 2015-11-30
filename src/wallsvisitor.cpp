@@ -268,20 +268,7 @@ void PrintingWallsVisitor::visitFixedStation( QString station )
 
 void PrintingWallsVisitor::message(WallsMessage message)
 {
-    switch(message.severity) {
-    case WallsMessage::Info:
-        cout << "[INFO]    ";
-        break;
-    case WallsMessage::Warning:
-        cout << "[WARNING] ";
-        break;
-    case WallsMessage::Error:
-        cout << "[ERROR] ";
-        break;
-    }
-
-    cout << message.source.toStdString() << ", line " << message.startLine << ", column " << message.startColumn << ":" << endl;
-    cout << "  " << message.message.toStdString() << endl;
+    cout << message.toString().toStdString() << endl;
 }
 
 void CapturingWallsVisitor::beginFile( QString source )

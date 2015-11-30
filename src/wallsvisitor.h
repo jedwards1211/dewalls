@@ -10,24 +10,10 @@
 #include "angle.h"
 #include "unitizeddouble.h"
 #include "varianceoverride.h"
+#include "segmentparseexception.h"
+#include "wallsmessage.h"
 
 namespace dewalls {
-
-struct WallsMessage {
-    enum Severity {
-        Info = 0,
-        Warning = 1,
-        Error = 2
-    };
-
-    QString message;
-    Severity severity;
-    QString source;
-    int startLine;
-    int startColumn;
-    int endLine;
-    int endColumn;
-};
 
 class WallsVisitor
 {

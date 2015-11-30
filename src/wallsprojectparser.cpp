@@ -379,7 +379,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     if (!file.open(QFile::ReadOnly))
     {
         QString msg = QString("I couldn't open %1").arg(fileName);
-        emit message("error", msg);
+        emit message(WallsMessage("error", msg));
         return WpjBookPtr();
     }
 
@@ -390,23 +390,18 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
         line = line.trimmed();
         if (file.error() != QFile::NoError)
         {
-            QString msg = QString("Error reading from file %1 at line %2: %3")
-                    .arg(fileName)
-                    .arg(lineNumber)
-                    .arg(file.errorString());
-            emit message("error", msg);
+            emit message(WallsMessage("error",
+                                      QString("failed to read from file: %1").arg(file.errorString()),
+                                      fileName,
+                                      lineNumber));
             return WpjBookPtr();
         }
 
         try {
             parseLine(Segment(line, fileName, lineNumber, 0));
         }
-        catch (const SegmentParseExpectedException& ex) {
-            emitMessage(ex);
-            return WpjBookPtr();
-        }
         catch (const SegmentParseException& ex) {
-            emitMessage(ex);
+            emit message(WallsMessage(ex));
             return WpjBookPtr();
         }
 

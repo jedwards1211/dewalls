@@ -11,17 +11,8 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
         WallsProjectParser parser;
 
         QObject::connect(&parser, &WallsProjectParser::message,
-                         [=](const QString& severity, const QString& message, const QString& source,
-                         int startLine, int startColumn, int endLine, int endColumn) {
-            Q_UNUSED(severity);
-            Q_UNUSED(startColumn);
-            Q_UNUSED(endLine);
-            Q_UNUSED(endColumn);
-            std::cout << "In file: " << source.toStdString() << std::endl;
-            std::cout << "In file: " << source.toStdString() << std::endl;
-            std::cout << "In file: " << source.toStdString() << std::endl;
-            std::cout << "Line " << startLine << std::endl;
-            std::cout << message.toStdString() << std::endl;
+                         [=](WallsMessage message) {
+            std::cout << message.toString().toStdString() << std::endl;
         });
 
         WpjBookPtr projectRoot;

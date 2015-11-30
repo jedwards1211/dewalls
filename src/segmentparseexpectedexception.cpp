@@ -36,10 +36,10 @@ QString SegmentParseExpectedException::detailMessage() const
 
     if (uniqList.size() == 1)
     {
-        return QString("Expected \"%1\"").arg(uniqList.first());
+        return QString("Expected \"%1\"\n").arg(uniqList.first());
     }
 
-    return QString("Expected one of:\n  %1\n%2").arg(uniqList.join("\n  "), segment().underlineInContext());
+    return QString("Expected one of:\n  %1\n").arg(uniqList.join("\n  "));
 }
 
 } // namespace dewalls

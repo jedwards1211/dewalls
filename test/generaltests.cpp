@@ -149,7 +149,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
                 parser.parseLine("A B 1 1/184 4");
                 REQUIRE( visitor.messages.size() == 1 );
-                REQUIRE( visitor.messages[0].message.contains("exceeds") );
+                REQUIRE( visitor.messages[0].message().contains("exceeds") );
 
                 parser.parseLine("#units typeab=c");
                 parser.parseLine("A B 1 1/3 4");
@@ -198,7 +198,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
                 parser.parseLine("A B 1 2 4/-7");
                 REQUIRE( visitor.messages.size() == 1 );
-                REQUIRE( visitor.messages[0].message.contains("exceeds") );
+                REQUIRE( visitor.messages[0].message().contains("exceeds") );
 
                 parser.parseLine("#units typevb=c");
                 parser.parseLine("A B 1 2 1/3");

@@ -2,6 +2,7 @@
 #define DEWALLS_ABSTRACTPARSER_H
 
 #include <QObject>
+#include "wallsmessage.h"
 
 namespace dewalls {
 
@@ -15,12 +16,7 @@ public:
     explicit AbstractParser(QObject *parent = 0);
 
 signals:
-    void message(QString severity, QString message, QString source = QString(),
-                 int startLine = -1, int startCol = -1,
-                 int endLine = -1, int endCol = -1);
-
-protected:
-    void emitMessage(const SegmentParseException& exception);
+    void message(WallsMessage message);
 };
 
 } // namespace dewalls
