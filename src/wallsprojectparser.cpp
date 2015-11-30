@@ -205,7 +205,35 @@ QDir WpjEntry::dir() const {
 }
 
 QString WpjEntry::absolutePath() const {
-    return QDir::cleanPath(dir().absoluteFilePath(Name + ".SRV"));
+    if (isBook()) {
+        return QDir::cleanPath(dir().absolutePath());
+    }
+    else {
+        QString name = Name.value();
+        if (isSurvey() && !name.endsWith(".SRV", Qt::CaseInsensitive)) {
+            if (QFileInfo(QDir::cleanPath(dir().absoluteFilePath(name + ".SRV"))).exists()) {
+                name += ".SRV";
+            }
+            else if (QFileInfo(QDir::cleanPath(dir().absoluteFilePath(name + ".srv"))).exists()) {
+                name += ".srv";
+            }
+            else {
+                name += ".SRV";
+            }
+        }
+        return QDir::cleanPath(dir().absoluteFilePath(name));
+    }
+}
+
+QList<Segment> WpjEntry::allOptions() const {
+    QList<Segment> options;
+    if (!Parent.isNull()) {
+        options = Parent->allOptions();
+    }
+    if (!Options.isEmpty()) {
+        options << Options;
+    }
+    return options;
 }
 
 void WallsProjectParser::parseLine(QString line) {
@@ -270,7 +298,7 @@ void WallsProjectParser::endbookLine() {
 void WallsProjectParser::nameLine() {
     expect(".NAME", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->Name = remaining().value();
+    CurrentEntry->Name = remaining();
 }
 
 void WallsProjectParser::pathLine() {
@@ -298,7 +326,7 @@ void WallsProjectParser::statusLine() {
 void WallsProjectParser::optionsLine() {
     expect(".OPTIONS", Qt::CaseInsensitive);
     whitespace();
-    CurrentEntry->Options = remaining().value();
+    CurrentEntry->Options = remaining();
 }
 
 void WallsProjectParser::commentLine() {

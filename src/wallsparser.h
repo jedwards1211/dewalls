@@ -80,6 +80,7 @@ public:
     void parseLine();
     void parseLine(QString line);
     void parseLine(Segment line);
+    void parseUnitsOptions(Segment options);
 
     void beginBlockCommentLine();
     void endBlockCommentLine();

@@ -957,6 +957,32 @@ void WallsParser::unitsLine()
 
     try
     {
+        if (maybeWhitespace())
+        {
+            unitsOptions();
+        }
+        _visitor->endUnitsLine();
+    }
+    catch (const SegmentParseExpectedException& ex)
+    {
+        _visitor->abortUnitsLine();
+        throw ex;
+    }
+    catch (const SegmentParseException& ex)
+    {
+        _visitor->abortUnitsLine();
+        throw ex;
+    }
+}
+
+void WallsParser::parseUnitsOptions(Segment options)
+{
+    reset(options);
+
+    _visitor->beginUnitsLine();
+
+    try
+    {
         unitsOptions();
         _visitor->endUnitsLine();
     }
@@ -974,9 +1000,18 @@ void WallsParser::unitsLine()
 
 void WallsParser::unitsOptions()
 {
+    bool gotOne = false;
     while(!maybe([&]() { this->inlineCommentOrEndOfLine(); } ))
     {
-        whitespace();
+        if (gotOne)
+        {
+            whitespace();
+        }
+        else
+        {
+            gotOne = true;
+        }
+
         maybe([&]() {
             this->oneOf(
                         [&]() { this->unitsOption(); },

@@ -69,12 +69,12 @@ public:
     // display name
     const QString Title;
     // the file name (relative to path if given)
-    QString Name;
+    Segment Name;
     // the path of the directory in which the file is found relative to the parent
     QString Path;
     int Status;
     // extra #units options
-    QString Options;
+    Segment Options;
     GeoReferencePtr Reference;
 
     bool referenceInherited() const;
@@ -91,8 +91,19 @@ public:
     bool preserveVertShotLength() const;
     LaunchOptions launchOptions() const;
     View defaultViewAfterCompilation() const;
+    /**
+     * @return the directory where this entry's file (or this book's subentries' files)
+     * is located
+     */
     QDir dir() const;
+    /**
+     * @return the absolute path to this entry's file (or this book's directory)
+     */
     QString absolutePath() const;
+    /**
+     * @return the inherited and own #units options for this entry (or this book's subentries)
+     */
+    QList<Segment> allOptions() const;
 
     static const int BookTypeBit;
     static const int NameDefinesSegmentBit;
