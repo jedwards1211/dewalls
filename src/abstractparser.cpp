@@ -10,7 +10,7 @@ AbstractParser::AbstractParser(QObject *parent) : QObject(parent)
 }
 
 void AbstractParser::emitMessage(const SegmentParseException &ex) {
-    emit message(Severity::Error, ex.detailMessage(), ex.segment().source(),
+    emit message("error", ex.detailMessage(), ex.segment().source(),
                  ex.segment().startLine(), ex.segment().startCol(),
                  ex.segment().endLine(), ex.segment().endCol());
 }

@@ -3,8 +3,6 @@
 
 #include <QObject>
 
-#include "severity.h"
-
 namespace dewalls {
 
 class SegmentParseException;
@@ -17,7 +15,7 @@ public:
     explicit AbstractParser(QObject *parent = 0);
 
 signals:
-    void message(Severity severity, QString message, QString source = QString(),
+    void message(QString severity, QString message, QString source = QString(),
                  int startLine = -1, int startCol = -1,
                  int endLine = -1, int endCol = -1);
 

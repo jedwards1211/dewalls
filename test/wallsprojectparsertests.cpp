@@ -11,7 +11,7 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
         WallsProjectParser parser;
 
         QObject::connect(&parser, &WallsProjectParser::message,
-                         [=](const Severity& severity, const QString& message, const QString& source,
+                         [=](const QString& severity, const QString& message, const QString& source,
                          int startLine, int startColumn, int endLine, int endColumn) {
             Q_UNUSED(severity);
             Q_UNUSED(startColumn);

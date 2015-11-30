@@ -205,7 +205,7 @@ QDir WpjEntry::dir() const {
 }
 
 QString WpjEntry::absolutePath() const {
-    return QDir::cleanPath(dir().absoluteFilePath(Name));
+    return QDir::cleanPath(dir().absoluteFilePath(Name + ".SRV"));
 }
 
 void WallsProjectParser::parseLine(QString line) {
@@ -351,7 +351,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     if (!file.open(QFile::ReadOnly))
     {
         QString msg = QString("I couldn't open %1").arg(fileName);
-        emit message(Severity::Error, msg);
+        emit message("error", msg);
         return WpjBookPtr();
     }
 
@@ -366,7 +366,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
                     .arg(fileName)
                     .arg(lineNumber)
                     .arg(file.errorString());
-            emit message(Severity::Error, msg);
+            emit message("error", msg);
             return WpjBookPtr();
         }
 
