@@ -7,6 +7,9 @@
 #include <QDir>
 #include <QSharedPointer>
 #include <QFile>
+#include "unitizeddouble.h"
+#include "angle.h"
+#include "length.h"
 
 #include "wallsmessage.h"
 #include "lineparser.h"
@@ -15,21 +18,18 @@ namespace dewalls {
 
 class Segment;
 
-struct DmsAngle {
-    double degrees;
-    double minutes;
-    double seconds;
-};
-
 struct GeoReference {
+    typedef UnitizedDouble<Length> ULength;
+    typedef UnitizedDouble<Angle> UAngle;
+
     // positive for north, negative for south
     int zone;
-    double northing;
-    double easting;
-    double gridConvergence;
-    double elevation;
-    DmsAngle latitude;
-    DmsAngle longitude;
+    ULength northing;
+    ULength easting;
+    UAngle gridConvergence;
+    ULength elevation;
+    UAngle latitude;
+    UAngle longitude;
     int wallsDatumIndex;
     QString datumName;
 };

@@ -4,11 +4,15 @@
 
 #include <QDir>
 #include <QDebug>
+#include "signum.h"
 
 #include "segment.h"
 #include "segmentparseexception.h"
 
 namespace dewalls {
+
+typedef UnitizedDouble<Length> ULength;
+typedef UnitizedDouble<Angle> UAngle;
 
 // STATUS BITS
 //   2^0 : Type = Book
@@ -338,30 +342,37 @@ void WallsProjectParser::refLine() {
     expect(".REF", Qt::CaseInsensitive);
     whitespace();
     GeoReference ref;
-    ref.northing = doubleLiteral();
+    ref.northing = ULength(doubleLiteral(), Length::meters());
     whitespace();
-    ref.easting = doubleLiteral();
+    ref.easting = ULength(doubleLiteral(), Length::meters());
     whitespace();
     ref.zone = intLiteral();
     whitespace();
-    ref.gridConvergence = doubleLiteral();
+    ref.gridConvergence = UAngle(doubleLiteral(), Angle::degrees());
     whitespace();
-    ref.elevation = doubleLiteral();
+    ref.elevation = ULength(doubleLiteral(), Length::meters());
     whitespace();
     doubleLiteral(); // don't know what this field represents
     whitespace();
-    ref.latitude.degrees = intLiteral();
+
+    double degrees, minutes, seconds;
+
+    degrees = intLiteral();
     whitespace();
-    ref.latitude.minutes = unsignedIntLiteral();
+    minutes = unsignedIntLiteral();
     whitespace();
-    ref.latitude.seconds = unsignedDoubleLiteral();
+    seconds = unsignedDoubleLiteral();
     whitespace();
-    ref.longitude.degrees = intLiteral();
+    ref.latitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::degrees());
+
+    degrees = intLiteral();
     whitespace();
-    ref.longitude.minutes = unsignedIntLiteral();
+    minutes = unsignedIntLiteral();
     whitespace();
-    ref.longitude.seconds = unsignedDoubleLiteral();
+    seconds = unsignedDoubleLiteral();
     whitespace();
+    ref.longitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::degrees());
+
     ref.wallsDatumIndex = unsignedIntLiteral();
     whitespace();
     expect('"');

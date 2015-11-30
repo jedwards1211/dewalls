@@ -6,6 +6,9 @@
 
 using namespace dewalls;
 
+typedef UnitizedDouble<Length> ULength;
+typedef UnitizedDouble<Angle> UAngle;
+
 TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
     SECTION( "correctly parses valid file" ) {
         WallsProjectParser parser;
@@ -29,11 +32,11 @@ TEST_CASE( "WallsProjectParserTests", "[WallsProjectParser]" ) {
         CHECK( projectRoot->gridRelative() );
 
         REQUIRE( !projectRoot->reference().isNull() );
-        CHECK( projectRoot->reference()->northing == 2308521.655 );
-        CHECK( projectRoot->reference()->easting == 324341.706 );
+        CHECK( projectRoot->reference()->northing == ULength(2308521.655, Length::meters()) );
+        CHECK( projectRoot->reference()->easting == ULength(324341.706, Length::meters()) );
         CHECK( projectRoot->reference()->zone == 16 );
-        CHECK( projectRoot->reference()->gridConvergence == -0.602 );
-        CHECK( projectRoot->reference()->elevation == 27 );
+        CHECK( projectRoot->reference()->gridConvergence == UAngle(-0.602, Angle::degrees()) );
+        CHECK( projectRoot->reference()->elevation == ULength(27, Length::meters()) );
 
         REQUIRE( projectRoot->Children.size() == 5 );
 
