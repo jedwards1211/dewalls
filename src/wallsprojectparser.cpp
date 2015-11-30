@@ -46,8 +46,8 @@ namespace dewalls {
 //  	northing	easting	   zn conv   el ? d  m  s  lat d  m  s long index/name
 // .REF	2308552.729 324501.432 16 -0.601 27 6 20 52 14.229 88 41 13.085 0 "Adindan"
 
-WallsProjectParser::WallsProjectParser()
-    : AbstractParser(), LineParser()
+WallsProjectParser::WallsProjectParser(QObject* parent)
+    : QObject(parent), LineParser()
 {
 
 }

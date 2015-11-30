@@ -1,13 +1,14 @@
 #ifndef DEWALLS_WALLSPROJECTPARSER_H
 #define DEWALLS_WALLSPROJECTPARSER_H
 
+#include <QObject>
 #include <QList>
 #include <QString>
 #include <QDir>
 #include <QSharedPointer>
 #include <QFile>
 
-#include "abstractparser.h"
+#include "wallsmessage.h"
 #include "lineparser.h"
 
 namespace dewalls {
@@ -138,11 +139,11 @@ public:
     QList<WpjEntryPtr> Children;
 };
 
-class WallsProjectParser : public AbstractParser, public LineParser
+class WallsProjectParser : public QObject, public LineParser
 {
     Q_OBJECT
 public:
-    WallsProjectParser();
+    WallsProjectParser(QObject* parent = 0);
 
     void parseLine(QString line);
     void parseLine(Segment line);
@@ -172,6 +173,9 @@ public:
         }
         return CurrentEntry->Parent;
     }
+
+signals:
+    void message(WallsMessage message);
 
 private:
     WpjEntryPtr CurrentEntry;
