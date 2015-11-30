@@ -11,10 +11,11 @@
 #include "angle.h"
 #include "wallstypes.h"
 #include "math.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class WallsUnits
+class DEWALLS_LIB_EXPORT WallsUnits
 {
 public:
     typedef const Unit<Length> * LengthUnit;

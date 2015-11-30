@@ -7,6 +7,9 @@
 //Std includes
 #include "math.h"
 
+//Our includes
+#include "dewallsexport.h"
+
 namespace dewalls {
 
 template<class T>

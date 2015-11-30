@@ -5,13 +5,14 @@
 #include <QSharedPointer>
 #include "unitizeddouble.h"
 #include "length.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
 class FloatedVarianceOverride;
 class FloatedTraverseVarianceOverride;
 
-class VarianceOverride
+class DEWALLS_LIB_EXPORT VarianceOverride
 {
 public:
     enum class Type

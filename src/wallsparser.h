@@ -5,7 +5,7 @@
 #include <QHash>
 #include <QSharedPointer>
 #include <QStack>
-#
+
 #include "lineparser.h"
 #include "unitizeddouble.h"
 #include "length.h"
@@ -15,10 +15,11 @@
 #include "wallstypes.h"
 #include "wallsunits.h"
 #include "wallsvisitor.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class WallsParser : public LineParser
+class DEWALLS_LIB_EXPORT WallsParser : public LineParser
 {
 public:
     typedef UnitizedDouble<Length> ULength;

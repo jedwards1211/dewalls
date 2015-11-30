@@ -4,10 +4,11 @@
 #include <QString>
 #include <QSharedPointer>
 #include "unittype.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class Angle : public UnitType<Angle>
+class DEWALLS_LIB_EXPORT Angle : public UnitType<Angle>
 {
 public:
     static void init();

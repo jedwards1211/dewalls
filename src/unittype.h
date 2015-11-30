@@ -49,6 +49,12 @@ inline QString UnitType<T>::name() const
 }
 
 template<class T>
+inline QHash<QString, const Unit<T> *> UnitType<T>::units() const
+{
+    return _units;
+}
+
+template<class T>
 inline const Unit<T> *UnitType<T>::baseUnit() const
 {
     return _baseUnit;

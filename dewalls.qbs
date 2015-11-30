@@ -17,17 +17,21 @@ Project {
 
         Group {
             fileTagsFilter: ["dynamiclibrary"]
-            qbs.installDir: "lib/" + (qbs.targetOS.contains("darwin") ? product.name + ".framework/Versions/A" : "")
+            qbs.installDir: (qbs.targetOS.contains("darwin") ? product.name + ".framework/Versions/A" : "")
             qbs.install: true
         }
 
         Group {
             fileTagsFilter: ["bundle"]
-            qbs.installDir: "lib"
             qbs.install: true
         }
 
-        cpp.installNamePrefix: qbs.installRoot + "/lib"
+        cpp.installNamePrefix: qbs.installRoot
+
+        Properties {
+            condition: qbs.targetOS.contains("windows")
+            cpp.defines: ["DEWALLS_LIB"]
+        }
 
         Properties {
             condition: qbs.targetOS.contains("osx")

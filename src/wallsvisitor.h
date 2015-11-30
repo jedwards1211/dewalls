@@ -10,6 +10,7 @@
 #include "angle.h"
 #include "unitizeddouble.h"
 #include "varianceoverride.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
@@ -29,7 +30,7 @@ struct WallsMessage {
     int endColumn;
 };
 
-class WallsVisitor
+class DEWALLS_LIB_EXPORT WallsVisitor
 {
 public:
 
@@ -132,7 +133,7 @@ public:
     virtual void message( WallsMessage message );
 };
 
-class CapturingWallsVisitor : public WallsVisitor
+class DEWALLS_LIB_EXPORT CapturingWallsVisitor : public WallsVisitor
 {
 public:
     inline CapturingWallsVisitor() { cflag = false; }

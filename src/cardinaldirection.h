@@ -3,10 +3,11 @@
 
 #include "angle.h"
 #include "unitizeddouble.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class CardinalDirection {
+class DEWALLS_LIB_EXPORT CardinalDirection {
 public:
     typedef UnitizedDouble<Angle> UAngle;
 

@@ -5,10 +5,11 @@
 
 #include "angle.h"
 #include <cmath>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class PercentGrade : public Unit<Angle>
+class DEWALLS_LIB_EXPORT PercentGrade : public Unit<Angle>
 {
 public:
     friend class Angle;

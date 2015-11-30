@@ -4,10 +4,11 @@
 #include <exception>
 
 #include "segment.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class SegmentParseException : public std::exception
+class DEWALLS_LIB_EXPORT SegmentParseException : public std::exception
 {
 public:
     SegmentParseException(Segment segment);

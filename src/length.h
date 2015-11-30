@@ -5,10 +5,11 @@
 #include "unittype.h"
 #include "defaultunit.h"
 #include <QSharedPointer>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class Length : public UnitType<Length>
+class DEWALLS_LIB_EXPORT Length : public UnitType<Length>
 {
 public:
     static void init();
