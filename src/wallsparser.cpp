@@ -349,32 +349,33 @@ ULength WallsParser::unsignedLength(LengthUnit defaultUnit)
 {
     ULength result;
     oneOfR(result,
-          [&]() { return this->unsignedLengthNonInches(defaultUnit); },
-          [&]() { return this->unsignedLengthInches(); });
+           [&]() { return unsignedLengthNonInches(defaultUnit); },
+    [&]() { return unsignedLengthInches(); });
     return result;
 }
 
 ULength WallsParser::length(LengthUnit defaultUnit)
 {
-    bool negate = maybe( [&]() { return this->expect('-'); } );
+    bool negate = maybe( [&]() { return expect('-'); } );
     ULength length = unsignedLength(defaultUnit);
     return negate ? -length : length;
 }
 
 UAngle WallsParser::unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUnit defaultUnit)
 {
-    auto this_expectColon = [&]() { this->expect(':'); };
+    auto expectColon = [&]() { expect(':'); };
+    auto _unsignedDoubleLiteral = [&]{ return unsignedDoubleLiteral(); };
 
     double value;
-    bool hasValue = maybeOwn(value, &WallsParser::unsignedDoubleLiteral);
-    if (maybe(this_expectColon))
+    bool hasValue = maybe(value, _unsignedDoubleLiteral);
+    if (maybe(expectColon))
     {
         double minutes, seconds;
-        bool hasMinutes = maybeOwn(minutes, &WallsParser::unsignedDoubleLiteral);
+        bool hasMinutes = maybe(minutes, _unsignedDoubleLiteral);
         bool hasSeconds = false;
-        if (maybe(this_expectColon))
+        if (maybe(expectColon))
         {
-            hasSeconds = maybeOwn(seconds, &WallsParser::unsignedDoubleLiteral);
+            hasSeconds = maybe(seconds, _unsignedDoubleLiteral);
         }
         if (!(hasValue || hasMinutes || hasSeconds))
         {
@@ -393,16 +394,17 @@ UAngle WallsParser::unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUni
 
 UAngle WallsParser::unsignedDmsAngle()
 {
-    auto this_expectColon = [&]() { this->expect(':'); };
+    auto expectColon = [&]() { expect(':'); };
+    auto _unsignedDoubleLiteral = [&]{ return unsignedDoubleLiteral(); };
 
     double degrees, minutes, seconds;
-    bool hasDegrees = maybeOwn(degrees, &WallsParser::unsignedDoubleLiteral);
+    bool hasDegrees = maybe(degrees, _unsignedDoubleLiteral);
     expect(':');
-    bool hasMinutes = maybeOwn(minutes, &WallsParser::unsignedDoubleLiteral);
+    bool hasMinutes = maybe(minutes, _unsignedDoubleLiteral);
     bool hasSeconds = false;
-    if (maybe(this_expectColon))
+    if (maybe(expectColon))
     {
-        hasSeconds = maybeOwn(seconds, &WallsParser::unsignedDoubleLiteral);
+        hasSeconds = maybe(seconds, _unsignedDoubleLiteral);
     }
     if (!(hasDegrees || hasMinutes || hasSeconds))
     {
@@ -469,7 +471,7 @@ UAngle WallsParser::quadrantAzimuth()
 
     int start = _i;
     UAngle angle;
-    if (maybe(angle, [&]() { return this->nonQuadrantAzimuth(Angle::degrees()); }))
+    if (maybe(angle, [&]() { return nonQuadrantAzimuth(Angle::degrees()); }))
     {
         if (approx(angle.get(Angle::degrees())) >= 90.0)
         {
@@ -489,15 +491,15 @@ UAngle WallsParser::quadrantAzimuth()
 UAngle WallsParser::azimuth(AngleUnit defaultUnit)
 {
     UAngle result;
-    oneOfR(result, [&]() { return this->quadrantAzimuth(); },
-                   [&]() { return this->nonQuadrantAzimuth(defaultUnit); });
+    oneOfR(result, [&]() { return quadrantAzimuth(); },
+    [&]() { return nonQuadrantAzimuth(defaultUnit); });
     return result;
 }
 
 UAngle WallsParser::azimuthOffset(AngleUnit defaultUnit)
 {
     double signum;
-    if (!maybe(signum, [this]() { return this->oneOfMap(signSignums); } ))
+    if (!maybe(signum, [this]() { return oneOfMap(signSignums); } ))
     {
         signum = 1.0;
     }
@@ -521,7 +523,7 @@ UAngle WallsParser::inclination(AngleUnit defaultUnit)
 {
     int start = _i;
     double signum;
-    bool hasSignum = maybe(signum, [this]() { return this->oneOfMap(signSignums); } );
+    bool hasSignum = maybe(signum, [this]() { return oneOfMap(signSignums); } );
     UAngle angle = unsignedInclination(defaultUnit);
 
     if (hasSignum)
@@ -539,11 +541,11 @@ VarianceOverridePtr WallsParser::varianceOverride(LengthUnit defaultUnit)
 {
     VarianceOverridePtr result;
     oneOfR(result,
-           [&]() { return this->floatedVectorVarianceOverride(); },
-           [&]() { return this->floatedTraverseVarianceOverride(); },
-           [&]() { return this->lengthVarianceOverride(defaultUnit); },
-           [&]() { return this->rmsErrorVarianceOverride(defaultUnit); },
-           [&]() { return VarianceOverridePtr(NULL); });
+           [&]() { return floatedVectorVarianceOverride(); },
+    [&]() { return floatedTraverseVarianceOverride(); },
+    [&]() { return lengthVarianceOverride(defaultUnit); },
+    [&]() { return rmsErrorVarianceOverride(defaultUnit); },
+    [&]() { return VarianceOverridePtr(NULL); });
     return result;
 }
 
@@ -573,8 +575,8 @@ VarianceOverridePtr WallsParser::rmsErrorVarianceOverride(LengthUnit defaultUnit
 QString WallsParser::quotedTextOrNonwhitespace()
 {
     QString result;
-    oneOfR(result, [&]() { return this->quotedText(); },
-    [&]() { return this->nonwhitespace().value(); });
+    oneOfR(result, [&]() { return quotedText(); },
+    [&]() { return nonwhitespace().value(); });
     return result;
 }
 
@@ -629,15 +631,15 @@ void WallsParser::parseLine()
     if (_inBlockComment)
     {
         throwAllExpected([&]() {
-            this->oneOfWithLookahead([&]() { this->endBlockCommentLine(); },
-            [&]() { this->insideBlockCommentLine(); });
+            oneOfWithLookahead([&]() { endBlockCommentLine(); },
+            [&]() { insideBlockCommentLine(); });
         });
     }
     else
     {
-        throwAllExpected([&]() { this->oneOf([&]() { this->comment(); },
-            [&]() { this->directiveLine(); },
-            [&]() { this->vectorLine(); });
+        throwAllExpected([&]() { oneOf([&]() { comment(); },
+            [&]() { directiveLine(); },
+            [&]() { vectorLine(); });
         });
     }
 }
@@ -747,14 +749,14 @@ void WallsParser::segmentLine()
 
 Segment WallsParser::segmentDirective()
 {
-    oneOf([&]() { this->expect("#segment", Qt::CaseInsensitive); },
-    [&]() { this->expect("#seg", Qt::CaseInsensitive); },
-    [&]() { this->expect("#s", Qt::CaseInsensitive); } );
+    oneOf([&]() { expect("#segment", Qt::CaseInsensitive); },
+    [&]() { expect("#seg", Qt::CaseInsensitive); },
+    [&]() { expect("#s", Qt::CaseInsensitive); } );
 
     if (maybeWhitespace())
     {
         Segment result;
-        maybe(result, [&]() { return this->untilComment({"<SEGMENT>"}); });
+        maybe(result, [&]() { return untilComment({"<SEGMENT>"}); });
         return result.trimmed();
     }
     return _line.mid(_i, 0);
@@ -806,7 +808,7 @@ void WallsParser::prefixDirective()
     if (maybeWhitespace())
     {
         Segment segment;
-        if (maybe(segment, [&]() { return this->expect(prefixRx, {"<PREFIX>"}); }))
+        if (maybe(segment, [&]() { return expect(prefixRx, {"<PREFIX>"}); }))
         {
             prefix = segment.value();
         }
@@ -825,8 +827,8 @@ void WallsParser::noteLine()
 
 void WallsParser::noteDirective()
 {
-    oneOf([&]() { this->expect("#note", Qt::CaseInsensitive); },
-    [&]() { this->expect("#n", Qt::CaseInsensitive); });
+    oneOf([&]() { expect("#note", Qt::CaseInsensitive); },
+    [&]() { expect("#n", Qt::CaseInsensitive); });
 
     whitespace();
     QString station = expect(stationRx, {"<STATION NAME>"}).value();
@@ -846,8 +848,8 @@ void WallsParser::flagLine()
 
 void WallsParser::flagDirective()
 {
-    oneOf([&]() { this->expect("#flag", Qt::CaseInsensitive); },
-    [&]() { this->expect("#f", Qt::CaseInsensitive); });
+    oneOf([&]() { expect("#flag", Qt::CaseInsensitive); },
+    [&]() { expect("#f", Qt::CaseInsensitive); });
 
     QStringList stations;
 
@@ -856,7 +858,7 @@ void WallsParser::flagDirective()
     while(true)
     {
         Segment station;
-        if (!maybe([&]() { return this->expect(stationRx, {"<STATION NAME>"}); }))
+        if (!maybe([&]() { return expect(stationRx, {"<STATION NAME>"}); }))
         {
             break;
         }
@@ -868,7 +870,7 @@ void WallsParser::flagDirective()
     }
 
     QString flag;
-    bool hasFlag = maybe(flag, [&]() { return this->slashPrefixedFlag(); });
+    bool hasFlag = maybe(flag, [&]() { return slashPrefixedFlag(); });
     maybeWhitespace();
 
     if (stations.isEmpty())
@@ -897,8 +899,8 @@ void WallsParser::symbolLine()
 {
     maybeWhitespace();
 
-    oneOf([&]() { this->expect("#symbol", Qt::CaseInsensitive); },
-    [&]() { this->expect("#sym", Qt::CaseInsensitive); });
+    oneOf([&]() { expect("#symbol", Qt::CaseInsensitive); },
+    [&]() { expect("#sym", Qt::CaseInsensitive); });
 
     // ignore the rest for now
     remaining();
@@ -917,10 +919,10 @@ QDate WallsParser::dateDirective()
     expect("#date", Qt::CaseInsensitive);
     whitespace();
     oneOfR(_date,
-    [&]() { return this->isoDate(); },
-    [&]() { return this->usDate1(); },
-    [&]() { return this->usDate2(); },
-    [&]() { return this->usDate3(); });
+           [&]() { return isoDate(); },
+    [&]() { return usDate1(); },
+    [&]() { return usDate2(); },
+    [&]() { return usDate3(); });
     return _date;
 }
 
@@ -950,8 +952,8 @@ QDate WallsParser::usDate3()
 void WallsParser::unitsLine()
 {
     maybeWhitespace();
-    oneOf([&]() { this->expect("#units", Qt::CaseInsensitive); },
-    [&]() { this->expect("#u", Qt::CaseInsensitive); });
+    oneOf([&]() { expect("#units", Qt::CaseInsensitive); },
+    [&]() { expect("#u", Qt::CaseInsensitive); });
 
     _visitor->beginUnitsLine();
 
@@ -1001,7 +1003,7 @@ void WallsParser::parseUnitsOptions(Segment options)
 void WallsParser::unitsOptions()
 {
     bool gotOne = false;
-    while(!maybe([&]() { this->inlineCommentOrEndOfLine(); } ))
+    while(!maybe([&]() { inlineCommentOrEndOfLine(); } ))
     {
         if (gotOne)
         {
@@ -1013,10 +1015,10 @@ void WallsParser::unitsOptions()
         }
 
         maybe([&]() {
-            this->oneOf(
-                        [&]() { this->unitsOption(); },
-                        [&]() { this->macroOption(); }
-                        );
+            oneOf(
+                        [&]() { unitsOption(); },
+            [&]() { macroOption(); }
+            );
         });
     }
 }
@@ -1024,7 +1026,7 @@ void WallsParser::unitsOptions()
 void WallsParser::unitsOption()
 {
     void (WallsParser::*option)() = oneOfMapLowercase(unitsOptionRx, unitsOptionMap);
-   (this->*option)();
+    (this->*option)();
 }
 
 void WallsParser::macroOption()
@@ -1128,8 +1130,8 @@ void WallsParser::v_vb()
 void WallsParser::order()
 {
     expect('=');
-    oneOf([&]() { this->ctOrder(); },
-    [&]() { this->rectOrder(); });
+    oneOf([&]() { ctOrder(); },
+    [&]() { rectOrder(); });
 }
 
 void WallsParser::ctOrder()
@@ -1377,12 +1379,12 @@ void WallsParser::fromStation()
 void WallsParser::afterFromStation()
 {
     oneOf([&]() {
-        this->toStation();
-        this->whitespace();
-        this->afterToStation();
+        toStation();
+        whitespace();
+        afterToStation();
     }, [&]() {
-        this->lruds();
-        this->afterLruds();
+        lruds();
+        afterLruds();
     });
 }
 
@@ -1611,7 +1613,7 @@ void WallsParser::tapingMethodElements()
     foreach(TapingMethodElement elem, _units->tape)
     {
         if (!maybeWhitespace() ||
-            !maybe([&]() { this->tapingMethodElement(elem); }))
+                !maybe([&]() { tapingMethodElement(elem); }))
         {
             break;
         }
@@ -1634,7 +1636,7 @@ void WallsParser::tapingMethodElement(TapingMethodElement elem)
 void WallsParser::instrumentHeight()
 {
     ULength ih;
-    if (optional(ih, [&]() { return this->length(_units->s_unit); }))
+    if (optional(ih, [&]() { return length(_units->s_unit); }))
     {
         _visitor->visitInstrumentHeight(ih);
     }
@@ -1643,7 +1645,7 @@ void WallsParser::instrumentHeight()
 void WallsParser::targetHeight()
 {
     ULength th;
-    if (optional(th, [&]() { return this->length(_units->s_unit); }))
+    if (optional(th, [&]() { return length(_units->s_unit); }))
     {
         _visitor->visitTargetHeight(th);
     }
@@ -1671,7 +1673,7 @@ void WallsParser::lrudElement(LrudElement elem)
 void WallsParser::left()
 {
     ULength left;
-    if (optional(left, [&]() { return this->unsignedLength(_units->s_unit); }))
+    if (optional(left, [&]() { return unsignedLength(_units->s_unit); }))
     {
         _visitor->visitLeft(left);
     }
@@ -1680,7 +1682,7 @@ void WallsParser::left()
 void WallsParser::right()
 {
     ULength right;
-    if (optional(right, [&]() { return this->unsignedLength(_units->s_unit); }))
+    if (optional(right, [&]() { return unsignedLength(_units->s_unit); }))
     {
         _visitor->visitRight(right);
     }
@@ -1689,7 +1691,7 @@ void WallsParser::right()
 void WallsParser::up()
 {
     ULength up;
-    if (optional(up, [&]() { return this->unsignedLength(_units->s_unit); }))
+    if (optional(up, [&]() { return unsignedLength(_units->s_unit); }))
     {
         _visitor->visitUp(up);
     }
@@ -1698,7 +1700,7 @@ void WallsParser::up()
 void WallsParser::down()
 {
     ULength down;
-    if (optional(down, [&]() { return this->unsignedLength(_units->s_unit); }))
+    if (optional(down, [&]() { return unsignedLength(_units->s_unit); }))
     {
         _visitor->visitDown(down);
     }
@@ -1706,7 +1708,7 @@ void WallsParser::down()
 
 void WallsParser::afterVectorMeasurements()
 {
-    if (maybe([&]() { return this->varianceOverrides(); }))
+    if (maybe([&]() { return varianceOverrides(); }))
     {
         maybeWhitespace();
     }
@@ -1744,7 +1746,7 @@ void WallsParser::varianceOverrides()
 
 void WallsParser::afterVectorVarianceOverrides()
 {
-    if (maybe([&]() { this->lruds(); }))
+    if (maybe([&]() { lruds(); }))
     {
         maybeWhitespace();
     }
@@ -1754,22 +1756,22 @@ void WallsParser::afterVectorVarianceOverrides()
 void WallsParser::lruds()
 {
     oneOfWithLookahead([&]() {
-        this->expect('<');
-        this->lrudContent();
-        this->expect('>');
+        expect('<');
+        lrudContent();
+        expect('>');
     }, [&]() {
-        this->expect('*');
-        this->lrudContent();
-        this->expect('*');
+        expect('*');
+        lrudContent();
+        expect('*');
     });
 }
 
 void WallsParser::lrudContent()
 {
     oneOfWithLookahead([&]() {
-        this->commaDelimLrudContent();
+        commaDelimLrudContent();
     }, [&]() {
-        this->whitespaceDelimLrudContent();
+        whitespaceDelimLrudContent();
     });
 }
 
@@ -1813,28 +1815,28 @@ void WallsParser::afterRequiredCommaDelimLrudMeasurements()
     {
         maybeWhitespace();
         oneOf([&]() {
-            this->lrudFacingAngle();
-            this->maybeWhitespace();
-            if (this->maybeChar(','))
+            lrudFacingAngle();
+            maybeWhitespace();
+            if (maybeChar(','))
             {
-                this->maybeWhitespace();
-                this->lrudCFlag();
+                maybeWhitespace();
+                lrudCFlag();
             }
-        }, [&]() { this->lrudCFlag(); });
+        }, [&]() { lrudCFlag(); });
     }
 }
 
 void WallsParser::afterRequiredWhitespaceDelimLrudMeasurements()
 {
     maybe([&]() {
-        this->oneOf([&]() {
-            this->lrudFacingAngle();
-            if (this->maybeWhitespace())
+        oneOf([&]() {
+            lrudFacingAngle();
+            if (maybeWhitespace())
             {
-                maybe([&]() { this->lrudCFlag(); });
+                maybe([&]() { lrudCFlag(); });
             }
         },
-        [&]() { this->lrudCFlag(); });
+        [&]() { lrudCFlag(); });
     });
 }
 
@@ -1850,7 +1852,7 @@ void WallsParser::lrudCFlag()
 
 void WallsParser::afterLruds()
 {
-    if (maybe([&]() { this->inlineDirective(); }))
+    if (maybe([&]() { inlineDirective(); }))
     {
         maybeWhitespace();
     }
@@ -1934,14 +1936,14 @@ void WallsParser::fixRectElement(RectElement elem)
 
 void WallsParser::fixEast()
 {
-    oneOf([&]() { this->_visitor->visitEast(this->length(this->_units->d_unit)); },
-    [&]() { this->_visitor->visitLongitude(this->longitude()); });
+    oneOf([&]() { _visitor->visitEast(length(_units->d_unit)); },
+    [&]() { _visitor->visitLongitude(longitude()); });
 }
 
 void WallsParser::fixNorth()
 {
-    oneOf([&]() { this->_visitor->visitNorth(this->length(this->_units->d_unit)); },
-    [&]() { this->_visitor->visitLatitude(this->latitude()); });
+    oneOf([&]() { _visitor->visitNorth(length(_units->d_unit)); },
+    [&]() { _visitor->visitLatitude(latitude()); });
 }
 
 void WallsParser::fixUp()
@@ -1951,7 +1953,7 @@ void WallsParser::fixUp()
 
 void WallsParser::afterFixMeasurements()
 {
-    if (maybe([&]() { this->varianceOverrides(); }))
+    if (maybe([&]() { varianceOverrides(); }))
     {
         maybeWhitespace();
     }
@@ -1960,7 +1962,7 @@ void WallsParser::afterFixMeasurements()
 
 void WallsParser::afterFixVarianceOverrides()
 {
-    if (maybe([&]() { this->inlineNote(); }))
+    if (maybe([&]() { inlineNote(); }))
     {
         maybeWhitespace();
     }
@@ -1975,7 +1977,7 @@ void WallsParser::inlineNote()
 
 void WallsParser::afterFixInlineNote()
 {
-    if (maybe([&]() { this->inlineDirective(); }))
+    if (maybe([&]() { inlineDirective(); }))
     {
         maybeWhitespace();
     }
@@ -1984,8 +1986,8 @@ void WallsParser::afterFixInlineNote()
 
 void WallsParser::inlineCommentOrEndOfLine()
 {
-    oneOf([&]() { this->inlineComment(); },
-    [&]() { this->endOfLine(); });
+    oneOf([&]() { inlineComment(); },
+    [&]() { endOfLine(); });
 }
 
 void WallsParser::comment()

@@ -324,14 +324,14 @@ template<typename F>
 QString WallsParser::escapedText(F charPredicate, std::initializer_list<QString> expectedItems)
 {
     QString result;
-    while (maybe([&]() { result.append(this->escapedChar(charPredicate, expectedItems)); } ));
+    while (maybe([&]() { result.append(escapedChar(charPredicate, expectedItems)); } ));
     return result;
 }
 
 template<typename R, typename F>
 bool WallsParser::optional(R& result, F production)
 {
-    if (maybe([&]() { return this->expect(optionalRx, {"-", "--"}); }))
+    if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
     {
         return false;
     }
@@ -347,7 +347,7 @@ QList<T> WallsParser::elementChars(QHash<QChar, T> elements, QSet<T> requiredEle
     {
         T element;
         if (requiredElements.isEmpty()) {
-            if (!maybe(element, [&]() { return this->oneOfMap(elements); }))
+            if (!maybe(element, [&]() { return oneOfMap(elements); }))
             {
                 break;
             }

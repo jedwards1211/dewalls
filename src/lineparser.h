@@ -98,12 +98,6 @@ public:
     template<typename R, typename F>
     bool maybe(R& result, F production);
 
-    template<typename R, class O>
-    bool maybeOwn(R (O::*production)());
-
-    template<typename R, class O>
-    bool maybeOwn(R& result, R (O::*production)());
-
     bool maybeChar(QChar c);
 
     void endOfLine();
@@ -337,46 +331,6 @@ bool LineParser::maybe(R& result, F production)
     try
     {
         result = production();
-        return true;
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        if (_i > start)
-        {
-            throwAllExpected(ex);
-        }
-        addExpected(ex);
-        return false;
-    }
-}
-
-template<typename R, class O>
-bool LineParser::maybeOwn(R (O::*production)())
-{
-    int start = _i;
-    try
-    {
-        (this->*production)();
-        return true;
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        if (_i > start)
-        {
-            throwAllExpected(ex);
-        }
-        addExpected(ex);
-        return false;
-    }
-}
-
-template<typename R, class O>
-bool LineParser::maybeOwn(R& result, R (O::*production)())
-{
-    int start = _i;
-    try
-    {
-        result = (this->*production)();
         return true;
     }
     catch (const SegmentParseExpectedException& ex)

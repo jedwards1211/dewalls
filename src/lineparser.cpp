@@ -162,8 +162,7 @@ Segment LineParser::whitespace()
 
 bool LineParser::maybeWhitespace()
 {
-//    return maybe([&]() { this->whitespace(); } );
-    return maybeOwn(&LineParser::whitespace);
+    return maybe([&]() { whitespace(); } );
 }
 
 Segment LineParser::nonwhitespace()
