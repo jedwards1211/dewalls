@@ -114,6 +114,10 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 CHECK_THROWS( parser.parseLine("A B 2.5 -- 90/-90") );
             }
 
+            SECTION( "frontsight azimuth can be omitted without dashes" ) {
+                parser.parseLine("A B 2.5 /235 0");
+            }
+
             SECTION( "azimuth can't be omitted for non-vertical shots" ) {
                 CHECK_THROWS( parser.parseLine("A B 2.5 -- 45") );
                 CHECK_THROWS( parser.parseLine("A B 2.5 --/-- 45") );
@@ -173,6 +177,10 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 parser.parseLine("A B 1 2 3/4");
                 REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::gradians()) );
                 REQUIRE( visitor.backsightInclination == UAngle(4, Angle::degrees()) );
+            }
+
+            SECTION( "backsight inclination can be omitted without dashes" ) {
+                parser.parseLine("A B 1 2 /3");
             }
 
             SECTION( "vb_unit" ) {

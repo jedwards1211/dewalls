@@ -1513,17 +1513,26 @@ void WallsParser::azimuth()
     int start = _i;
     _azmFs.clear();
     _azmBs.clear();
-    if (optional(_azmFs, [&]() { return this->azimuth(_units->a_unit); }))
-    {
+
+    oneOf([&]() {
+        optional(_azmFs, [&]() { return azimuth(_units->a_unit); });
+        maybe([&]() {
+            expect('/');
+            optional(_azmBs, [&]() { return azimuth(_units->ab_unit); });
+        });
+    },
+    [&]() {
+        expect('/');
+        optional(_azmBs, [&]() { return azimuth(_units->ab_unit); });
+    });
+
+    if (_azmFs.isValid()) {
         _visitor->visitFrontsightAzimuth(_azmFs);
     }
-    if (maybeChar('/'))
-    {
-        if (optional(_azmBs, [&]() { return this->azimuth(_units->ab_unit); }))
-        {
-            _visitor->visitBacksightAzimuth(_azmBs);
-        }
+    if (_azmBs.isValid()) {
+        _visitor->visitBacksightAzimuth(_azmBs);
     }
+
     _azmSegment = _line.mid(start, _i - start);
 
     if (_azmFs.isValid() && _azmBs.isValid())
@@ -1546,14 +1555,29 @@ UAngle WallsParser::incDifference(UAngle fs, UAngle bs) {
 
 void WallsParser::inclination()
 {
+    int start = _i;
     _incFs.clear();
     _incBs.clear();
-    int start = _i;
-    optional(_incFs, [&]() { return this->inclination(_units->v_unit); });
-    if (maybeChar('/'))
-    {
-        optional(_incBs, [&]() { return this->inclination(_units->vb_unit); });
+
+    oneOf([&]() {
+        optional(_incFs, [&]() { return inclination(_units->v_unit); });
+        maybe([&]() {
+            expect('/');
+            optional(_incBs, [&]() { return inclination(_units->vb_unit); });
+        });
+    },
+    [&]() {
+        expect('/');
+        optional(_incBs, [&]() { return inclination(_units->vb_unit); });
+    });
+
+    if (_incFs.isValid()) {
+        _visitor->visitFrontsightInclination(_incFs);
     }
+    if (_incBs.isValid()) {
+        _visitor->visitBacksightInclination(_incBs);
+    }
+
     _incSegment = _line.mid(start, _i - start);
 
     if (!_incFs.isValid() && !_incBs.isValid()) {
