@@ -200,7 +200,7 @@ WpjEntry::View WpjEntry::defaultViewAfterCompilation() const {
 }
 
 QDir WpjEntry::dir() const {
-    if (Parent.isNull()) {
+    if (Parent.isNull() || QDir::isAbsolutePath(Path)) {
         return QDir(Path);
     }
     QDir dir = Parent->dir();
