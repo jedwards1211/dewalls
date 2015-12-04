@@ -214,6 +214,9 @@ QString WpjEntry::absolutePath() const {
     }
     else {
         QString name = Name.value();
+        if (name.isEmpty()) {
+            return QString();
+        }
         if (isSurvey() && !name.endsWith(".SRV", Qt::CaseInsensitive)) {
             if (QFileInfo(QDir::cleanPath(dir().absoluteFilePath(name + ".SRV"))).exists()) {
                 name += ".SRV";
