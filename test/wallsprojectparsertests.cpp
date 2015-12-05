@@ -1,5 +1,6 @@
 #include "../lib/catch.hpp"
 
+#include "tostrings.h"
 #include "../src/wallsprojectparser.h"
 
 using namespace dewalls;
@@ -64,32 +65,47 @@ TEST_CASE( "WallsProjectParser parses example file", "[WallsProjectParser]" ) {
     CHECK( child4->isBook() );
 }
 
-template<typename S>
-WpjEntryPtr entryAt(WpjBookPtr book, S childTitle) {
-    foreach(WpjEntryPtr child, book->Children) {
-        if (child->Title == childTitle) {
-            return child;
+namespace dewalls {
+namespace PathTests {
+
+WpjEntryPtr entryAt(WpjBookPtr book, QString titlePath) {
+    QStringList titleParts = titlePath.split("/");
+    for (int i = 0; i < titleParts.size() && !book.isNull(); i++) {
+        WpjEntryPtr nextChild;
+        foreach(WpjEntryPtr child, book->Children) {
+            if (child->Title == titleParts[i]) {
+                nextChild = child;
+                break;
+            }
+        }
+        if (i == titleParts.size() - 1) {
+            return nextChild;
+        }
+        else if (!nextChild.isNull() && nextChild->isBook()) {
+            book = nextChild.staticCast<WpjBook>();
+        }
+        else {
+            return WpjEntryPtr();
         }
     }
     return WpjEntryPtr();
 }
 
-template<typename S, typename... Args>
-WpjEntryPtr entryAt(WpjBookPtr book, S childTitle, Args... args) {
-    foreach(WpjEntryPtr child, book->Children) {
-        if (child->Title == childTitle && child->isBook()) {
-            return entryAt(child.staticCast<WpjBook>(), args...);
-        }
-    }
-    return WpjEntryPtr();
+QString absolutePath(WpjEntryPtr entry) {
+    return entry.isNull() ? QString() : entry->absolutePath();
 }
 
 void checkEntryPath(WpjEntryPtr entry, QString path) {
     REQUIRE( !entry.isNull() );
-    CHECK( entry->absolutePath().toStdString() == QDir::cleanPath(path).toStdString() );
+    CHECK( entry->absolutePath() == QDir::cleanPath(path) );
 }
 
+} // namespace PathTests
+} // namespace dewalls
+
 TEST_CASE( "WallsProjectParser handles paths correctly", "[WallsProjectParser, .PATH]") {
+    using namespace dewalls::PathTests;
+
     WallsProjectParser parser;
 
     parser.parseLine(".book root");
@@ -113,17 +129,21 @@ TEST_CASE( "WallsProjectParser handles paths correctly", "[WallsProjectParser, .
     parser.parseLine(".book h");
     parser.parseLine(".path /hdir");
     parser.parseLine(".endbook"); // h
+    parser.parseLine(".survey i");
     parser.parseLine(".endbook"); // a
     parser.parseLine(".endbook"); // root
 
     WpjBookPtr root = parser.result();
 
     REQUIRE( !root.isNull() );
-    checkEntryPath( entryAt(root, "a", "b"), "/rootdir/bdir" );
-    checkEntryPath( entryAt(root, "a", "b", "c"), "/rootdir/bdir" );
-    checkEntryPath( entryAt(root, "a", "b", "d"), "/rootdir/bdir/ddir" );
-    checkEntryPath( entryAt(root, "a", "b", "d", "e"), "/rootdir/bdir/ddir" );
-    checkEntryPath( entryAt(root, "a", "f"), "/rootdir/fdir" );
-    checkEntryPath( entryAt(root, "a", "f", "g"), "/rootdir/fdir/gsurvey.SRV" );
-    checkEntryPath( entryAt(root, "a", "h"), "/hdir" );
+    CHECK( "/rootdir" == absolutePath(root) );
+    CHECK( "/rootdir" == absolutePath(entryAt(root, "a")) );
+    CHECK( "/rootdir/bdir" == absolutePath(entryAt(root, "a/b")) );
+    CHECK( "/rootdir/bdir" == absolutePath(entryAt(root, "a/b/c")) );
+    CHECK( "/rootdir/bdir/ddir" == absolutePath(entryAt(root, "a/b/d")) );
+    CHECK( "/rootdir/bdir/ddir" == absolutePath(entryAt(root, "a/b/d/e")) );
+    CHECK( "/rootdir/fdir" == absolutePath(entryAt(root, "a/f")) );
+    CHECK( "/rootdir/fdir/gsurvey.SRV" == absolutePath(entryAt(root, "a/f/g")) );
+    CHECK( "/hdir" == absolutePath(entryAt(root, "a/h")) );
+    CHECK( QString() == absolutePath(entryAt(root, "a/i")) );
 }
