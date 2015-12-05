@@ -23,6 +23,7 @@ public:
 
     inline bool isZero() const { return _unit && _quantity == 0.0; }
     inline bool isNonzero() const { return _unit && _quantity != 0.0; }
+    double signum() const;
 
     friend void swap(UnitizedDouble<T>& first, UnitizedDouble<T>& second)
     {
@@ -64,6 +65,15 @@ inline UnitizedDouble<T>::UnitizedDouble(UnitizedDouble&& other)
     : UnitizedDouble()
 {
     swap(*this, other);
+}
+
+template<class T>
+inline double UnitizedDouble<T>::signum() const
+{
+    if (_unit) {
+        return _quantity > 0.0 ? 1.0 : _quantity == 0.0 ? 0.0 : -1.0;
+    }
+    return NAN;
 }
 
 template<class T>

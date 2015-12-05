@@ -2,6 +2,7 @@
 #include "../src/wallsparser.h"
 #include "wallsvisitor.h"
 #include "approx.h"
+#include "unitizedmath.h"
 
 using namespace dewalls;
 
@@ -97,6 +98,17 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             }
         }
 
+        SECTION( "incd" ) {
+            parser.parseLine("#units incd=-2");
+            SECTION( "error when incd changes measurement sign" ) {
+                // zero-length shots should not be affected
+                parser.parseLine("A B 0 350 4");
+                // shots long enough should be OK
+                parser.parseLine("A B 2.1 350 4");
+                CHECK_THROWS( parser.parseLine("A B 1 350 4") );
+            }
+        }
+
         SECTION( "azimuth" ) {
             SECTION( "azimuth can be omitted for vertical shots" ) {
                 parser.parseLine("A B 2.5 -- 90");
@@ -108,10 +120,6 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 parser.parseLine("A B 2.5 -- -90");
                 parser.parseLine("A B 2.5 -- 100g");
                 parser.parseLine("A B 2.5 -- -100g");
-
-                parser.parseLine("#units typevb=c");
-                parser.parseLine("A B 2.5 -- 90/90");
-                CHECK_THROWS( parser.parseLine("A B 2.5 -- 90/-90") );
             }
 
             SECTION( "frontsight azimuth can be omitted without dashes" ) {
@@ -294,6 +302,12 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( !visitor.instrumentHeight.isValid() );
                 REQUIRE( visitor.targetHeight == ULength(4, Length::meters()) );
                 REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4 5") );
+            }
+
+            SECTION( "with inclination omitted" ) {
+                parser.parseLine("A B 1 2 -- 4 5");
+                REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
+                REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
             }
 
             SECTION( "disabled" ) {
@@ -534,5 +548,45 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         CHECK( parser.units()->macros["world"] == "" );
 
         CHECK_THROWS( parser.parseLine("#units $(undefined)") );
+    }
+}
+
+TEST_CASE( "WallsUnits tests", "[dewalls]" ) {
+    WallsUnits units;
+
+    SECTION( "avgInc" ) {
+        units.typevb_corrected = true;
+        CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle(1, Angle::degrees())) == UAngle(2, Angle::degrees()) );
+        CHECK( units.avgInc(UAngle(1, Angle::degrees()), UAngle(3, Angle::degrees())) == UAngle(2, Angle::degrees()) );
+        CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle()) == UAngle(3, Angle::degrees()) );
+        CHECK( units.avgInc(UAngle(), UAngle(3, Angle::degrees())) == UAngle(3, Angle::degrees()) );
+
+        units.typevb_corrected = false;
+        CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle(-1, Angle::degrees())) == UAngle(2, Angle::degrees()) );
+        CHECK( units.avgInc(UAngle(1, Angle::degrees()), UAngle(-3, Angle::degrees())) == UAngle(2, Angle::degrees()) );
+        CHECK( units.avgInc(UAngle(), UAngle(3, Angle::degrees())) == UAngle(-3, Angle::degrees()) );
+    }
+
+    SECTION( "applyHeightCorrections" ) {
+        units.typevb_corrected = true;
+        ULength dist(sqrt(2) * 5 - 1, Length::meters());
+        units.incd = ULength(1, Length::meters());
+        UAngle fsInc(42, Angle::degrees());
+        units.incv = UAngle(1, Angle::degrees());
+        UAngle bsInc(49, Angle::degrees());
+        units.incvb = UAngle(-2, Angle::degrees());
+        units.inch = ULength(2, Length::meters());
+        ULength ih(-8, Length::meters());
+        ULength th(-1, Length::meters());
+
+        units.applyHeightCorrections(dist, fsInc, bsInc, ih, th);
+
+        CHECK( uabs(dist - ULength(4, Length::meters())) < ULength(1e-6, Length::meters()) );
+        CHECK( uabs(fsInc - UAngle(-3, Angle::degrees())) < UAngle(1e-6, Angle::degrees()) );
+        CHECK( uabs(bsInc - UAngle(4, Angle::degrees())) < UAngle(1e-6, Angle::degrees()) );
+
+        dist = ULength(5, Length::meters());
+        fsInc = UAngle(90, Angle::degrees());
+        bsInc = UAngle();
     }
 }

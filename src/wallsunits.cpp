@@ -65,7 +65,7 @@ void WallsUnits::setPrefix(int index, QString newPrefix)
     }
 }
 
-QString WallsUnits::processStationName(QString name)
+QString WallsUnits::processStationName(QString name) const
 {
     if (name.isNull())
     {
@@ -86,13 +86,18 @@ void WallsUnits::rectToCt(ULength north, ULength east, ULength up, ULength& dist
     ULength ne = usqrt(ne2); // horizontal offset
     if (!up.isValid()) up = ULength(0, Length::m());
 
-    distance = usqrt(ne2 + usq(up)).in(d_unit);
-    azm = uatan2(east, north).in(a_unit);
+    distance = usqrt(ne2 + usq(up)).in(d_unit) - incd;
+    azm = uatan2(east, north).in(a_unit) - inca;
     if (azm < UAngle(0, Angle::degrees()))
     {
         azm += UAngle(360.0, Angle::degrees());
     }
-    inc = uatan2(up, ne).in(v_unit);
+    inc = uatan2(up, ne).in(v_unit) - incv;
+}
+
+ULength WallsUnits::correctLength(ULength length, ULength correction) const
+{
+    return length.isNonzero() && correction.isNonzero() ? length + correction : length;
 }
 
 void WallsUnits::applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const
@@ -100,16 +105,16 @@ void WallsUnits::applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bs
     if (inch.isNonzero() || ih.isNonzero() || th.isNonzero())
     {
         UAngle inc = avgInc(fsInc + incv, bsInc + incvb);
-        if (inc.isValid() && !isVertical(inc))
+        if (inc.isValid() && !isVertical(fsInc, bsInc))
         {
             // horizontal offset before height correction
-            ULength ne = ucos(inc) * (dist + incd);
+            ULength ne = ucos(inc) * correctLength(dist, incd);
             // vertical offset before height correction
-            ULength u = usin(inc) * (dist + incd);
+            ULength u = usin(inc) * correctLength(dist, incd);
 
             u += inch;
-            if (ih.isValid()) u += ih;
-            if (th.isValid()) u -= th;
+            if (ih.isValid()) u += correctLength(ih, incs);
+            if (th.isValid()) u -= correctLength(th, incs);
 
             // adjust fsInc/bsInc so that their new avg
             // is the corrected inclination
@@ -142,10 +147,21 @@ UAngle WallsUnits::avgInc(UAngle fsInc, UAngle bsInc) const
 
 bool WallsUnits::isVertical(UAngle angle)
 {
-    return fabs(fabs(angle.get(Angle::degrees())) - 90.0) < 1e-4;
+    return fabs(fabs(angle.get(Angle::degrees())) - 90.0) < 1e-6;
 }
 
-QString WallsUnits::lrud_order_string()
+bool WallsUnits::isVertical(UAngle fsInc, UAngle bsInc)
+{
+    if (fsInc.isValid() && !isVertical(fsInc)) {
+        return false;
+    }
+    if (bsInc.isValid() && !isVertical(bsInc)) {
+        return false;
+    }
+    return fsInc.isValid() || bsInc.isValid();
+}
+
+QString WallsUnits::lrud_order_string() const
 {
     QString result;
     foreach(LrudElement elem, lrud_order) {

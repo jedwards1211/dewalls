@@ -60,14 +60,16 @@ public:
     QHash<QString, QString> macros;
 
     void setPrefix(int index, QString newPrefix);
-    QString processStationName(QString name);
+    QString processStationName(QString name) const;
 
-    QString lrud_order_string();
+    QString lrud_order_string() const;
 
     void rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const;
     void applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const;
+    ULength correctLength(ULength dist, ULength correction) const;
     UAngle avgInc(UAngle fsInc, UAngle bsInc) const;
     static bool isVertical(UAngle angle);
+    static bool isVertical(UAngle fsInc, UAngle bsInc);
 };
 
 } // namespace dewalls

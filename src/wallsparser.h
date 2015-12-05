@@ -216,6 +216,8 @@ private:
     void uv();
     void flag();
 
+    void checkCorrectedSign(int segStart, ULength measurement, ULength correction);
+
     void fromStation();
     void afterFromStation();
     void toStation();

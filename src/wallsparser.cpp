@@ -1432,7 +1432,7 @@ void WallsParser::afterToStation()
 
     if (_units->vectorType == VectorType::CT)
     {
-        if (!_azmFs.isValid() && !_azmBs.isValid() && !WallsUnits::isVertical(_units->avgInc(_incFs, _incBs)))
+        if (!_azmFs.isValid() && !_azmBs.isValid() && !WallsUnits::isVertical(_incFs, _incBs))
         {
             throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
@@ -1490,9 +1490,19 @@ void WallsParser::ctElement(CtElement elem)
     }
 }
 
+void WallsParser::checkCorrectedSign(int segStart, ULength measurement, ULength correction) {
+    if (measurement.isNonzero() && correction.isNonzero() &&
+            measurement.signum() != (measurement + correction).signum()) {
+        throw SegmentParseException(_segment.mid(segStart, _i - segStart), "correction changes sign of measurement");
+    }
+}
+
 void WallsParser::distance()
 {
-    _visitor->visitDistance(unsignedLength(_units->d_unit));
+    int start = _i;
+    ULength dist = unsignedLength(_units->d_unit);
+    checkCorrectedSign(start, dist, _units->incd);
+    _visitor->visitDistance(dist);
 }
 
 UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
@@ -1635,18 +1645,22 @@ void WallsParser::tapingMethodElement(TapingMethodElement elem)
 
 void WallsParser::instrumentHeight()
 {
+    int start = _i;
     ULength ih;
     if (optional(ih, [&]() { return length(_units->s_unit); }))
     {
+        checkCorrectedSign(start, ih, _units->incs);
         _visitor->visitInstrumentHeight(ih);
     }
 }
 
 void WallsParser::targetHeight()
 {
+    int start = _i;
     ULength th;
     if (optional(th, [&]() { return length(_units->s_unit); }))
     {
+        checkCorrectedSign(start, th, _units->incs);
         _visitor->visitTargetHeight(th);
     }
 }
@@ -1672,36 +1686,44 @@ void WallsParser::lrudElement(LrudElement elem)
 
 void WallsParser::left()
 {
+    int start = _i;
     ULength left;
     if (optional(left, [&]() { return unsignedLength(_units->s_unit); }))
     {
+        checkCorrectedSign(start, left, _units->incs);
         _visitor->visitLeft(left);
     }
 }
 
 void WallsParser::right()
 {
+    int start = _i;
     ULength right;
     if (optional(right, [&]() { return unsignedLength(_units->s_unit); }))
     {
+        checkCorrectedSign(start, right, _units->incs);
         _visitor->visitRight(right);
     }
 }
 
 void WallsParser::up()
 {
+    int start = _i;
     ULength up;
     if (optional(up, [&]() { return unsignedLength(_units->s_unit); }))
     {
+        checkCorrectedSign(start, up, _units->incs);
         _visitor->visitUp(up);
     }
 }
 
 void WallsParser::down()
 {
+    int start = _i;
     ULength down;
     if (optional(down, [&]() { return unsignedLength(_units->s_unit); }))
     {
+        checkCorrectedSign(start, down, _units->incs);
         _visitor->visitDown(down);
     }
 }
