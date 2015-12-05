@@ -1043,7 +1043,7 @@ void WallsParser::macroOption()
 
 void WallsParser::save()
 {
-    if (_stack.size() > 10)
+    if (_stack.size() >= 10)
     {
         throw SegmentParseException(_line.mid(_i - 4, _i), "units stack is full");
     }

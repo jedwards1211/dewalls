@@ -481,6 +481,36 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         }
     }
 
+    SECTION( "save, restore, and reset" ) {
+        parser.parseLine("#units lrud=from:urld");
+        parser.parseLine("#units save");
+        parser.parseLine("#units lrud=from:rldu");
+        parser.parseLine("#units save");
+        parser.parseLine("#units reset");
+        REQUIRE( parser.units()->lrud_order_string() == "LRUD" );
+        parser.parseLine("#units restore");
+        REQUIRE( parser.units()->lrud_order_string() == "RLDU" );
+        parser.parseLine("#units restore");
+        REQUIRE( parser.units()->lrud_order_string() == "URLD" );
+    }
+
+    SECTION( "can't do more than 10 saves" ) {
+        for (int i = 0; i < 10; i++) {
+            parser.parseLine("#units save");
+        }
+        REQUIRE_THROWS( parser.parseLine("#units save") );
+    }
+
+    SECTION( "can't restore more than number of times saved" ) {
+        for (int i = 0; i < 4; i++) {
+            parser.parseLine("#units save");
+        }
+        for (int i = 0; i < 4; i++) {
+            parser.parseLine("#units restore");
+        }
+        REQUIRE_THROWS( parser.parseLine("#units restore") );
+    }
+
     SECTION( "Walls' crazy macros" ) {
         parser.parseLine("#units $hello=\"der=vad pre\" $world=\"fix1=hello feet\"");
         REQUIRE( parser.units()->macros["hello"] == "der=vad pre" );

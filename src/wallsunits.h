@@ -62,6 +62,8 @@ public:
     void setPrefix(int index, QString newPrefix);
     QString processStationName(QString name);
 
+    QString lrud_order_string();
+
     void rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const;
     void applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const;
     UAngle avgInc(UAngle fsInc, UAngle bsInc) const;

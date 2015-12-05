@@ -145,5 +145,14 @@ bool WallsUnits::isVertical(UAngle angle)
     return fabs(fabs(angle.get(Angle::degrees())) - 90.0) < 1e-4;
 }
 
+QString WallsUnits::lrud_order_string()
+{
+    QString result;
+    foreach(LrudElement elem, lrud_order) {
+        result += char(elem);
+    }
+    return result;
+}
+
 } // namespace dewalls
 
