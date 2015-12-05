@@ -203,9 +203,10 @@ QDir WpjEntry::dir() const {
     if (Parent.isNull() || QDir::isAbsolutePath(Path)) {
         return QDir(Path);
     }
-    QDir dir = Parent->dir();
-    dir.cd(Path);
-    return dir;
+    if (!Path.isNull()) {
+        return QDir(QDir::cleanPath(Parent->dir().path() + '/' + Path));
+    }
+    return Parent->dir();
 }
 
 QString WpjEntry::absolutePath() const {
@@ -398,7 +399,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     }
 
     int lineNumber = 0;
-    while (!file.atEnd())
+    while (!file.atEnd() && (ProjectRoot.isNull() || !CurrentEntry.isNull()))
     {
         QString line = file.readLine();
         line = line.trimmed();
@@ -408,6 +409,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
                                       QString("failed to read from file: %1").arg(file.errorString()),
                                       fileName,
                                       lineNumber));
+            file.close();
             return WpjBookPtr();
         }
 
@@ -416,6 +418,7 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
         }
         catch (const SegmentParseException& ex) {
             emit message(WallsMessage(ex));
+            file.close();
             return WpjBookPtr();
         }
 
@@ -423,6 +426,15 @@ WpjBookPtr WallsProjectParser::parseFile(QString fileName) {
     }
 
     file.close();
+
+    // not enough .ENDBOOKs at end?
+    if (!CurrentEntry.isNull()) {
+        emit message(WallsMessage("error",
+                                  QString("unexpected end of file: %1").arg(fileName),
+                                  fileName,
+                                  lineNumber));
+        return WpjBookPtr();
+    }
 
     if (!ProjectRoot.isNull()) {
         ProjectRoot->Path = QFileInfo(fileName).dir().canonicalPath();
