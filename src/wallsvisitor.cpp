@@ -29,6 +29,7 @@ void WallsVisitor::visitLongitude( UAngle longitude ) { Q_UNUSED(longitude); }
 void WallsVisitor::visitRectUp( ULength up ) { Q_UNUSED(up); }
 void WallsVisitor::visitInstrumentHeight( ULength instrumentHeight ) { Q_UNUSED(instrumentHeight); }
 void WallsVisitor::visitTargetHeight( ULength targetHeight ) { Q_UNUSED(targetHeight); }
+void WallsVisitor::cancelShotMeasurements( ) { }
 void WallsVisitor::visitLeft( ULength left ) { Q_UNUSED(left); }
 void WallsVisitor::visitRight( ULength right ) { Q_UNUSED(right); }
 void WallsVisitor::visitUp( ULength up ) { Q_UNUSED(up); }
@@ -172,6 +173,11 @@ void PrintingWallsVisitor::visitInstrumentHeight( ULength instrumentHeight )
 void PrintingWallsVisitor::visitTargetHeight( ULength targetHeight )
 {
     cout << "  th:           " << targetHeight << endl;
+}
+
+void PrintingWallsVisitor::cancelShotMeasurements( )
+{
+    cout << "  ** CANCEL SHOT MEASUREMENTS **" << endl;
 }
 
 void PrintingWallsVisitor::visitLeft( ULength left )
@@ -393,6 +399,21 @@ void CapturingWallsVisitor::visitTargetHeight( ULength _targetHeight )
     targetHeight = _targetHeight;
 }
 
+void CapturingWallsVisitor::cancelShotMeasurements( )
+{
+    to.clear();
+    distance.clear();
+    frontsightAzimuth.clear();
+    backsightAzimuth.clear();
+    frontsightInclination.clear();
+    backsightInclination.clear();
+    north.clear();
+    east.clear();
+    rectUp.clear();
+    instrumentHeight.clear();
+    targetHeight.clear();
+}
+
 void CapturingWallsVisitor::visitLeft( ULength _left )
 {
     left = _left;
@@ -520,6 +541,7 @@ void MultiWallsVisitor::visitLongitude( UAngle longitude ){  multicast(&WallsVis
 void MultiWallsVisitor::visitRectUp( ULength up ){  multicast(&WallsVisitor::visitRectUp, up); }
 void MultiWallsVisitor::visitInstrumentHeight( ULength instrumentHeight ){  multicast(&WallsVisitor::visitInstrumentHeight, instrumentHeight); }
 void MultiWallsVisitor::visitTargetHeight( ULength targetHeight ){  multicast(&WallsVisitor::visitTargetHeight, targetHeight); }
+void MultiWallsVisitor::cancelShotMeasurements( ){  multicast(&WallsVisitor::cancelShotMeasurements); }
 void MultiWallsVisitor::visitLeft( ULength left ){  multicast(&WallsVisitor::visitLeft, left); }
 void MultiWallsVisitor::visitRight( ULength right ){  multicast(&WallsVisitor::visitRight, right); }
 void MultiWallsVisitor::visitUp( ULength up ){  multicast(&WallsVisitor::visitUp, up); }

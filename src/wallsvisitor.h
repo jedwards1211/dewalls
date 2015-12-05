@@ -48,6 +48,7 @@ public:
     virtual void visitRectUp( ULength up );
     virtual void visitInstrumentHeight( ULength instrumentHeight );
     virtual void visitTargetHeight( ULength targetHeight );
+    virtual void cancelShotMeasurements( );
     virtual void visitLeft( ULength left );
     virtual void visitRight( ULength right );
     virtual void visitUp( ULength up );
@@ -97,6 +98,7 @@ public:
     virtual void visitRectUp( ULength up );
     virtual void visitInstrumentHeight( ULength instrumentHeight );
     virtual void visitTargetHeight( ULength targetHeight );
+    virtual void cancelShotMeasurements( );
     virtual void visitLeft( ULength left );
     virtual void visitRight( ULength right );
     virtual void visitUp( ULength up );
@@ -186,6 +188,7 @@ public:
     virtual void visitRectUp( ULength up );
     virtual void visitInstrumentHeight( ULength instrumentHeight );
     virtual void visitTargetHeight( ULength targetHeight );
+    virtual void cancelShotMeasurements( );
     virtual void visitLeft( ULength left );
     virtual void visitRight( ULength right );
     virtual void visitUp( ULength up );
@@ -263,6 +266,7 @@ public:
     virtual void visitRectUp( ULength up );
     virtual void visitInstrumentHeight( ULength instrumentHeight );
     virtual void visitTargetHeight( ULength targetHeight );
+    virtual void cancelShotMeasurements( );
     virtual void visitLeft( ULength left );
     virtual void visitRight( ULength right );
     virtual void visitUp( ULength up );

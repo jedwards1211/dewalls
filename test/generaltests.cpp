@@ -434,6 +434,68 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             }
         }
 
+        SECTION( "lrud/station name ambiguity" ) {
+            parser.parseLine("A *1 2 3 4");
+            CHECK( visitor.to == "*1" );
+            CHECK( visitor.distance == ULength(2, Length::meters()) );
+            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
+            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
+            CHECK( visitor.left == ULength() );
+            CHECK( visitor.right == ULength() );
+            CHECK( visitor.up == ULength() );
+            CHECK( visitor.down == ULength() );
+
+            parser.parseLine("A <1 2 3 4");
+            CHECK( visitor.to == "<1" );
+            CHECK( visitor.distance == ULength(2, Length::meters()) );
+            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
+            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
+            CHECK( visitor.left == ULength() );
+            CHECK( visitor.right == ULength() );
+            CHECK( visitor.up == ULength() );
+            CHECK( visitor.down == ULength() );
+
+            parser.parseLine("A *1 2 3 4 *5,6,7,8*");
+            CHECK( visitor.to == "*1" );
+            CHECK( visitor.distance == ULength(2, Length::meters()) );
+            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
+            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
+            CHECK( visitor.left == ULength(5, Length::meters()) );
+            CHECK( visitor.right == ULength(6, Length::meters()) );
+            CHECK( visitor.up == ULength(7, Length::meters()) );
+            CHECK( visitor.down == ULength(8, Length::meters()) );
+
+            parser.parseLine("A *1 2 3 4 *");
+            CHECK( visitor.to == QString() );
+            CHECK( visitor.distance == ULength() );
+            CHECK( visitor.frontsightAzimuth == UAngle() );
+            CHECK( visitor.frontsightInclination == UAngle() );
+            CHECK( visitor.left == ULength(1, Length::meters()) );
+            CHECK( visitor.right == ULength(2, Length::meters()) );
+            CHECK( visitor.up == ULength(3, Length::meters()) );
+            CHECK( visitor.down == ULength(4, Length::meters()) );
+
+            parser.parseLine("A <1 2 3 4 <5,6,7,8>");
+            CHECK( visitor.to == "<1" );
+            CHECK( visitor.distance == ULength(2, Length::meters()) );
+            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
+            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
+            CHECK( visitor.left == ULength(5, Length::meters()) );
+            CHECK( visitor.right == ULength(6, Length::meters()) );
+            CHECK( visitor.up == ULength(7, Length::meters()) );
+            CHECK( visitor.down == ULength(8, Length::meters()) );
+
+            parser.parseLine("A <1 2 3 4 >");
+            CHECK( visitor.to == QString() );
+            CHECK( visitor.distance == ULength() );
+            CHECK( visitor.frontsightAzimuth == UAngle() );
+            CHECK( visitor.frontsightInclination == UAngle() );
+            CHECK( visitor.left == ULength(1, Length::meters()) );
+            CHECK( visitor.right == ULength(2, Length::meters()) );
+            CHECK( visitor.up == ULength(3, Length::meters()) );
+            CHECK( visitor.down == ULength(4, Length::meters()) );
+        }
+
         SECTION( "valid spacing" ) {
             parser.parseLine("   A B 1 2 3(?,?)*4,5,6,7*#s blah;test");
         }

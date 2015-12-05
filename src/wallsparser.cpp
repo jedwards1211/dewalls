@@ -1,6 +1,8 @@
 #include "wallsparser.h"
 #include "unitizedmath.h"
 
+#include <iostream>
+
 namespace dewalls {
 
 typedef UnitizedDouble<Length> ULength;
@@ -291,8 +293,8 @@ WallsParser::WallsParser(Segment segment)
       unitsOptionRx(QRegExp("[a-zA-Z_0-9/]*")),
       directiveRx(QRegExp("#([][]|[a-zA-Z0-9]+)")),
       macroNameRx(QRegExp("[^()=,,# \t]*")),
-      stationRx(QRegExp("[^<*,,#/ \t][^,,#/ \t]{0,7}")),
-      prefixRx(QRegExp("[^:,,#/ \t]+")),
+      stationRx(QRegExp("[^;,,#/ \t]{0,8}")),
+      prefixRx(QRegExp("[^:;,,#/ \t]+")),
       optionalRx(QRegExp("--+")),
       optionalStationRx(QRegExp("-+")),
       isoDateRx(QRegExp("\\d{4}-\\d{2}-\\d{2}")),
@@ -1378,11 +1380,12 @@ void WallsParser::fromStation()
 
 void WallsParser::afterFromStation()
 {
-    oneOf([&]() {
+    oneOfWithLookahead([&]() {
         toStation();
         whitespace();
         afterToStation();
     }, [&]() {
+        _visitor->cancelShotMeasurements();
         lruds();
         afterLruds();
     });

@@ -14,6 +14,8 @@
 #include <initializer_list>
 #include <functional>
 
+#include <iostream>
+
 namespace dewalls {
 
 class LineParser
@@ -232,6 +234,7 @@ void LineParser::oneOfWithLookahead(F production)
     }
     catch (const SegmentParseExpectedException& ex)
     {
+//        std::cout << ex.message().toStdString() << std::endl;
         throwAllExpected(ex);
     }
 }
@@ -246,6 +249,7 @@ void LineParser::oneOfWithLookahead(F production, Args... args)
     }
     catch (const SegmentParseExpectedException& ex)
     {
+//        std::cout << ex.message().toStdString() << std::endl;
         addExpected(ex);
         _i = start;
         oneOfWithLookahead(args...);
