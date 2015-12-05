@@ -778,11 +778,10 @@ QString WallsParser::combineSegments(QString base, Segment offset)
     {
         if (part.value() == "..")
         {
-            if (baseParts.isEmpty())
+            if (!baseParts.isEmpty())
             {
-                throw SegmentParseException(part, "already at root segment, can't go up");
+                baseParts.removeLast();
             }
-            baseParts.removeLast();
         }
         else if (part.value() != ".")
         {
