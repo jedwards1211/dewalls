@@ -5,7 +5,7 @@
 #include <QHash>
 #include <QSharedPointer>
 #include <QStack>
-#
+
 #include "lineparser.h"
 #include "unitizeddouble.h"
 #include "length.h"
@@ -15,6 +15,8 @@
 #include "wallstypes.h"
 #include "wallsunits.h"
 #include "wallsvisitor.h"
+#include "vector.h"
+#include "fixstation.h"
 
 namespace dewalls {
 
@@ -103,49 +105,67 @@ public:
 private:
     static double approx(double val);
 
+    static QHash<QString, LengthUnit> createLengthUnits();
+    static QHash<QString, AngleUnit> createAzmUnits();
+    static QHash<QString, AngleUnit> createIncUnits();
+    static QHash<QChar, LengthUnit> createLengthUnitSuffixes();
+    static QHash<QChar, AngleUnit> createAzmUnitSuffixes();
+    static QHash<QChar, AngleUnit> createIncUnitSuffixes();
+    static QHash<QChar, CardinalDirection> createCardinalDirections();
+    static QHash<QChar, CardinalDirection> createNorthSouth();
+    static QHash<QChar, CardinalDirection> createEastWest();
+    static QHash<QChar, QChar> createEscapedChars();
+    static QHash<QChar, CtElement> createCtElements();
+    static QHash<QChar, RectElement> createRectElements();
+    static QHash<QChar, LrudElement> createLrudElements();
+    static QHash<QString, bool> createCorrectedValues();
+    static QHash<QString, CaseType> createCaseTypes();
+    static QHash<QString, LrudType> createLrudTypes();
+    static QHash<QString, QList<TapingMethodElement>> createTapingMethods();
+    static QHash<QString, int> createPrefixDirectives();
     static QHash<QString, OwnProduction> createUnitsOptionMap();
     static QHash<QString, OwnProduction> createDirectivesMap();
 
-    const QHash<QString, LengthUnit> lengthUnits;
-    const QHash<QString, AngleUnit> azmUnits;
-    const QHash<QString, AngleUnit> incUnits;
-    const QHash<QChar, LengthUnit> lengthUnitSuffixes;
-    const QHash<QChar, AngleUnit> azmUnitSuffixes;
-    const QHash<QChar, AngleUnit> incUnitSuffixes;
-    const QHash<QChar, CardinalDirection> cardinalDirections;
-    const QHash<QChar, CardinalDirection> northSouth;
-    const QHash<QChar, CardinalDirection> eastWest;
-    const QHash<QChar, QChar> escapedChars;
-    const QHash<QChar, CtElement> ctElements;
-    const QSet<CtElement> requiredCtElements;
-    const QHash<QChar, RectElement> rectElements;
-    const QSet<RectElement> requiredRectElements;
-    const QHash<QChar, LrudElement> lrudElements;
-    const QSet<LrudElement> requiredLrudElements;
-    const QHash<QString, bool> correctedValues;
-    const QHash<QString, CaseType> caseTypes;
-    const QHash<QString, LrudType> lrudTypes;
-    const QHash<QString, QList<TapingMethodElement>> tapingMethods;
-    const QHash<QString, int> prefixDirectives;
+    static const QHash<QString, LengthUnit> lengthUnits;
+    static const QHash<QString, AngleUnit> azmUnits;
+    static const QHash<QString, AngleUnit> incUnits;
+    static const QHash<QChar, LengthUnit> lengthUnitSuffixes;
+    static const QHash<QChar, AngleUnit> azmUnitSuffixes;
+    static const QHash<QChar, AngleUnit> incUnitSuffixes;
+    static const QHash<QChar, CardinalDirection> cardinalDirections;
+    static const QHash<QChar, CardinalDirection> northSouth;
+    static const QHash<QChar, CardinalDirection> eastWest;
+    static const QHash<QChar, QChar> escapedChars;
+    static const QHash<QChar, CtElement> ctElements;
+    static const QSet<CtElement> requiredCtElements;
+    static const QHash<QChar, RectElement> rectElements;
+    static const QSet<RectElement> requiredRectElements;
+    static const QHash<QChar, LrudElement> lrudElements;
+    static const QSet<LrudElement> requiredLrudElements;
+    static const QHash<QString, bool> correctedValues;
+    static const QHash<QString, CaseType> caseTypes;
+    static const QHash<QString, LrudType> lrudTypes;
+    static const QHash<QString, QList<TapingMethodElement>> tapingMethods;
+    static const QHash<QString, int> prefixDirectives;
 
-    const QRegExp wordRx;
-    const QRegExp notSemicolonRx;
-    const QRegExp unitsOptionRx;
-    const QRegExp directiveRx;
-    const QRegExp macroNameRx;
-    const QRegExp stationRx;
-    const QRegExp prefixRx;
+    static const QRegExp wordRx;
+    static const QRegExp notSemicolonRx;
+    static const QRegExp unitsOptionRx;
+    static const QRegExp directiveRx;
+    static const QRegExp macroNameRx;
+    static const QRegExp stationRx;
+    static const QRegExp prefixRx;
 
-    const QRegExp optionalRx;
-    const QRegExp optionalStationRx;
+    static const QRegExp optionalRx;
+    static const QRegExp optionalStationRx;
 
-    const QRegExp isoDateRx;
-    const QRegExp usDateRx1;
-    const QRegExp usDateRx2;
-    const QRegExp usDateRx3;
+    static const QRegExp isoDateRx;
+    static const QRegExp usDateRx1;
+    static const QRegExp usDateRx2;
+    static const QRegExp usDateRx3;
 
-    const QHash<QString, OwnProduction> unitsOptionMap;
-    const QHash<QString, OwnProduction> directivesMap;
+    static const QHash<QString, OwnProduction> unitsOptionMap;
+    static const QHash<QString, OwnProduction> directivesMap;
 
     static const UAngle oneEighty;
 

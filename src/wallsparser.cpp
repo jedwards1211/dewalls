@@ -12,7 +12,7 @@ typedef const Unit<Angle>  * AngleUnit;
 typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
 typedef void (WallsParser::*OwnProduction)();
 
-QHash<QString, LengthUnit> createLengthUnits()
+QHash<QString, LengthUnit> WallsParser::createLengthUnits()
 {
     QHash<QString, LengthUnit> result;
     result["meters"] = result["meter"] = result["m"] = Length::meters();
@@ -20,7 +20,7 @@ QHash<QString, LengthUnit> createLengthUnits()
     return result;
 }
 
-QHash<QString, AngleUnit> createAzmUnits()
+QHash<QString, AngleUnit> WallsParser::createAzmUnits()
 {
     QHash<QString, AngleUnit> result;
     result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
@@ -29,7 +29,7 @@ QHash<QString, AngleUnit> createAzmUnits()
     return result;
 }
 
-QHash<QString, AngleUnit> createIncUnits()
+QHash<QString, AngleUnit> WallsParser::createIncUnits()
 {
     QHash<QString, AngleUnit> result;
     result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
@@ -39,7 +39,7 @@ QHash<QString, AngleUnit> createIncUnits()
     return result;
 }
 
-QHash<QChar, LengthUnit> createLengthUnitSuffixes()
+QHash<QChar, LengthUnit> WallsParser::createLengthUnitSuffixes()
 {
     QHash<QChar, LengthUnit> result;
     result['m'] = result['M'] = Length::meters();
@@ -48,7 +48,7 @@ QHash<QChar, LengthUnit> createLengthUnitSuffixes()
     return result;
 }
 
-QHash<QChar, AngleUnit> createAzmUnitSuffixes()
+QHash<QChar, AngleUnit> WallsParser::createAzmUnitSuffixes()
 {
     QHash<QChar, AngleUnit> result;
     result['d'] = result['D'] = Angle::degrees();
@@ -57,7 +57,7 @@ QHash<QChar, AngleUnit> createAzmUnitSuffixes()
     return result;
 }
 
-QHash<QChar, AngleUnit> createIncUnitSuffixes()
+QHash<QChar, AngleUnit> WallsParser::createIncUnitSuffixes()
 {
     QHash<QChar, AngleUnit> result;
     result['d'] = result['D'] = Angle::degrees();
@@ -67,7 +67,7 @@ QHash<QChar, AngleUnit> createIncUnitSuffixes()
     return result;
 }
 
-QHash<QChar, CardinalDirection> createCardinalDirections()
+QHash<QChar, CardinalDirection> WallsParser::createCardinalDirections()
 {
     QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
@@ -78,7 +78,7 @@ QHash<QChar, CardinalDirection> createCardinalDirections()
 }
 
 
-QHash<QChar, CardinalDirection> createNorthSouth()
+QHash<QChar, CardinalDirection> WallsParser::createNorthSouth()
 {
     QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
@@ -86,7 +86,7 @@ QHash<QChar, CardinalDirection> createNorthSouth()
     return result;
 }
 
-QHash<QChar, CardinalDirection> createEastWest()
+QHash<QChar, CardinalDirection> WallsParser::createEastWest()
 {
     QHash<QChar, CardinalDirection> result;
     result['e'] = result['E'] = CardinalDirection::East;
@@ -94,7 +94,7 @@ QHash<QChar, CardinalDirection> createEastWest()
     return result;
 }
 
-QHash<QChar, QChar> createEscapedChars()
+QHash<QChar, QChar> WallsParser::createEscapedChars()
 {
     QHash<QChar, QChar> result;
     result['r'] = 'r';
@@ -106,7 +106,7 @@ QHash<QChar, QChar> createEscapedChars()
     return result;
 }
 
-QHash<QChar, CtElement> createCtElements()
+QHash<QChar, CtElement> WallsParser::createCtElements()
 {
     QHash<QChar, CtElement> result;
     result['d'] = result['D'] = CtElement::D;
@@ -115,7 +115,7 @@ QHash<QChar, CtElement> createCtElements()
     return result;
 }
 
-QHash<QChar, RectElement> createRectElements()
+QHash<QChar, RectElement> WallsParser::createRectElements()
 {
     QHash<QChar, RectElement> result;
     result['e'] = result['E'] = RectElement::E;
@@ -124,7 +124,7 @@ QHash<QChar, RectElement> createRectElements()
     return result;
 }
 
-QHash<QChar, LrudElement> createLrudElements()
+QHash<QChar, LrudElement> WallsParser::createLrudElements()
 {
     QHash<QChar, LrudElement> result;
     result['l'] = result['L'] = LrudElement::L;
@@ -134,7 +134,7 @@ QHash<QChar, LrudElement> createLrudElements()
     return result;
 }
 
-QHash<QString, bool> createCorrectedValues()
+QHash<QString, bool> WallsParser::createCorrectedValues()
 {
     QHash<QString, bool> result;
     result["corrected"] = result["c"] = true;
@@ -142,7 +142,7 @@ QHash<QString, bool> createCorrectedValues()
     return result;
 }
 
-QHash<QString, CaseType> createCaseTypes()
+QHash<QString, CaseType> WallsParser::createCaseTypes()
 {
     QHash<QString, CaseType> result;
     result["upper"] = result["u"] = CaseType::Upper;
@@ -151,7 +151,7 @@ QHash<QString, CaseType> createCaseTypes()
     return result;
 }
 
-QHash<QString, LrudType> createLrudTypes()
+QHash<QString, LrudType> WallsParser::createLrudTypes()
 {
     QHash<QString, LrudType> result;
     result["from"] = result["f"] = LrudType::From;
@@ -161,7 +161,7 @@ QHash<QString, LrudType> createLrudTypes()
     return result;
 }
 
-QHash<QString, QList<TapingMethodElement>> createTapingMethods()
+QHash<QString, QList<TapingMethodElement>> WallsParser::createTapingMethods()
 {
     typedef QList<TapingMethodElement> Method;
     QHash<QString, QList<TapingMethodElement>> result;
@@ -172,7 +172,7 @@ QHash<QString, QList<TapingMethodElement>> createTapingMethods()
     return result;
 }
 
-QHash<QString, int> createPrefixDirectives()
+QHash<QString, int> WallsParser::createPrefixDirectives()
 {
     QHash<QString, int> result;
     result["#prefix1"] = result["#prefix"] = 0;
@@ -246,12 +246,54 @@ QHash<QString, OwnProduction> WallsParser::createDirectivesMap()
     return result;
 }
 
-const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::degrees());
-
 double WallsParser::approx(double val)
 {
     return floor(val * 1e6) * 1e-6;
 }
+
+
+const QHash<QString, LengthUnit> WallsParser::lengthUnits = WallsParser::createLengthUnits();
+const QHash<QString, AngleUnit> WallsParser::azmUnits = WallsParser::createAzmUnits();
+const QHash<QString, AngleUnit> WallsParser::incUnits = WallsParser::createIncUnits();
+const QHash<QChar, LengthUnit> WallsParser::lengthUnitSuffixes = WallsParser::createLengthUnitSuffixes();
+const QHash<QChar, AngleUnit> WallsParser::azmUnitSuffixes = WallsParser::createAzmUnitSuffixes();
+const QHash<QChar, AngleUnit> WallsParser::incUnitSuffixes = WallsParser::createIncUnitSuffixes();
+const QHash<QChar, CardinalDirection> WallsParser::cardinalDirections = WallsParser::createCardinalDirections();
+const QHash<QChar, CardinalDirection> WallsParser::northSouth = WallsParser::createNorthSouth();
+const QHash<QChar, CardinalDirection> WallsParser::eastWest = WallsParser::createEastWest();
+const QHash<QChar, QChar> WallsParser::escapedChars = WallsParser::createEscapedChars();
+const QHash<QChar, CtElement> WallsParser::ctElements = WallsParser::createCtElements();
+const QSet<CtElement> WallsParser::requiredCtElements({CtElement::D, CtElement::A});
+const QHash<QChar, RectElement> WallsParser::rectElements = WallsParser::createRectElements();
+const QSet<RectElement> WallsParser::requiredRectElements({RectElement::E, RectElement::N});
+const QHash<QChar, LrudElement> WallsParser::lrudElements = WallsParser::createLrudElements();
+const QSet<LrudElement> WallsParser::requiredLrudElements({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D});
+const QHash<QString, bool> WallsParser::correctedValues = WallsParser::createCorrectedValues();
+const QHash<QString, CaseType> WallsParser::caseTypes = WallsParser::createCaseTypes();
+const QHash<QString, LrudType> WallsParser::lrudTypes = WallsParser::createLrudTypes();
+const QHash<QString, QList<TapingMethodElement>> WallsParser::tapingMethods = WallsParser::createTapingMethods();
+const QHash<QString, int> WallsParser::prefixDirectives = WallsParser::createPrefixDirectives();
+
+const QRegExp WallsParser::wordRx("\\w+");
+const QRegExp WallsParser::notSemicolonRx("[^;]+");
+const QRegExp WallsParser::unitsOptionRx("[a-zA-Z_0-9/]*");
+const QRegExp WallsParser::directiveRx("#([][]|[a-zA-Z0-9]+)");
+const QRegExp WallsParser::macroNameRx("[^()=,,# \t]*");
+const QRegExp WallsParser::stationRx("[^;,,#/ \t]{0,8}");
+const QRegExp WallsParser::prefixRx("[^:;,,#/ \t]+");
+
+const QRegExp WallsParser::optionalRx("--+");
+const QRegExp WallsParser::optionalStationRx("-+");
+
+const QRegExp WallsParser::isoDateRx("\\d{4}-\\d{2}-\\d{2}");
+const QRegExp WallsParser::usDateRx1("\\d{2}-\\d{2}-\\d{2,4}");
+const QRegExp WallsParser::usDateRx2("\\d{2}/\\d{2}/\\d{2,4}");
+const QRegExp WallsParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
+
+const QHash<QString, OwnProduction> WallsParser::unitsOptionMap = WallsParser::createUnitsOptionMap();
+const QHash<QString, OwnProduction> WallsParser::directivesMap = WallsParser::createDirectivesMap();
+
+const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::degrees());
 
 WallsParser::WallsParser()
     : WallsParser(Segment())
@@ -267,42 +309,6 @@ WallsParser::WallsParser(QString line)
 
 WallsParser::WallsParser(Segment segment)
     : LineParser(segment),
-      lengthUnits(createLengthUnits()),
-      azmUnits(createAzmUnits()),
-      incUnits(createIncUnits()),
-      lengthUnitSuffixes(createLengthUnitSuffixes()),
-      azmUnitSuffixes(createAzmUnitSuffixes()),
-      incUnitSuffixes(createIncUnitSuffixes()),
-      cardinalDirections(createCardinalDirections()),
-      northSouth(createNorthSouth()),
-      eastWest(createEastWest()),
-      escapedChars(createEscapedChars()),
-      ctElements(createCtElements()),
-      requiredCtElements({CtElement::D, CtElement::A}),
-      rectElements(createRectElements()),
-      requiredRectElements({RectElement::E, RectElement::N}),
-      lrudElements(createLrudElements()),
-      requiredLrudElements({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D}),
-      correctedValues(createCorrectedValues()),
-      caseTypes(createCaseTypes()),
-      lrudTypes(createLrudTypes()),
-      tapingMethods(createTapingMethods()),
-      prefixDirectives(createPrefixDirectives()),
-      wordRx(QRegExp("\\w+")),
-      notSemicolonRx(QRegExp("[^;]+")),
-      unitsOptionRx(QRegExp("[a-zA-Z_0-9/]*")),
-      directiveRx(QRegExp("#([][]|[a-zA-Z0-9]+)")),
-      macroNameRx(QRegExp("[^()=,,# \t]*")),
-      stationRx(QRegExp("[^;,,#/ \t]{0,8}")),
-      prefixRx(QRegExp("[^:;,,#/ \t]+")),
-      optionalRx(QRegExp("--+")),
-      optionalStationRx(QRegExp("-+")),
-      isoDateRx(QRegExp("\\d{4}-\\d{2}-\\d{2}")),
-      usDateRx1(QRegExp("\\d{2}-\\d{2}-\\d{2,4}")),
-      usDateRx2(QRegExp("\\d{2}/\\d{2}/\\d{2,4}")),
-      usDateRx3(QRegExp("\\d{4}-\\d{1,2}-\\d{1,2}")),
-      unitsOptionMap(createUnitsOptionMap()),
-      directivesMap(createDirectivesMap()),
       _visitor(NULL),
       _inBlockComment(false),
       _units(QSharedPointer<WallsUnits>(new WallsUnits())),
