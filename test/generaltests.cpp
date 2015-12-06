@@ -12,33 +12,33 @@ typedef UnitizedDouble<Angle> UAngle;
 TEST_CASE( "general tests", "[dewalls]" ) {
     WallsParser parser;
 
-    REQUIRE( parser.units()->vectorType == VectorType::CT );
-    REQUIRE( parser.units()->d_unit == Length::meters() );
-    REQUIRE( parser.units()->s_unit == Length::meters() );
-    REQUIRE( parser.units()->a_unit == Angle::degrees() );
-    REQUIRE( parser.units()->ab_unit == Angle::degrees() );
-    REQUIRE( parser.units()->v_unit == Angle::degrees() );
-    REQUIRE( parser.units()->vb_unit == Angle::degrees() );
-    REQUIRE( parser.units()->lrud == LrudType::From );
-    REQUIRE( parser.units()->prefix.isEmpty() );
-    REQUIRE( parser.units()->typeab_corrected == false );
-    REQUIRE( parser.units()->typevb_corrected == false );
-    REQUIRE( parser.units()->rect.isZero() );
-    REQUIRE( parser.units()->decl.isZero() );
-    REQUIRE( parser.units()->grid.isZero() );
-    REQUIRE( parser.units()->incd.isZero() );
-    REQUIRE( parser.units()->incs.isZero() );
-    REQUIRE( parser.units()->inca.isZero() );
-    REQUIRE( parser.units()->incab.isZero() );
-    REQUIRE( parser.units()->incv.isZero() );
-    REQUIRE( parser.units()->incvb.isZero() );
-    REQUIRE( parser.units()->inch.isZero() );
+    REQUIRE( parser.units().vectorType() == VectorType::CT );
+    REQUIRE( parser.units().dUnit() == Length::meters() );
+    REQUIRE( parser.units().sUnit() == Length::meters() );
+    REQUIRE( parser.units().aUnit() == Angle::degrees() );
+    REQUIRE( parser.units().abUnit() == Angle::degrees() );
+    REQUIRE( parser.units().vUnit() == Angle::degrees() );
+    REQUIRE( parser.units().vbUnit() == Angle::degrees() );
+    REQUIRE( parser.units().lrud() == LrudType::From );
+    REQUIRE( parser.units().prefix().isEmpty() );
+    REQUIRE( parser.units().typeabCorrected() == false );
+    REQUIRE( parser.units().typevbCorrected() == false );
+    REQUIRE( parser.units().rect().isZero() );
+    REQUIRE( parser.units().decl().isZero() );
+    REQUIRE( parser.units().grid().isZero() );
+    REQUIRE( parser.units().incd().isZero() );
+    REQUIRE( parser.units().incs().isZero() );
+    REQUIRE( parser.units().inca().isZero() );
+    REQUIRE( parser.units().incab().isZero() );
+    REQUIRE( parser.units().incv().isZero() );
+    REQUIRE( parser.units().incvb().isZero() );
+    REQUIRE( parser.units().inch().isZero() );
     REQUIRE( parser.date().isNull() );
-    REQUIRE( parser.units()->case_ == CaseType::Mixed );
-    REQUIRE( parser.units()->flag.isNull() );
+    REQUIRE( parser.units().case_() == CaseType::Mixed );
+    REQUIRE( parser.units().flag().isNull() );
     REQUIRE( parser.segment().isNull() );
-    REQUIRE( parser.units()->uvh == 1.0 );
-    REQUIRE( parser.units()->uvv == 1.0 );
+    REQUIRE( parser.units().uvh() == 1.0 );
+    REQUIRE( parser.units().uvv() == 1.0 );
 
     CapturingWallsVisitor visitor;
 
@@ -85,13 +85,13 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 CHECK_THROWS( parser.parseLine("A B -0.001 350 4") );
             }
 
-            SECTION( "d_unit affects distance" ) {
+            SECTION( "dUnit affects distance" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 2.5 350 4");
                 REQUIRE( visitor.distance == ULength(2.5, Length::feet()) );
             }
 
-            SECTION( "s_unit doesn't affect distance" ) {
+            SECTION( "sUnit doesn't affect distance" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 2.5 350 4");
                 REQUIRE( visitor.distance == ULength(2.5, Length::meters()) );
@@ -131,14 +131,14 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 CHECK_THROWS( parser.parseLine("A B 2.5 --/-- 45") );
             }
 
-            SECTION( "a_unit" ) {
+            SECTION( "aUnit" ) {
                 parser.parseLine("#units a=grads");
                 parser.parseLine("A B 1 2/3 4");
                 REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::gradians()) );
                 REQUIRE( visitor.backsightAzimuth == UAngle(3, Angle::degrees()) );
             }
 
-            SECTION( "ab_unit" ) {
+            SECTION( "abUnit" ) {
                 parser.parseLine("#units ab=grads");
                 parser.parseLine("A B 1 2/3 4");
                 REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::degrees()) );
@@ -180,7 +180,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         }
 
         SECTION( "inclination" ) {
-            SECTION( "v_unit" ) {
+            SECTION( "vUnit" ) {
                 parser.parseLine("#units v=grads");
                 parser.parseLine("A B 1 2 3/4");
                 REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::gradians()) );
@@ -191,7 +191,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 parser.parseLine("A B 1 2 /3");
             }
 
-            SECTION( "vb_unit" ) {
+            SECTION( "vbUnit" ) {
                 parser.parseLine("#units vb=grads");
                 parser.parseLine("A B 1 2 3/4");
                 REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::degrees()) );
@@ -282,14 +282,14 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
             REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
 
-            SECTION( "are affected by s_unit" ) {
+            SECTION( "are affected by sUnit" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 1 2 3 4 5");
                 REQUIRE( visitor.instrumentHeight == ULength(4, Length::feet()) );
                 REQUIRE( visitor.targetHeight == ULength(5, Length::feet()) );
             }
 
-            SECTION( "are not affected by d_unit" ) {
+            SECTION( "are not affected by dUnit" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 1 2 3 4 5");
                 REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
@@ -394,7 +394,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( visitor.down == ULength(7, Length::inches()) );
             }
 
-            SECTION( "s_unit affects lruds" ) {
+            SECTION( "sUnit affects lruds" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
                 REQUIRE( visitor.left == ULength(4, Length::feet()) );
@@ -403,7 +403,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( visitor.down == ULength(7, Length::feet()) );
             }
 
-            SECTION( "d_unit doesn't affect lruds" ) {
+            SECTION( "dUnit doesn't affect lruds" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
                 REQUIRE( visitor.left == ULength(4, Length::meters()) );
@@ -503,19 +503,19 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
     SECTION( "prefixes" ) {
         parser.parseLine("#units prefix=a");
-        CHECK( parser.units()->processStationName("b") == "a:b" );
-        CHECK( parser.units()->processStationName("d:b") == "d:b" );
-        CHECK( parser.units()->processStationName(":b") == "b" );
+        CHECK( parser.units().processStationName("b") == "a:b" );
+        CHECK( parser.units().processStationName("d:b") == "d:b" );
+        CHECK( parser.units().processStationName(":b") == "b" );
 
         parser.parseLine("#units prefix2=c");
-        CHECK( parser.units()->processStationName("b") == "c:a:b" );
-        CHECK( parser.units()->processStationName(":b") == "c::b" );
-        CHECK( parser.units()->processStationName("d:b") == "c:d:b" );
-        CHECK( parser.units()->processStationName("::b") == "b" );
-        CHECK( parser.units()->processStationName(":::::b") == "b" );
+        CHECK( parser.units().processStationName("b") == "c:a:b" );
+        CHECK( parser.units().processStationName(":b") == "c::b" );
+        CHECK( parser.units().processStationName("d:b") == "c:d:b" );
+        CHECK( parser.units().processStationName("::b") == "b" );
+        CHECK( parser.units().processStationName(":::::b") == "b" );
 
         parser.parseLine("#units prefix1");
-        CHECK( parser.units()->processStationName("b") == "c::b" );
+        CHECK( parser.units().processStationName("b") == "c::b" );
     }
 
     SECTION( "fixed stations" ) {
@@ -544,7 +544,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             REQUIRE( visitor.east == ULength(3, Length::meters()) );
         }
 
-        SECTION( "affected by d_unit" ) {
+        SECTION( "affected by dUnit" ) {
             parser.parseLine("#units d=feet");
             parser.parseLine("#fix a 1 2 3");
             REQUIRE( visitor.east == ULength(1, Length::feet()) );
@@ -563,11 +563,11 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         parser.parseLine("#units lrud=from:rldu");
         parser.parseLine("#units save");
         parser.parseLine("#units reset");
-        REQUIRE( parser.units()->lrud_order_string() == "LRUD" );
+        REQUIRE( parser.units().lrudOrderString() == "LRUD" );
         parser.parseLine("#units restore");
-        REQUIRE( parser.units()->lrud_order_string() == "RLDU" );
+        REQUIRE( parser.units().lrudOrderString() == "RLDU" );
         parser.parseLine("#units restore");
-        REQUIRE( parser.units()->lrud_order_string() == "URLD" );
+        REQUIRE( parser.units().lrudOrderString() == "URLD" );
     }
 
     SECTION( "can't do more than 10 saves" ) {
@@ -589,25 +589,25 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
     SECTION( "Walls' crazy macros" ) {
         parser.parseLine("#units $hello=\"der=vad pre\" $world=\"fix1=hello feet\"");
-        REQUIRE( parser.units()->macros["hello"] == "der=vad pre" );
-        REQUIRE( parser.units()->macros["world"] == "fix1=hello feet" );
+        REQUIRE( parser.macros()["hello"] == "der=vad pre" );
+        REQUIRE( parser.macros()["world"] == "fix1=hello feet" );
 
         parser.parseLine("#units or$(hello)$(world)");
 
-        REQUIRE( parser.units()->ctOrder.size() == 3 );
-        REQUIRE( parser.units()->prefix.size() >= 1 );
+        REQUIRE( parser.units().ctOrder().size() == 3 );
+        REQUIRE( parser.units().prefix().size() >= 1 );
 
-        CHECK( parser.units()->ctOrder[0] == CtElement::V );
-        CHECK( parser.units()->ctOrder[1] == CtElement::A );
-        CHECK( parser.units()->ctOrder[2] == CtElement::D );
+        CHECK( parser.units().ctOrder()[0] == CtElement::V );
+        CHECK( parser.units().ctOrder()[1] == CtElement::A );
+        CHECK( parser.units().ctOrder()[2] == CtElement::D );
 
-        CHECK( parser.units()->prefix[0] == "hello" );
-        CHECK( parser.units()->d_unit == Length::feet() );
-        CHECK( parser.units()->s_unit == Length::feet() );
+        CHECK( parser.units().prefix()[0] == "hello" );
+        CHECK( parser.units().dUnit() == Length::feet() );
+        CHECK( parser.units().sUnit() == Length::feet() );
 
         parser.parseLine("#units $hello $world");
-        CHECK( parser.units()->macros["hello"] == "" );
-        CHECK( parser.units()->macros["world"] == "" );
+        CHECK( parser.macros()["hello"] == "" );
+        CHECK( parser.macros()["world"] == "" );
 
         CHECK_THROWS( parser.parseLine("#units $(undefined)") );
     }
@@ -617,27 +617,27 @@ TEST_CASE( "WallsUnits tests", "[dewalls]" ) {
     WallsUnits units;
 
     SECTION( "avgInc" ) {
-        units.typevb_corrected = true;
+        units.setTypevbCorrected(true);
         CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle(1, Angle::degrees())) == UAngle(2, Angle::degrees()) );
         CHECK( units.avgInc(UAngle(1, Angle::degrees()), UAngle(3, Angle::degrees())) == UAngle(2, Angle::degrees()) );
         CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle()) == UAngle(3, Angle::degrees()) );
         CHECK( units.avgInc(UAngle(), UAngle(3, Angle::degrees())) == UAngle(3, Angle::degrees()) );
 
-        units.typevb_corrected = false;
+        units.setTypevbCorrected(false);
         CHECK( units.avgInc(UAngle(3, Angle::degrees()), UAngle(-1, Angle::degrees())) == UAngle(2, Angle::degrees()) );
         CHECK( units.avgInc(UAngle(1, Angle::degrees()), UAngle(-3, Angle::degrees())) == UAngle(2, Angle::degrees()) );
         CHECK( units.avgInc(UAngle(), UAngle(3, Angle::degrees())) == UAngle(-3, Angle::degrees()) );
     }
 
     SECTION( "applyHeightCorrections" ) {
-        units.typevb_corrected = true;
+        units.setTypevbCorrected(true);
         ULength dist(sqrt(2) * 5 - 1, Length::meters());
-        units.incd = ULength(1, Length::meters());
+        units.setIncd(ULength(1, Length::meters()));
         UAngle fsInc(42, Angle::degrees());
-        units.incv = UAngle(1, Angle::degrees());
+        units.setIncv(UAngle(1, Angle::degrees()));
         UAngle bsInc(49, Angle::degrees());
-        units.incvb = UAngle(-2, Angle::degrees());
-        units.inch = ULength(2, Length::meters());
+        units.setIncvb(UAngle(-2, Angle::degrees()));
+        units.setInch(ULength(2, Length::meters()));
         ULength ih(-8, Length::meters());
         ULength th(-1, Length::meters());
 

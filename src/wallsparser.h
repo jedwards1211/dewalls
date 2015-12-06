@@ -37,7 +37,8 @@ public:
     WallsVisitor* visitor() const;
     void setVisitor(WallsVisitor* visitor);
 
-    QSharedPointer<WallsUnits> units() const;
+    WallsUnits units() const;
+    QHash<QString, QString> macros() const;
     QDate date() const;
     QString segment() const;
 
@@ -99,8 +100,6 @@ public:
     void vectorLine();
 
     QString combineSegments(QString base, Segment offset);
-
-    WallsParser& operator=(const WallsParser& rhs);
 
 private:
     static double approx(double val);
@@ -291,8 +290,9 @@ private:
 
     WallsVisitor* _visitor;
     bool _inBlockComment;
-    QSharedPointer<WallsUnits> _units;
-    QStack<QSharedPointer<WallsUnits>> _stack;
+    WallsUnits _units;
+    QStack<WallsUnits> _stack;
+    QHash<QString, QString> _macros;
     QString _segment;
     QDate _date;
 
@@ -320,9 +320,14 @@ inline void WallsParser::setVisitor(WallsVisitor* visitor)
     _visitor = visitor;
 }
 
-inline QSharedPointer<WallsUnits> WallsParser::units() const
+inline WallsUnits WallsParser::units() const
 {
     return _units;
+}
+
+inline QHash<QString, QString> WallsParser::macros() const
+{
+    return _macros;
 }
 
 inline QDate WallsParser::date() const

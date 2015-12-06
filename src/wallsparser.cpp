@@ -311,27 +311,13 @@ WallsParser::WallsParser(Segment segment)
     : LineParser(segment),
       _visitor(NULL),
       _inBlockComment(false),
-      _units(QSharedPointer<WallsUnits>(new WallsUnits())),
-      _stack(QStack<QSharedPointer<WallsUnits>>()),
+      _units(),
+      _stack(),
+      _macros(),
       _segment(),
       _date()
 {
 
-}
-
-WallsParser& WallsParser::operator =(const WallsParser& rhs)
-{
-    _visitor = rhs._visitor;
-    _inBlockComment = rhs._inBlockComment;
-    _units = QSharedPointer<WallsUnits>(new WallsUnits(*rhs._units));
-    _stack.clear();
-    foreach (QSharedPointer<WallsUnits> stackItem, rhs._stack)
-    {
-        _stack.push(QSharedPointer<WallsUnits>(new WallsUnits(*stackItem)));
-    }
-    _segment = rhs._segment;
-    _date = rhs._date;
-    return *this;
 }
 
 ULength WallsParser::unsignedLengthInches()
@@ -671,11 +657,11 @@ QString WallsParser::replaceMacro()
         if (c == ')')
         {
             Segment macroName = _line.mid(start, _i - 1 - start);
-            if (!_units->macros.contains(macroName.value()))
+            if (!_macros.contains(macroName.value()))
             {
                 throw SegmentParseException(macroName, "macro not defined");
             }
-            return _units->macros[macroName.value()];
+            return _macros[macroName.value()];
         }
         else if (c.isSpace())
         {
@@ -821,7 +807,7 @@ void WallsParser::prefixDirective()
         }
     }
 
-    _units->setPrefix(prefixIndex, prefix);
+    _units.setPrefix(prefixIndex, prefix);
 }
 
 void WallsParser::noteLine()
@@ -882,7 +868,7 @@ void WallsParser::flagDirective()
 
     if (stations.isEmpty())
     {
-        _units->flag = flag;
+        _units.flag() = flag;
     }
     else
     {
@@ -1045,7 +1031,7 @@ void WallsParser::macroOption()
     {
         macroValue = quotedTextOrNonwhitespace();
     }
-    _units->macros[macroName] = macroValue;
+    _macros[macroName] = macroValue;
 }
 
 void WallsParser::save()
@@ -1054,7 +1040,7 @@ void WallsParser::save()
     {
         throw SegmentParseException(_line.mid(_i - 4, _i), "units stack is full");
     }
-    _stack.push(QSharedPointer<WallsUnits>(new WallsUnits(*_units)));
+    _stack.push(_units);
 }
 
 void WallsParser::restore()
@@ -1068,70 +1054,76 @@ void WallsParser::restore()
 
 void WallsParser::reset_()
 {
-    _units = QSharedPointer<WallsUnits>(new WallsUnits());
+    _units = WallsUnits();
 }
 
 void WallsParser::meters()
 {
-    _units->d_unit = _units->s_unit = Length::meters();
+    _units.setDUnit(Length::meters());
+    _units.setSUnit(Length::meters());
 }
 
 void WallsParser::feet()
 {
-    _units->d_unit = _units->s_unit = Length::feet();
+    _units.setDUnit(Length::feet());
+    _units.setSUnit(Length::feet());
 }
 
 void WallsParser::ct()
 {
-    _units->vectorType = VectorType::CT;
+    _units.setVectorType(VectorType::CT);
 }
 
 void WallsParser::d()
 {
     expect('=');
-    _units->d_unit = oneOfMapLowercase(nonwhitespaceRx, lengthUnits);
+    _units.setDUnit(oneOfMapLowercase(nonwhitespaceRx, lengthUnits));
 }
 
 void WallsParser::s()
 {
     expect('=');
-    _units->s_unit = oneOfMapLowercase(nonwhitespaceRx, lengthUnits);
+    _units.setSUnit(oneOfMapLowercase(nonwhitespaceRx, lengthUnits));
 }
 
 void WallsParser::a()
 {
     expect('=');
-    _units->a_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
+    _units.setAUnit(oneOfMapLowercase(nonwhitespaceRx, azmUnits));
 }
 
 void WallsParser::ab()
 {
     expect('=');
-    _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
+    _units.setAbUnit(oneOfMapLowercase(nonwhitespaceRx, azmUnits));
 }
 
 void WallsParser::a_ab()
 {
     expect('=');
-    _units->a_unit = _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
+    AngleUnit unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
+    _units.setAUnit(unit);
+    _units.setAbUnit(unit);
 }
 
 void WallsParser::v()
 {
     expect('=');
-    _units->v_unit = _units->ab_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
+    _units.setVUnit(oneOfMapLowercase(nonwhitespaceRx, incUnits));
 }
 
 void WallsParser::vb()
 {
     expect('=');
-    _units->vb_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
+    _units.setVbUnit(oneOfMapLowercase(nonwhitespaceRx, incUnits));
 }
 
 void WallsParser::v_vb()
 {
     expect('=');
-    _units->v_unit = _units->vb_unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
+    AngleUnit unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
+    _units.setVUnit(unit);
+    _units.setVbUnit(unit);
 }
 
 void WallsParser::order()
@@ -1143,149 +1135,149 @@ void WallsParser::order()
 
 void WallsParser::ctOrder()
 {
-    _units->ctOrder = elementChars(ctElements, requiredCtElements);
+    _units.setCtOrder(elementChars(ctElements, requiredCtElements));
 }
 
 void WallsParser::rectOrder()
 {
-    _units->rectOrder = elementChars(rectElements, requiredRectElements);
+    _units.setRectOrder(elementChars(rectElements, requiredRectElements));
 }
 
 void WallsParser::decl()
 {
     expect('=');
-    _units->decl = azimuthOffset(_units->a_unit);
+    _units.setDecl(azimuthOffset(_units.aUnit()));
 }
 
 void WallsParser::grid()
 {
     expect('=');
-    _units->grid = azimuthOffset(_units->a_unit);
+    _units.setGrid(azimuthOffset(_units.aUnit()));
 }
 
 void WallsParser::rect()
 {
     if (maybeChar('='))
     {
-        _units->rect = azimuthOffset(_units->a_unit);
+        _units.setRect(azimuthOffset(_units.aUnit()));
     }
     else
     {
-        _units->vectorType = VectorType::RECT;
+        _units.setVectorType(VectorType::RECT);
     }
 }
 
 void WallsParser::incd()
 {
     expect('=');
-    _units->incd = length(_units->d_unit);
+    _units.setIncd(length(_units.dUnit()));
 }
 
 void WallsParser::inch()
 {
     expect('=');
-    _units->inch = length(_units->s_unit);
+    _units.setInch(length(_units.sUnit()));
 }
 
 void WallsParser::incs()
 {
     expect('=');
-    _units->incs = length(_units->s_unit);
+    _units.setIncs(length(_units.sUnit()));
 }
 
 void WallsParser::inca()
 {
     expect('=');
-    _units->inca = azimuthOffset(_units->a_unit);
+    _units.setInca(azimuthOffset(_units.aUnit()));
 }
 
 void WallsParser::incab()
 {
     expect('=');
-    _units->incab = azimuthOffset(_units->ab_unit);
+    _units.setIncab(azimuthOffset(_units.abUnit()));
 }
 
 void WallsParser::incv()
 {
     expect('=');
-    _units->incv = inclination(_units->v_unit);
+    _units.setIncv(inclination(_units.vUnit()));
 }
 
 void WallsParser::incvb()
 {
     expect('=');
-    _units->incvb = inclination(_units->vb_unit);
+    _units.setIncvb(inclination(_units.vbUnit()));
 }
 
 void WallsParser::typeab()
 {
     expect('=');
-    _units->typeab_corrected = oneOfMapLowercase(wordRx, correctedValues);
+    _units.setTypeabCorrected(oneOfMapLowercase(wordRx, correctedValues));
     if (maybeChar(','))
     {
-        _units->typeab_tolerance = UAngle(unsignedDoubleLiteral(), Angle::degrees());
+        _units.setTypeabTolerance(UAngle(unsignedDoubleLiteral(), Angle::degrees()));
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
-            _units->typeab_no_average = true;
+            _units.setTypeabNoAverage(true);
         }
         else
         {
-            _units->typeab_no_average = false;
+            _units.setTypeabNoAverage(false);
         }
     }
     else
     {
-        _units->typeab_tolerance = UAngle(2.0, Angle::degrees());
+        _units.setTypeabTolerance(UAngle(2.0, Angle::degrees()));
     }
 }
 
 void WallsParser::typevb()
 {
     expect('=');
-    _units->typevb_corrected = oneOfMapLowercase(wordRx, correctedValues);
+    _units.setTypevbCorrected(oneOfMapLowercase(wordRx, correctedValues));
     if (maybeChar(','))
     {
-        _units->typevb_tolerance = UAngle(unsignedDoubleLiteral(), Angle::degrees());
+        _units.setTypevbTolerance(UAngle(unsignedDoubleLiteral(), Angle::degrees()));
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
-            _units->typevb_no_average = true;
+            _units.setTypevbNoAverage(true);
         }
         else
         {
-            _units->typevb_no_average = false;
+            _units.setTypevbNoAverage(false);
         }
     }
     else
     {
-        _units->typevb_tolerance = UAngle(2.0, Angle::degrees());
+        _units.setTypevbTolerance(UAngle(2.0, Angle::degrees()));
     }
 }
 
 void WallsParser::case_()
 {
     expect('=');
-    _units->case_ = oneOfMapLowercase(nonwhitespaceRx, caseTypes);
+    _units.setCase(oneOfMapLowercase(nonwhitespaceRx, caseTypes));
 }
 
 void WallsParser::lrud()
 {
     expect('=');
-    _units->lrud = oneOfMapLowercase(wordRx, lrudTypes);
+    _units.setLrud(oneOfMapLowercase(wordRx, lrudTypes));
     if (maybeChar(':'))
     {
         lrudOrder();
     }
     else
     {
-        _units->lrud_order = QList<LrudElement>({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D});
+        _units.setLrudOrder(QList<LrudElement>({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D}));
     }
 }
 
 void WallsParser::lrudOrder()
 {
-    _units->lrud_order = elementChars(lrudElements, requiredLrudElements);
+    _units.setLrudOrder(elementChars(lrudElements, requiredLrudElements));
 }
 
 void WallsParser::prefix1()
@@ -1311,31 +1303,33 @@ void WallsParser::prefix(int index)
     {
         prefix = expect(prefixRx, {"<PREFIX>"}).value();
     }
-    _units->setPrefix(index, prefix);
+    _units.setPrefix(index, prefix);
 }
 
 void WallsParser::tape()
 {
     expect('=');
-    _units->tape = oneOfMapLowercase(nonwhitespaceRx, tapingMethods);
+    _units.setTape(oneOfMapLowercase(nonwhitespaceRx, tapingMethods));
 }
 
 void WallsParser::uvh()
 {
     expect('=');
-    _units->uvh = unsignedDoubleLiteral();
+    _units.setUvh(unsignedDoubleLiteral());
 }
 
 void WallsParser::uvv()
 {
     expect('=');
-    _units->uvv = unsignedDoubleLiteral();
+    _units.setUvv(unsignedDoubleLiteral());
 }
 
 void WallsParser::uv()
 {
     expect('=');
-    _units->uvv = _units->uvh = unsignedDoubleLiteral();
+    double value = unsignedDoubleLiteral();
+    _units.setUvv(value);
+    _units.setUvh(value);
 }
 
 void WallsParser::flag()
@@ -1345,7 +1339,7 @@ void WallsParser::flag()
     {
         flag = quotedTextOrNonwhitespace();
     }
-    _units->flag = flag;
+    _units.setFlag(flag);
 }
 
 void WallsParser::vectorLine()
@@ -1413,9 +1407,9 @@ void WallsParser::toStation()
 void WallsParser::afterToStation()
 {
     int k = 0;
-    if (_units->vectorType == VectorType::RECT)
+    if (_units.vectorType() == VectorType::RECT)
     {
-        foreach(RectElement elem, _units->rectOrder)
+        foreach(RectElement elem, _units.rectOrder())
         {
             if (k++ > 0)
             {
@@ -1426,7 +1420,7 @@ void WallsParser::afterToStation()
     }
     else
     {
-        foreach(CtElement elem, _units->ctOrder)
+        foreach(CtElement elem, _units.ctOrder())
         {
             if (k++ > 0)
             {
@@ -1438,7 +1432,7 @@ void WallsParser::afterToStation()
 
     using namespace std;
 
-    if (_units->vectorType == VectorType::CT)
+    if (_units.vectorType() == VectorType::CT)
     {
         if (!_azmFs.isValid() && !_azmBs.isValid() && !WallsUnits::isVertical(_incFs, _incBs))
         {
@@ -1469,17 +1463,17 @@ void WallsParser::rectElement(RectElement elem)
 
 void WallsParser::east()
 {
-    _visitor->visitEast(length(_units->d_unit));
+    _visitor->visitEast(length(_units.dUnit()));
 }
 
 void WallsParser::north()
 {
-    _visitor->visitNorth(length(_units->d_unit));
+    _visitor->visitNorth(length(_units.dUnit()));
 }
 
 void WallsParser::rectUp()
 {
-    _visitor->visitRectUp(length(_units->d_unit));
+    _visitor->visitRectUp(length(_units.dUnit()));
 }
 
 void WallsParser::ctElement(CtElement elem)
@@ -1508,13 +1502,13 @@ void WallsParser::checkCorrectedSign(int segStart, ULength measurement, ULength 
 void WallsParser::distance()
 {
     int start = _i;
-    ULength dist = unsignedLength(_units->d_unit);
-    checkCorrectedSign(start, dist, _units->incd);
+    ULength dist = unsignedLength(_units.dUnit());
+    checkCorrectedSign(start, dist, _units.incd());
     _visitor->visitDistance(dist);
 }
 
 UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
-    if (!_units->typeab_corrected) {
+    if (!_units.typeabCorrected()) {
         if (bs < oneEighty)
         {
             bs += oneEighty;
@@ -1535,15 +1529,15 @@ void WallsParser::azimuth()
     _azmBs.clear();
 
     oneOf([&]() {
-        optional(_azmFs, [&]() { return azimuth(_units->a_unit); });
+        optional(_azmFs, [&]() { return azimuth(_units.aUnit()); });
         maybe([&]() {
             expect('/');
-            optional(_azmBs, [&]() { return azimuth(_units->ab_unit); });
+            optional(_azmBs, [&]() { return azimuth(_units.abUnit()); });
         });
     },
     [&]() {
         expect('/');
-        optional(_azmBs, [&]() { return azimuth(_units->ab_unit); });
+        optional(_azmBs, [&]() { return azimuth(_units.abUnit()); });
     });
 
     if (_azmFs.isValid()) {
@@ -1558,19 +1552,19 @@ void WallsParser::azimuth()
     if (_azmFs.isValid() && _azmBs.isValid())
     {
         UAngle diff = azmDifference(_azmFs, _azmBs);
-        if (diff > _units->typeab_tolerance)
+        if (diff > _units.typeabTolerance())
         {
             _visitor->message(WallsMessage("warning",
                                            QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
                                            .arg(diff.toString())
-                                           .arg(_units->typevb_tolerance.toString()),
+                                           .arg(_units.typevbTolerance().toString()),
                                            _azmSegment));
         }
     }
 }
 
 UAngle WallsParser::incDifference(UAngle fs, UAngle bs) {
-    return _units->typevb_corrected ? uabs(fs - bs) : uabs(fs + bs);
+    return _units.typevbCorrected() ? uabs(fs - bs) : uabs(fs + bs);
 }
 
 void WallsParser::inclination()
@@ -1580,15 +1574,15 @@ void WallsParser::inclination()
     _incBs.clear();
 
     oneOf([&]() {
-        optional(_incFs, [&]() { return inclination(_units->v_unit); });
+        optional(_incFs, [&]() { return inclination(_units.vUnit()); });
         maybe([&]() {
             expect('/');
-            optional(_incBs, [&]() { return inclination(_units->vb_unit); });
+            optional(_incBs, [&]() { return inclination(_units.vbUnit()); });
         });
     },
     [&]() {
         expect('/');
-        optional(_incBs, [&]() { return inclination(_units->vb_unit); });
+        optional(_incBs, [&]() { return inclination(_units.vbUnit()); });
     });
 
     if (_incFs.isValid()) {
@@ -1601,7 +1595,7 @@ void WallsParser::inclination()
     _incSegment = _line.mid(start, _i - start);
 
     if (!_incFs.isValid() && !_incBs.isValid()) {
-        _incFs = UAngle(0, _units->v_unit);
+        _incFs = UAngle(0, _units.vUnit());
         _visitor->visitFrontsightInclination(_incFs);
     }
     else {
@@ -1614,12 +1608,12 @@ void WallsParser::inclination()
         if (_incFs.isValid() && _incBs.isValid())
         {
             UAngle diff = incDifference(_incFs, _incBs);
-            if (diff > _units->typevb_tolerance)
+            if (diff > _units.typevbTolerance())
             {
                 _visitor->message(WallsMessage("warning",
                                                QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
                                                .arg(diff.toString())
-                                               .arg(_units->typevb_tolerance.toString()),
+                                               .arg(_units.typevbTolerance().toString()),
                                                _incSegment));
             }
         }
@@ -1628,7 +1622,7 @@ void WallsParser::inclination()
 
 void WallsParser::tapingMethodElements()
 {
-    foreach(TapingMethodElement elem, _units->tape)
+    foreach(TapingMethodElement elem, _units.tape())
     {
         if (!maybeWhitespace() ||
                 !maybe([&]() { tapingMethodElement(elem); }))
@@ -1655,9 +1649,9 @@ void WallsParser::instrumentHeight()
 {
     int start = _i;
     ULength ih;
-    if (optional(ih, [&]() { return length(_units->s_unit); }))
+    if (optional(ih, [&]() { return length(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, ih, _units->incs);
+        checkCorrectedSign(start, ih, _units.incs());
         _visitor->visitInstrumentHeight(ih);
     }
 }
@@ -1666,9 +1660,9 @@ void WallsParser::targetHeight()
 {
     int start = _i;
     ULength th;
-    if (optional(th, [&]() { return length(_units->s_unit); }))
+    if (optional(th, [&]() { return length(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, th, _units->incs);
+        checkCorrectedSign(start, th, _units.incs());
         _visitor->visitTargetHeight(th);
     }
 }
@@ -1696,9 +1690,9 @@ void WallsParser::left()
 {
     int start = _i;
     ULength left;
-    if (optional(left, [&]() { return unsignedLength(_units->s_unit); }))
+    if (optional(left, [&]() { return unsignedLength(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, left, _units->incs);
+        checkCorrectedSign(start, left, _units.incs());
         _visitor->visitLeft(left);
     }
 }
@@ -1707,9 +1701,9 @@ void WallsParser::right()
 {
     int start = _i;
     ULength right;
-    if (optional(right, [&]() { return unsignedLength(_units->s_unit); }))
+    if (optional(right, [&]() { return unsignedLength(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, right, _units->incs);
+        checkCorrectedSign(start, right, _units.incs());
         _visitor->visitRight(right);
     }
 }
@@ -1718,9 +1712,9 @@ void WallsParser::up()
 {
     int start = _i;
     ULength up;
-    if (optional(up, [&]() { return unsignedLength(_units->s_unit); }))
+    if (optional(up, [&]() { return unsignedLength(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, up, _units->incs);
+        checkCorrectedSign(start, up, _units.incs());
         _visitor->visitUp(up);
     }
 }
@@ -1729,9 +1723,9 @@ void WallsParser::down()
 {
     int start = _i;
     ULength down;
-    if (optional(down, [&]() { return unsignedLength(_units->s_unit); }))
+    if (optional(down, [&]() { return unsignedLength(_units.sUnit()); }))
     {
-        checkCorrectedSign(start, down, _units->incs);
+        checkCorrectedSign(start, down, _units.incs());
         _visitor->visitDown(down);
     }
 }
@@ -1749,7 +1743,7 @@ void WallsParser::varianceOverrides()
 {
     expect('(');
     maybeWhitespace();
-    VarianceOverridePtr horizontal = varianceOverride(_units->d_unit);
+    VarianceOverridePtr horizontal = varianceOverride(_units.dUnit());
     if (!horizontal.isNull())
     {
         _visitor->visitHorizontalVarianceOverride(horizontal);
@@ -1758,7 +1752,7 @@ void WallsParser::varianceOverrides()
     if (maybeChar(','))
     {
         maybeWhitespace();
-        VarianceOverridePtr vertical = varianceOverride(_units->d_unit);
+        VarianceOverridePtr vertical = varianceOverride(_units.dUnit());
         if (horizontal.isNull() && vertical.isNull())
         {
             throw allExpected();
@@ -1809,7 +1803,7 @@ void WallsParser::commaDelimLrudContent()
 {
     maybeWhitespace();
     int m = 0;
-    foreach(LrudElement elem, _units->lrud_order)
+    foreach(LrudElement elem, _units.lrudOrder())
     {
         if (m++ > 0)
         {
@@ -1827,7 +1821,7 @@ void WallsParser::whitespaceDelimLrudContent()
 {
     maybeWhitespace();
     int m = 0;
-    foreach(LrudElement elem, _units->lrud_order)
+    foreach(LrudElement elem, _units.lrudOrder())
     {
         if (m++ > 0)
         {
@@ -1872,7 +1866,7 @@ void WallsParser::afterRequiredWhitespaceDelimLrudMeasurements()
 
 void WallsParser::lrudFacingAngle()
 {
-    _visitor->visitLrudFacingAngle(azimuth(_units->a_unit));
+    _visitor->visitLrudFacingAngle(azimuth(_units.aUnit()));
 }
 
 void WallsParser::lrudCFlag()
@@ -1936,7 +1930,7 @@ void WallsParser::fixedStation()
 void WallsParser::afterFixedStation()
 {
     int k = 0;
-    foreach(RectElement elem, _units->rectOrder)
+    foreach(RectElement elem, _units.rectOrder())
     {
         if (k++ > 0)
         {
@@ -1966,19 +1960,19 @@ void WallsParser::fixRectElement(RectElement elem)
 
 void WallsParser::fixEast()
 {
-    oneOf([&]() { _visitor->visitEast(length(_units->d_unit)); },
+    oneOf([&]() { _visitor->visitEast(length(_units.dUnit())); },
     [&]() { _visitor->visitLongitude(longitude()); });
 }
 
 void WallsParser::fixNorth()
 {
-    oneOf([&]() { _visitor->visitNorth(length(_units->d_unit)); },
+    oneOf([&]() { _visitor->visitNorth(length(_units.dUnit())); },
     [&]() { _visitor->visitLatitude(latitude()); });
 }
 
 void WallsParser::fixUp()
 {
-    _visitor->visitRectUp(length(_units->d_unit));
+    _visitor->visitRectUp(length(_units.dUnit()));
 }
 
 void WallsParser::afterFixMeasurements()
