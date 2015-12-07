@@ -7,7 +7,6 @@
 #include <QStringList>
 #include <QList>
 #include <QDateTime>
-#include "unit.h"
 #include "unitizeddouble.h"
 #include "length.h"
 #include "angle.h"

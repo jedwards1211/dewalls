@@ -1,8 +1,5 @@
 #include "length.h"
-#include "defaultunit.h"
-#include <QGlobalStatic>
-
-#include <iostream>
+#include <cmath>
 
 namespace dewalls {
 

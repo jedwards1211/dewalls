@@ -2,7 +2,6 @@
 #define DEWALLS_ANGLE_H
 
 #include <QString>
-#include "unittype.h"
 
 namespace dewalls {
 
