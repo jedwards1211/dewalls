@@ -1,4 +1,4 @@
-#include "wallsparser.h"
+#include "wallssurveyparser.h"
 #include "unitizedmath.h"
 
 namespace dewalls {
@@ -6,9 +6,9 @@ namespace dewalls {
 typedef UnitizedDouble<Length> ULength;
 typedef UnitizedDouble<Angle>  UAngle;
 typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
-typedef void (WallsParser::*OwnProduction)();
+typedef void (WallsSurveyParser::*OwnProduction)();
 
-QHash<QString, Length::Unit> WallsParser::createLengthUnits()
+QHash<QString, Length::Unit> WallsSurveyParser::createLengthUnits()
 {
     QHash<QString, Length::Unit> result;
     result["meters"] = result["meter"] = result["m"] = Length::Meters;
@@ -16,7 +16,7 @@ QHash<QString, Length::Unit> WallsParser::createLengthUnits()
     return result;
 }
 
-QHash<QString, Angle::Unit> WallsParser::createAzmUnits()
+QHash<QString, Angle::Unit> WallsSurveyParser::createAzmUnits()
 {
     QHash<QString, Angle::Unit> result;
     result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
@@ -25,7 +25,7 @@ QHash<QString, Angle::Unit> WallsParser::createAzmUnits()
     return result;
 }
 
-QHash<QString, Angle::Unit> WallsParser::createIncUnits()
+QHash<QString, Angle::Unit> WallsSurveyParser::createIncUnits()
 {
     QHash<QString, Angle::Unit> result;
     result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
@@ -35,7 +35,7 @@ QHash<QString, Angle::Unit> WallsParser::createIncUnits()
     return result;
 }
 
-QHash<QChar, Length::Unit> WallsParser::createLengthUnitSuffixes()
+QHash<QChar, Length::Unit> WallsSurveyParser::createLengthUnitSuffixes()
 {
     QHash<QChar, Length::Unit> result;
     result['m'] = result['M'] = Length::Meters;
@@ -44,7 +44,7 @@ QHash<QChar, Length::Unit> WallsParser::createLengthUnitSuffixes()
     return result;
 }
 
-QHash<QChar, Angle::Unit> WallsParser::createAzmUnitSuffixes()
+QHash<QChar, Angle::Unit> WallsSurveyParser::createAzmUnitSuffixes()
 {
     QHash<QChar, Angle::Unit> result;
     result['d'] = result['D'] = Angle::Degrees;
@@ -53,7 +53,7 @@ QHash<QChar, Angle::Unit> WallsParser::createAzmUnitSuffixes()
     return result;
 }
 
-QHash<QChar, Angle::Unit> WallsParser::createIncUnitSuffixes()
+QHash<QChar, Angle::Unit> WallsSurveyParser::createIncUnitSuffixes()
 {
     QHash<QChar, Angle::Unit> result;
     result['d'] = result['D'] = Angle::Degrees;
@@ -63,7 +63,7 @@ QHash<QChar, Angle::Unit> WallsParser::createIncUnitSuffixes()
     return result;
 }
 
-QHash<QChar, CardinalDirection> WallsParser::createCardinalDirections()
+QHash<QChar, CardinalDirection> WallsSurveyParser::createCardinalDirections()
 {
     QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
@@ -74,7 +74,7 @@ QHash<QChar, CardinalDirection> WallsParser::createCardinalDirections()
 }
 
 
-QHash<QChar, CardinalDirection> WallsParser::createNorthSouth()
+QHash<QChar, CardinalDirection> WallsSurveyParser::createNorthSouth()
 {
     QHash<QChar, CardinalDirection> result;
     result['n'] = result['N'] = CardinalDirection::North;
@@ -82,7 +82,7 @@ QHash<QChar, CardinalDirection> WallsParser::createNorthSouth()
     return result;
 }
 
-QHash<QChar, CardinalDirection> WallsParser::createEastWest()
+QHash<QChar, CardinalDirection> WallsSurveyParser::createEastWest()
 {
     QHash<QChar, CardinalDirection> result;
     result['e'] = result['E'] = CardinalDirection::East;
@@ -90,7 +90,7 @@ QHash<QChar, CardinalDirection> WallsParser::createEastWest()
     return result;
 }
 
-QHash<QChar, QChar> WallsParser::createEscapedChars()
+QHash<QChar, QChar> WallsSurveyParser::createEscapedChars()
 {
     QHash<QChar, QChar> result;
     result['r'] = 'r';
@@ -102,35 +102,35 @@ QHash<QChar, QChar> WallsParser::createEscapedChars()
     return result;
 }
 
-QHash<QChar, CtElement> WallsParser::createCtElements()
+QHash<QChar, CtMeasurement> WallsSurveyParser::createCtElements()
 {
-    QHash<QChar, CtElement> result;
-    result['d'] = result['D'] = CtElement::D;
-    result['a'] = result['A'] = CtElement::A;
-    result['v'] = result['V'] = CtElement::V;
+    QHash<QChar, CtMeasurement> result;
+    result['d'] = result['D'] = CtMeasurement::D;
+    result['a'] = result['A'] = CtMeasurement::A;
+    result['v'] = result['V'] = CtMeasurement::V;
     return result;
 }
 
-QHash<QChar, RectElement> WallsParser::createRectElements()
+QHash<QChar, RectMeasurement> WallsSurveyParser::createRectElements()
 {
-    QHash<QChar, RectElement> result;
-    result['e'] = result['E'] = RectElement::E;
-    result['n'] = result['N'] = RectElement::N;
-    result['u'] = result['U'] = RectElement::U;
+    QHash<QChar, RectMeasurement> result;
+    result['e'] = result['E'] = RectMeasurement::E;
+    result['n'] = result['N'] = RectMeasurement::N;
+    result['u'] = result['U'] = RectMeasurement::U;
     return result;
 }
 
-QHash<QChar, LrudElement> WallsParser::createLrudElements()
+QHash<QChar, LrudMeasurement> WallsSurveyParser::createLrudElements()
 {
-    QHash<QChar, LrudElement> result;
-    result['l'] = result['L'] = LrudElement::L;
-    result['r'] = result['R'] = LrudElement::R;
-    result['u'] = result['U'] = LrudElement::U;
-    result['d'] = result['D'] = LrudElement::D;
+    QHash<QChar, LrudMeasurement> result;
+    result['l'] = result['L'] = LrudMeasurement::L;
+    result['r'] = result['R'] = LrudMeasurement::R;
+    result['u'] = result['U'] = LrudMeasurement::U;
+    result['d'] = result['D'] = LrudMeasurement::D;
     return result;
 }
 
-QHash<QString, bool> WallsParser::createCorrectedValues()
+QHash<QString, bool> WallsSurveyParser::createCorrectedValues()
 {
     QHash<QString, bool> result;
     result["corrected"] = result["c"] = true;
@@ -138,7 +138,7 @@ QHash<QString, bool> WallsParser::createCorrectedValues()
     return result;
 }
 
-QHash<QString, CaseType> WallsParser::createCaseTypes()
+QHash<QString, CaseType> WallsSurveyParser::createCaseTypes()
 {
     QHash<QString, CaseType> result;
     result["upper"] = result["u"] = CaseType::Upper;
@@ -147,7 +147,7 @@ QHash<QString, CaseType> WallsParser::createCaseTypes()
     return result;
 }
 
-QHash<QString, LrudType> WallsParser::createLrudTypes()
+QHash<QString, LrudType> WallsSurveyParser::createLrudTypes()
 {
     QHash<QString, LrudType> result;
     result["from"] = result["f"] = LrudType::From;
@@ -157,18 +157,18 @@ QHash<QString, LrudType> WallsParser::createLrudTypes()
     return result;
 }
 
-QHash<QString, QList<TapingMethodElement>> WallsParser::createTapingMethods()
+QHash<QString, QList<TapingMethodMeasurement>> WallsSurveyParser::createTapingMethods()
 {
-    typedef QList<TapingMethodElement> Method;
-    QHash<QString, QList<TapingMethodElement>> result;
-    result["it"] = Method({TapingMethodElement::InstrumentHeight, TapingMethodElement::TargetHeight});
-    result["is"] = Method({TapingMethodElement::InstrumentHeight});
-    result["st"] = Method({TapingMethodElement::TargetHeight});
+    typedef QList<TapingMethodMeasurement> Method;
+    QHash<QString, QList<TapingMethodMeasurement>> result;
+    result["it"] = Method({TapingMethodMeasurement::InstrumentHeight, TapingMethodMeasurement::TargetHeight});
+    result["is"] = Method({TapingMethodMeasurement::InstrumentHeight});
+    result["st"] = Method({TapingMethodMeasurement::TargetHeight});
     result["ss"] = Method();
     return result;
 }
 
-QHash<QString, int> WallsParser::createPrefixDirectives()
+QHash<QString, int> WallsSurveyParser::createPrefixDirectives()
 {
     QHash<QString, int> result;
     result["#prefix1"] = result["#prefix"] = 0;
@@ -177,133 +177,133 @@ QHash<QString, int> WallsParser::createPrefixDirectives()
     return result;
 }
 
-QHash<QString, OwnProduction> WallsParser::createUnitsOptionMap()
+QHash<QString, OwnProduction> WallsSurveyParser::createUnitsOptionMap()
 {
     QHash<QString, OwnProduction> result;
-    result["save"] = &WallsParser::save;
-    result["restore"] = &WallsParser::restore;
-    result["reset"] = &WallsParser::reset_;
-    result["m"] = &WallsParser::meters;
-    result["meters"] = &WallsParser::meters;
-    result["f"] = &WallsParser::feet;
-    result["feet"] = &WallsParser::feet;
-    result["ct"] = &WallsParser::ct;
-    result["d"] = &WallsParser::d;
-    result["s"] = &WallsParser::s;
-    result["a"] = &WallsParser::a;
-    result["ab"] = &WallsParser::ab;
-    result["a/ab"] = &WallsParser::a_ab;
-    result["v"] = &WallsParser::v;
-    result["vb"] = &WallsParser::vb;
-    result["v/vb"] = &WallsParser::v_vb;
-    result["o"] = &WallsParser::order;
-    result["order"] = &WallsParser::order;
-    result["decl"] = &WallsParser::decl;
-    result["grid"] = &WallsParser::grid;
-    result["rect"] = &WallsParser::rect;
-    result["incd"] = &WallsParser::incd;
-    result["inch"] = &WallsParser::inch;
-    result["incs"] = &WallsParser::incs;
-    result["inca"] = &WallsParser::inca;
-    result["incab"] = &WallsParser::incab;
-    result["incv"] = &WallsParser::incv;
-    result["incvb"] = &WallsParser::incvb;
-    result["typeab"] = &WallsParser::typeab;
-    result["typevb"] = &WallsParser::typevb;
-    result["case"] = &WallsParser::case_;
-    result["lrud"] = &WallsParser::lrud;
-    result["tape"] = &WallsParser::tape;
-    result["prefix"] = &WallsParser::prefix1;
-    result["prefix1"] = &WallsParser::prefix1;
-    result["prefix2"] = &WallsParser::prefix2;
-    result["prefix3"] = &WallsParser::prefix3;
-    result["uvh"] = &WallsParser::uvh;
-    result["uvv"] = &WallsParser::uvv;
-    result["uv"] = &WallsParser::uv;
-    result["flag"] = &WallsParser::flag;
+    result["save"] = &WallsSurveyParser::save;
+    result["restore"] = &WallsSurveyParser::restore;
+    result["reset"] = &WallsSurveyParser::reset_;
+    result["m"] = &WallsSurveyParser::meters;
+    result["meters"] = &WallsSurveyParser::meters;
+    result["f"] = &WallsSurveyParser::feet;
+    result["feet"] = &WallsSurveyParser::feet;
+    result["ct"] = &WallsSurveyParser::ct;
+    result["d"] = &WallsSurveyParser::d;
+    result["s"] = &WallsSurveyParser::s;
+    result["a"] = &WallsSurveyParser::a;
+    result["ab"] = &WallsSurveyParser::ab;
+    result["a/ab"] = &WallsSurveyParser::a_ab;
+    result["v"] = &WallsSurveyParser::v;
+    result["vb"] = &WallsSurveyParser::vb;
+    result["v/vb"] = &WallsSurveyParser::v_vb;
+    result["o"] = &WallsSurveyParser::order;
+    result["order"] = &WallsSurveyParser::order;
+    result["decl"] = &WallsSurveyParser::decl;
+    result["grid"] = &WallsSurveyParser::grid;
+    result["rect"] = &WallsSurveyParser::rect;
+    result["incd"] = &WallsSurveyParser::incd;
+    result["inch"] = &WallsSurveyParser::inch;
+    result["incs"] = &WallsSurveyParser::incs;
+    result["inca"] = &WallsSurveyParser::inca;
+    result["incab"] = &WallsSurveyParser::incab;
+    result["incv"] = &WallsSurveyParser::incv;
+    result["incvb"] = &WallsSurveyParser::incvb;
+    result["typeab"] = &WallsSurveyParser::typeab;
+    result["typevb"] = &WallsSurveyParser::typevb;
+    result["case"] = &WallsSurveyParser::case_;
+    result["lrud"] = &WallsSurveyParser::lrud;
+    result["tape"] = &WallsSurveyParser::tape;
+    result["prefix"] = &WallsSurveyParser::prefix1;
+    result["prefix1"] = &WallsSurveyParser::prefix1;
+    result["prefix2"] = &WallsSurveyParser::prefix2;
+    result["prefix3"] = &WallsSurveyParser::prefix3;
+    result["uvh"] = &WallsSurveyParser::uvh;
+    result["uvv"] = &WallsSurveyParser::uvv;
+    result["uv"] = &WallsSurveyParser::uv;
+    result["flag"] = &WallsSurveyParser::flag;
 
     return result;
 }
 
-QHash<QString, OwnProduction> WallsParser::createDirectivesMap()
+QHash<QString, OwnProduction> WallsSurveyParser::createDirectivesMap()
 {
     QHash<QString, OwnProduction> result;
-    result["#units"] = result["#u"] = &WallsParser::unitsLine;
-    result["#flag"] = result["#f"] = &WallsParser::flagLine;
-    result["#fix"] = &WallsParser::fixLine;
-    result["#note"] = &WallsParser::noteLine;
-    result["#symbol"] = result["#sym"] = &WallsParser::symbolLine;
-    result["#segment"] = result["#seg"] = result["#s"] = &WallsParser::segmentLine;
-    result["#date"] = &WallsParser::dateLine;
-    result["#["] = &WallsParser::beginBlockCommentLine;
-    result["#]"] = &WallsParser::endBlockCommentLine;
+    result["#units"] = result["#u"] = &WallsSurveyParser::unitsLine;
+    result["#flag"] = result["#f"] = &WallsSurveyParser::flagLine;
+    result["#fix"] = &WallsSurveyParser::fixLine;
+    result["#note"] = &WallsSurveyParser::noteLine;
+    result["#symbol"] = result["#sym"] = &WallsSurveyParser::symbolLine;
+    result["#segment"] = result["#seg"] = result["#s"] = &WallsSurveyParser::segmentLine;
+    result["#date"] = &WallsSurveyParser::dateLine;
+    result["#["] = &WallsSurveyParser::beginBlockCommentLine;
+    result["#]"] = &WallsSurveyParser::endBlockCommentLine;
     result["#prefix1"] = result["#prefix2"] =
-            result["#prefix3"] = result["#prefix"] = &WallsParser::prefixLine;
+            result["#prefix3"] = result["#prefix"] = &WallsSurveyParser::prefixLine;
     return result;
 }
 
-double WallsParser::approx(double val)
+double WallsSurveyParser::approx(double val)
 {
     return floor(val * 1e6) * 1e-6;
 }
 
 
-const QHash<QString, Length::Unit> WallsParser::lengthUnits = WallsParser::createLengthUnits();
-const QHash<QString, Angle::Unit> WallsParser::azmUnits = WallsParser::createAzmUnits();
-const QHash<QString, Angle::Unit> WallsParser::incUnits = WallsParser::createIncUnits();
-const QHash<QChar, Length::Unit> WallsParser::lengthUnitSuffixes = WallsParser::createLengthUnitSuffixes();
-const QHash<QChar, Angle::Unit> WallsParser::azmUnitSuffixes = WallsParser::createAzmUnitSuffixes();
-const QHash<QChar, Angle::Unit> WallsParser::incUnitSuffixes = WallsParser::createIncUnitSuffixes();
-const QHash<QChar, CardinalDirection> WallsParser::cardinalDirections = WallsParser::createCardinalDirections();
-const QHash<QChar, CardinalDirection> WallsParser::northSouth = WallsParser::createNorthSouth();
-const QHash<QChar, CardinalDirection> WallsParser::eastWest = WallsParser::createEastWest();
-const QHash<QChar, QChar> WallsParser::escapedChars = WallsParser::createEscapedChars();
-const QHash<QChar, CtElement> WallsParser::ctElements = WallsParser::createCtElements();
-const QSet<CtElement> WallsParser::requiredCtElements({CtElement::D, CtElement::A});
-const QHash<QChar, RectElement> WallsParser::rectElements = WallsParser::createRectElements();
-const QSet<RectElement> WallsParser::requiredRectElements({RectElement::E, RectElement::N});
-const QHash<QChar, LrudElement> WallsParser::lrudElements = WallsParser::createLrudElements();
-const QSet<LrudElement> WallsParser::requiredLrudElements({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D});
-const QHash<QString, bool> WallsParser::correctedValues = WallsParser::createCorrectedValues();
-const QHash<QString, CaseType> WallsParser::caseTypes = WallsParser::createCaseTypes();
-const QHash<QString, LrudType> WallsParser::lrudTypes = WallsParser::createLrudTypes();
-const QHash<QString, QList<TapingMethodElement>> WallsParser::tapingMethods = WallsParser::createTapingMethods();
-const QHash<QString, int> WallsParser::prefixDirectives = WallsParser::createPrefixDirectives();
+const QHash<QString, Length::Unit> WallsSurveyParser::lengthUnits = WallsSurveyParser::createLengthUnits();
+const QHash<QString, Angle::Unit> WallsSurveyParser::azmUnits = WallsSurveyParser::createAzmUnits();
+const QHash<QString, Angle::Unit> WallsSurveyParser::incUnits = WallsSurveyParser::createIncUnits();
+const QHash<QChar, Length::Unit> WallsSurveyParser::lengthUnitSuffixes = WallsSurveyParser::createLengthUnitSuffixes();
+const QHash<QChar, Angle::Unit> WallsSurveyParser::azmUnitSuffixes = WallsSurveyParser::createAzmUnitSuffixes();
+const QHash<QChar, Angle::Unit> WallsSurveyParser::incUnitSuffixes = WallsSurveyParser::createIncUnitSuffixes();
+const QHash<QChar, CardinalDirection> WallsSurveyParser::cardinalDirections = WallsSurveyParser::createCardinalDirections();
+const QHash<QChar, CardinalDirection> WallsSurveyParser::northSouth = WallsSurveyParser::createNorthSouth();
+const QHash<QChar, CardinalDirection> WallsSurveyParser::eastWest = WallsSurveyParser::createEastWest();
+const QHash<QChar, QChar> WallsSurveyParser::escapedChars = WallsSurveyParser::createEscapedChars();
+const QHash<QChar, CtMeasurement> WallsSurveyParser::ctElements = WallsSurveyParser::createCtElements();
+const QSet<CtMeasurement> WallsSurveyParser::requiredCtElements({CtMeasurement::D, CtMeasurement::A});
+const QHash<QChar, RectMeasurement> WallsSurveyParser::rectElements = WallsSurveyParser::createRectElements();
+const QSet<RectMeasurement> WallsSurveyParser::requiredRectElements({RectMeasurement::E, RectMeasurement::N});
+const QHash<QChar, LrudMeasurement> WallsSurveyParser::lrudElements = WallsSurveyParser::createLrudElements();
+const QSet<LrudMeasurement> WallsSurveyParser::requiredLrudElements({LrudMeasurement::L, LrudMeasurement::R, LrudMeasurement::U, LrudMeasurement::D});
+const QHash<QString, bool> WallsSurveyParser::correctedValues = WallsSurveyParser::createCorrectedValues();
+const QHash<QString, CaseType> WallsSurveyParser::caseTypes = WallsSurveyParser::createCaseTypes();
+const QHash<QString, LrudType> WallsSurveyParser::lrudTypes = WallsSurveyParser::createLrudTypes();
+const QHash<QString, QList<TapingMethodMeasurement>> WallsSurveyParser::tapingMethods = WallsSurveyParser::createTapingMethods();
+const QHash<QString, int> WallsSurveyParser::prefixDirectives = WallsSurveyParser::createPrefixDirectives();
 
-const QRegExp WallsParser::wordRx("\\w+");
-const QRegExp WallsParser::notSemicolonRx("[^;]+");
-const QRegExp WallsParser::unitsOptionRx("[a-zA-Z_0-9/]*");
-const QRegExp WallsParser::directiveRx("#([][]|[a-zA-Z0-9]+)");
-const QRegExp WallsParser::macroNameRx("[^()=,,# \t]*");
-const QRegExp WallsParser::stationRx("[^;,,#/ \t]{0,8}");
-const QRegExp WallsParser::prefixRx("[^:;,,#/ \t]+");
+const QRegExp WallsSurveyParser::wordRx("\\w+");
+const QRegExp WallsSurveyParser::notSemicolonRx("[^;]+");
+const QRegExp WallsSurveyParser::unitsOptionRx("[a-zA-Z_0-9/]*");
+const QRegExp WallsSurveyParser::directiveRx("#([][]|[a-zA-Z0-9]+)");
+const QRegExp WallsSurveyParser::macroNameRx("[^()=,,# \t]*");
+const QRegExp WallsSurveyParser::stationRx("[^;,,#/ \t]{0,8}");
+const QRegExp WallsSurveyParser::prefixRx("[^:;,,#/ \t]+");
 
-const QRegExp WallsParser::optionalRx("--+");
-const QRegExp WallsParser::optionalStationRx("-+");
+const QRegExp WallsSurveyParser::optionalRx("--+");
+const QRegExp WallsSurveyParser::optionalStationRx("-+");
 
-const QRegExp WallsParser::isoDateRx("\\d{4}-\\d{2}-\\d{2}");
-const QRegExp WallsParser::usDateRx1("\\d{2}-\\d{2}-\\d{2,4}");
-const QRegExp WallsParser::usDateRx2("\\d{2}/\\d{2}/\\d{2,4}");
-const QRegExp WallsParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
+const QRegExp WallsSurveyParser::isoDateRx("\\d{4}-\\d{2}-\\d{2}");
+const QRegExp WallsSurveyParser::usDateRx1("\\d{2}-\\d{2}-\\d{2,4}");
+const QRegExp WallsSurveyParser::usDateRx2("\\d{2}/\\d{2}/\\d{2,4}");
+const QRegExp WallsSurveyParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
 
-const QHash<QString, OwnProduction> WallsParser::unitsOptionMap = WallsParser::createUnitsOptionMap();
-const QHash<QString, OwnProduction> WallsParser::directivesMap = WallsParser::createDirectivesMap();
+const QHash<QString, OwnProduction> WallsSurveyParser::unitsOptionMap = WallsSurveyParser::createUnitsOptionMap();
+const QHash<QString, OwnProduction> WallsSurveyParser::directivesMap = WallsSurveyParser::createDirectivesMap();
 
-const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::Degrees);
+const UAngle WallsSurveyParser::oneEighty = UAngle(180.0, Angle::Degrees);
 
-WallsParser::WallsParser()
-    : WallsParser(Segment())
+WallsSurveyParser::WallsSurveyParser()
+    : WallsSurveyParser(Segment())
 {
 
 }
 
-WallsParser::WallsParser(QString line)
-    : WallsParser(Segment(line))
+WallsSurveyParser::WallsSurveyParser(QString line)
+    : WallsSurveyParser(Segment(line))
 {
 
 }
 
-WallsParser::WallsParser(Segment segment)
+WallsSurveyParser::WallsSurveyParser(Segment segment)
     : LineParser(segment),
       _inBlockComment(false),
       _units(),
@@ -321,14 +321,14 @@ WallsParser::WallsParser(Segment segment)
 
 }
 
-ULength WallsParser::unsignedLengthInches()
+ULength WallsSurveyParser::unsignedLengthInches()
 {
     expect('i', Qt::CaseInsensitive);
     double inches = unsignedDoubleLiteral();
     return ULength(inches, Length::Inches);
 }
 
-ULength WallsParser::unsignedLengthNonInches(Length::Unit defaultUnit)
+ULength WallsSurveyParser::unsignedLengthNonInches(Length::Unit defaultUnit)
 {
     double value = unsignedDoubleLiteral();
     Length::Unit unit = oneOfMap(lengthUnitSuffixes, defaultUnit);
@@ -340,7 +340,7 @@ ULength WallsParser::unsignedLengthNonInches(Length::Unit defaultUnit)
     return ULength(value, unit);
 }
 
-ULength WallsParser::unsignedLength(Length::Unit defaultUnit)
+ULength WallsSurveyParser::unsignedLength(Length::Unit defaultUnit)
 {
     ULength result;
     oneOfR(result,
@@ -349,14 +349,14 @@ ULength WallsParser::unsignedLength(Length::Unit defaultUnit)
     return result;
 }
 
-ULength WallsParser::length(Length::Unit defaultUnit)
+ULength WallsSurveyParser::length(Length::Unit defaultUnit)
 {
     bool negate = maybe( [&]() { return expect('-'); } );
     ULength length = unsignedLength(defaultUnit);
     return negate ? -length : length;
 }
 
-UAngle WallsParser::unsignedAngle(QHash<QChar, Angle::Unit> unitSuffixes, Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::unsignedAngle(QHash<QChar, Angle::Unit> unitSuffixes, Angle::Unit defaultUnit)
 {
     auto expectColon = [&]() { expect(':'); };
     auto _unsignedDoubleLiteral = [&]{ return unsignedDoubleLiteral(); };
@@ -387,7 +387,7 @@ UAngle WallsParser::unsignedAngle(QHash<QChar, Angle::Unit> unitSuffixes, Angle:
     return UAngle(value, oneOfMap(unitSuffixes, defaultUnit));
 }
 
-UAngle WallsParser::unsignedDmsAngle()
+UAngle WallsSurveyParser::unsignedDmsAngle()
 {
     auto expectColon = [&]() { expect(':'); };
     auto _unsignedDoubleLiteral = [&]{ return unsignedDoubleLiteral(); };
@@ -410,7 +410,7 @@ UAngle WallsParser::unsignedDmsAngle()
                   (hasSeconds ? seconds / 3600.0 : 0), Angle::Degrees);
 }
 
-UAngle WallsParser::latitude()
+UAngle WallsSurveyParser::latitude()
 {
     int start = _i;
     CardinalDirection side = oneOfMap(northSouth);
@@ -428,7 +428,7 @@ UAngle WallsParser::latitude()
     return latitude;
 }
 
-UAngle WallsParser::longitude()
+UAngle WallsSurveyParser::longitude()
 {
     int start = _i;
     CardinalDirection side = oneOfMap(eastWest);
@@ -446,7 +446,7 @@ UAngle WallsParser::longitude()
     return longitude;
 }
 
-UAngle WallsParser::nonQuadrantAzimuth(Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::nonQuadrantAzimuth(Angle::Unit defaultUnit)
 {
     int start = _i;
 
@@ -460,7 +460,7 @@ UAngle WallsParser::nonQuadrantAzimuth(Angle::Unit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::quadrantAzimuth()
+UAngle WallsSurveyParser::quadrantAzimuth()
 {
     CardinalDirection from = oneOfMap(cardinalDirections);
 
@@ -483,7 +483,7 @@ UAngle WallsParser::quadrantAzimuth()
     return from.angle();
 }
 
-UAngle WallsParser::azimuth(Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::azimuth(Angle::Unit defaultUnit)
 {
     UAngle result;
     oneOfR(result, [&]() { return quadrantAzimuth(); },
@@ -491,7 +491,7 @@ UAngle WallsParser::azimuth(Angle::Unit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::azimuthOffset(Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::azimuthOffset(Angle::Unit defaultUnit)
 {
     double signum;
     if (!maybe(signum, [this]() { return oneOfMap(signSignums); } ))
@@ -501,7 +501,7 @@ UAngle WallsParser::azimuthOffset(Angle::Unit defaultUnit)
     return nonQuadrantAzimuth(defaultUnit) * signum;
 }
 
-UAngle WallsParser::unsignedInclination(Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::unsignedInclination(Angle::Unit defaultUnit)
 {
     int start = _i;
     UAngle result = unsignedAngle(incUnitSuffixes, defaultUnit);
@@ -514,7 +514,7 @@ UAngle WallsParser::unsignedInclination(Angle::Unit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::inclination(Angle::Unit defaultUnit)
+UAngle WallsSurveyParser::inclination(Angle::Unit defaultUnit)
 {
     int start = _i;
     double signum;
@@ -532,7 +532,7 @@ UAngle WallsParser::inclination(Angle::Unit defaultUnit)
     return angle;
 }
 
-VarianceOverridePtr WallsParser::varianceOverride(Length::Unit defaultUnit)
+VarianceOverridePtr WallsSurveyParser::varianceOverride(Length::Unit defaultUnit)
 {
     VarianceOverridePtr result;
     oneOfR(result,
@@ -544,30 +544,30 @@ VarianceOverridePtr WallsParser::varianceOverride(Length::Unit defaultUnit)
     return result;
 }
 
-VarianceOverridePtr WallsParser::floatedVectorVarianceOverride()
+VarianceOverridePtr WallsSurveyParser::floatedVectorVarianceOverride()
 {
     expect('?');
     return VarianceOverride::FLOATED;
 }
 
-VarianceOverridePtr WallsParser::floatedTraverseVarianceOverride()
+VarianceOverridePtr WallsSurveyParser::floatedTraverseVarianceOverride()
 {
     expect('*');
     return VarianceOverride::FLOATED_TRAVERSE;
 }
 
-VarianceOverridePtr WallsParser::lengthVarianceOverride(Length::Unit defaultUnit)
+VarianceOverridePtr WallsSurveyParser::lengthVarianceOverride(Length::Unit defaultUnit)
 {
     return VarianceOverridePtr(new LengthOverride(unsignedLength(defaultUnit)));
 }
 
-VarianceOverridePtr WallsParser::rmsErrorVarianceOverride(Length::Unit defaultUnit)
+VarianceOverridePtr WallsSurveyParser::rmsErrorVarianceOverride(Length::Unit defaultUnit)
 {
     expect('r', Qt::CaseInsensitive);
     return VarianceOverridePtr(new RMSError(unsignedLength(defaultUnit)));
 }
 
-QString WallsParser::quotedTextOrNonwhitespace()
+QString WallsSurveyParser::quotedTextOrNonwhitespace()
 {
     QString result;
     oneOfR(result, [&]() { return quotedText(); },
@@ -575,7 +575,7 @@ QString WallsParser::quotedTextOrNonwhitespace()
     return result;
 }
 
-QString WallsParser::quotedText()
+QString WallsSurveyParser::quotedText()
 {
     expect('"');
     QString result = escapedText([](QChar c) { return c != '"'; }, {"<QUOTED TEXT>"});
@@ -583,7 +583,7 @@ QString WallsParser::quotedText()
     return result;
 }
 
-QString WallsParser::movePastEndQuote()
+QString WallsSurveyParser::movePastEndQuote()
 {
     int start = _i++;
     while (_i < _line.length())
@@ -602,19 +602,19 @@ QString WallsParser::movePastEndQuote()
     return _line.value().mid(start, _i - start);
 }
 
-void WallsParser::parseLine(QString line)
+void WallsSurveyParser::parseLine(QString line)
 {
     reset(line);
     parseLine();
 }
 
-void WallsParser::parseLine(Segment line)
+void WallsSurveyParser::parseLine(Segment line)
 {
     reset(line);
     parseLine();
 }
 
-void WallsParser::parseLine()
+void WallsSurveyParser::parseLine()
 {
     maybeWhitespace();
 
@@ -639,16 +639,16 @@ void WallsParser::parseLine()
     }
 }
 
-void WallsParser::directiveLine()
+void WallsSurveyParser::directiveLine()
 {
     int start = _i;
     OwnProduction directive = oneOfMapLowercase(directiveRx, directivesMap);
     _i = start;
-    if (directive != &WallsParser::fixLine) replaceMacros();
+    if (directive != &WallsSurveyParser::fixLine) replaceMacros();
     (this->*directive)();
 }
 
-QString WallsParser::replaceMacro()
+QString WallsSurveyParser::replaceMacro()
 {
     _i += 2;
     int start = _i;
@@ -672,7 +672,7 @@ QString WallsParser::replaceMacro()
     throw SegmentParseExpectedException(_line.atAsSegment(_i), std::initializer_list<QString>{"<NON_WHITESPACE>", ")"});
 }
 
-void WallsParser::replaceMacros()
+void WallsSurveyParser::replaceMacros()
 {
     QString newLine;
 
@@ -708,14 +708,14 @@ void WallsParser::replaceMacros()
     }
 }
 
-void WallsParser::beginBlockCommentLine()
+void WallsSurveyParser::beginBlockCommentLine()
 {
     maybeWhitespace();
     expect("#[");
     _inBlockComment = true;
 }
 
-void WallsParser::endBlockCommentLine()
+void WallsSurveyParser::endBlockCommentLine()
 {
     maybeWhitespace();
     expect("#]");
@@ -723,17 +723,17 @@ void WallsParser::endBlockCommentLine()
     _inBlockComment = false;
 }
 
-void WallsParser::insideBlockCommentLine()
+void WallsSurveyParser::insideBlockCommentLine()
 {
     emit parsedComment(remaining().value());
 }
 
-Segment WallsParser::untilComment(std::initializer_list<QString> expectedItems)
+Segment WallsSurveyParser::untilComment(std::initializer_list<QString> expectedItems)
 {
     return expect(notSemicolonRx, expectedItems);
 }
 
-void WallsParser::segmentLine()
+void WallsSurveyParser::segmentLine()
 {
     maybeWhitespace();
     _segment = combineSegments(_segment, segmentDirective());
@@ -741,7 +741,7 @@ void WallsParser::segmentLine()
     inlineCommentOrEndOfLine();
 }
 
-Segment WallsParser::segmentDirective()
+Segment WallsSurveyParser::segmentDirective()
 {
     oneOf([&]() { expect("#segment", Qt::CaseInsensitive); },
     [&]() { expect("#seg", Qt::CaseInsensitive); },
@@ -756,7 +756,7 @@ Segment WallsParser::segmentDirective()
     return _line.mid(_i, 0);
 }
 
-QString WallsParser::combineSegments(QString base, Segment offset)
+QString WallsSurveyParser::combineSegments(QString base, Segment offset)
 {
     if (offset.value().startsWith('/'))
     {
@@ -784,7 +784,7 @@ QString WallsParser::combineSegments(QString base, Segment offset)
     return '/' + baseParts.join('/');
 }
 
-void WallsParser::prefixLine()
+void WallsSurveyParser::prefixLine()
 {
     maybeWhitespace();
     prefixDirective();
@@ -792,7 +792,7 @@ void WallsParser::prefixLine()
     inlineCommentOrEndOfLine();
 }
 
-void WallsParser::prefixDirective()
+void WallsSurveyParser::prefixDirective()
 {
     int prefixIndex = oneOfMapLowercase(nonwhitespaceRx, prefixDirectives);
 
@@ -810,7 +810,7 @@ void WallsParser::prefixDirective()
     _units.setPrefix(prefixIndex, prefix);
 }
 
-void WallsParser::noteLine()
+void WallsSurveyParser::noteLine()
 {
     maybeWhitespace();
     noteDirective();
@@ -818,7 +818,7 @@ void WallsParser::noteLine()
     inlineCommentOrEndOfLine();
 }
 
-void WallsParser::noteDirective()
+void WallsSurveyParser::noteDirective()
 {
     oneOf([&]() { expect("#note", Qt::CaseInsensitive); },
     [&]() { expect("#n", Qt::CaseInsensitive); });
@@ -831,7 +831,7 @@ void WallsParser::noteDirective()
     emit parsedNote(station, _note);
 }
 
-void WallsParser::flagLine()
+void WallsSurveyParser::flagLine()
 {
     maybeWhitespace();
     flagDirective();
@@ -839,7 +839,7 @@ void WallsParser::flagLine()
     inlineCommentOrEndOfLine();
 }
 
-void WallsParser::flagDirective()
+void WallsSurveyParser::flagDirective()
 {
     oneOf([&]() { expect("#flag", Qt::CaseInsensitive); },
     [&]() { expect("#f", Qt::CaseInsensitive); });
@@ -882,13 +882,13 @@ void WallsParser::flagDirective()
     inlineCommentOrEndOfLine();
 }
 
-QString WallsParser::slashPrefixedFlag()
+QString WallsSurveyParser::slashPrefixedFlag()
 {
     expect('/');
     return expect(notSemicolonRx, {"<FLAG>"}).value();
 }
 
-void WallsParser::symbolLine()
+void WallsSurveyParser::symbolLine()
 {
     maybeWhitespace();
 
@@ -899,7 +899,7 @@ void WallsParser::symbolLine()
     remaining();
 }
 
-void WallsParser::dateLine()
+void WallsSurveyParser::dateLine()
 {
     maybeWhitespace();
     emit parsedDate(dateDirective());
@@ -907,7 +907,7 @@ void WallsParser::dateLine()
     inlineCommentOrEndOfLine();
 }
 
-QDate WallsParser::dateDirective()
+QDate WallsSurveyParser::dateDirective()
 {
     expect("#date", Qt::CaseInsensitive);
     whitespace();
@@ -919,30 +919,30 @@ QDate WallsParser::dateDirective()
     return _date;
 }
 
-QDate WallsParser::isoDate()
+QDate WallsSurveyParser::isoDate()
 {
     Segment dateSegment = expect(isoDateRx, {"<DATE>"});
     return QDate::fromString(dateSegment.value(), Qt::ISODate);
 }
 
-QDate WallsParser::usDate1()
+QDate WallsSurveyParser::usDate1()
 {
     QString str = expect(usDateRx1, {"<DATE>"}).value();
     return QDate::fromString(str, str.length() > 8 ? "MM-dd-yyyy" : "MM-dd-yy");
 }
 
-QDate WallsParser::usDate2()
+QDate WallsSurveyParser::usDate2()
 {
     QString str = expect(usDateRx2, {"<DATE>"}).value();
     return QDate::fromString(str, str.length() > 8 ? "MM/dd/yyyy" : "MM/dd/yy");
 }
 
-QDate WallsParser::usDate3()
+QDate WallsSurveyParser::usDate3()
 {
     QString str = expect(usDateRx3, {"<DATE>"}).value();
     return QDate::fromString(str, "yyyy-MM-dd");
 }
-void WallsParser::unitsLine()
+void WallsSurveyParser::unitsLine()
 {
     maybeWhitespace();
     oneOf([&]() { expect("#units", Qt::CaseInsensitive); },
@@ -957,14 +957,14 @@ void WallsParser::unitsLine()
     }
 }
 
-void WallsParser::parseUnitsOptions(Segment options)
+void WallsSurveyParser::parseUnitsOptions(Segment options)
 {
     reset(options);
     unitsOptions();
     emit parsedUnits();
 }
 
-void WallsParser::unitsOptions()
+void WallsSurveyParser::unitsOptions()
 {
     bool gotOne = false;
     while(!maybe([&]() { inlineCommentOrEndOfLine(); } ))
@@ -987,13 +987,13 @@ void WallsParser::unitsOptions()
     }
 }
 
-void WallsParser::unitsOption()
+void WallsSurveyParser::unitsOption()
 {
-    void (WallsParser::*option)() = oneOfMapLowercase(unitsOptionRx, unitsOptionMap);
+    void (WallsSurveyParser::*option)() = oneOfMapLowercase(unitsOptionRx, unitsOptionMap);
     (this->*option)();
 }
 
-void WallsParser::macroOption()
+void WallsSurveyParser::macroOption()
 {
     expect('$');
     QString macroName = expect(macroNameRx, {"<MACRO NAME>"}).value();
@@ -1005,7 +1005,7 @@ void WallsParser::macroOption()
     _macros[macroName] = macroValue;
 }
 
-void WallsParser::save()
+void WallsSurveyParser::save()
 {
     if (_stack.size() >= 10)
     {
@@ -1014,7 +1014,7 @@ void WallsParser::save()
     _stack.push(_units);
 }
 
-void WallsParser::restore()
+void WallsSurveyParser::restore()
 {
     if (_stack.isEmpty())
     {
@@ -1023,53 +1023,53 @@ void WallsParser::restore()
     _units = _stack.pop();
 }
 
-void WallsParser::reset_()
+void WallsSurveyParser::reset_()
 {
     _units = WallsUnits();
 }
 
-void WallsParser::meters()
+void WallsSurveyParser::meters()
 {
     _units.setDUnit(Length::Meters);
     _units.setSUnit(Length::Meters);
 }
 
-void WallsParser::feet()
+void WallsSurveyParser::feet()
 {
     _units.setDUnit(Length::Feet);
     _units.setSUnit(Length::Feet);
 }
 
-void WallsParser::ct()
+void WallsSurveyParser::ct()
 {
     _units.setVectorType(VectorType::CT);
 }
 
-void WallsParser::d()
+void WallsSurveyParser::d()
 {
     expect('=');
     _units.setDUnit(oneOfMapLowercase(nonwhitespaceRx, lengthUnits));
 }
 
-void WallsParser::s()
+void WallsSurveyParser::s()
 {
     expect('=');
     _units.setSUnit(oneOfMapLowercase(nonwhitespaceRx, lengthUnits));
 }
 
-void WallsParser::a()
+void WallsSurveyParser::a()
 {
     expect('=');
     _units.setAUnit(oneOfMapLowercase(nonwhitespaceRx, azmUnits));
 }
 
-void WallsParser::ab()
+void WallsSurveyParser::ab()
 {
     expect('=');
     _units.setAbUnit(oneOfMapLowercase(nonwhitespaceRx, azmUnits));
 }
 
-void WallsParser::a_ab()
+void WallsSurveyParser::a_ab()
 {
     expect('=');
     Angle::Unit unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
@@ -1077,19 +1077,19 @@ void WallsParser::a_ab()
     _units.setAbUnit(unit);
 }
 
-void WallsParser::v()
+void WallsSurveyParser::v()
 {
     expect('=');
     _units.setVUnit(oneOfMapLowercase(nonwhitespaceRx, incUnits));
 }
 
-void WallsParser::vb()
+void WallsSurveyParser::vb()
 {
     expect('=');
     _units.setVbUnit(oneOfMapLowercase(nonwhitespaceRx, incUnits));
 }
 
-void WallsParser::v_vb()
+void WallsSurveyParser::v_vb()
 {
     expect('=');
     Angle::Unit unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
@@ -1097,36 +1097,36 @@ void WallsParser::v_vb()
     _units.setVbUnit(unit);
 }
 
-void WallsParser::order()
+void WallsSurveyParser::order()
 {
     expect('=');
     oneOf([&]() { ctOrder(); },
     [&]() { rectOrder(); });
 }
 
-void WallsParser::ctOrder()
+void WallsSurveyParser::ctOrder()
 {
     _units.setCtOrder(elementChars(ctElements, requiredCtElements));
 }
 
-void WallsParser::rectOrder()
+void WallsSurveyParser::rectOrder()
 {
     _units.setRectOrder(elementChars(rectElements, requiredRectElements));
 }
 
-void WallsParser::decl()
+void WallsSurveyParser::decl()
 {
     expect('=');
     _units.setDecl(azimuthOffset(_units.aUnit()));
 }
 
-void WallsParser::grid()
+void WallsSurveyParser::grid()
 {
     expect('=');
     _units.setGrid(azimuthOffset(_units.aUnit()));
 }
 
-void WallsParser::rect()
+void WallsSurveyParser::rect()
 {
     if (maybeChar('='))
     {
@@ -1138,49 +1138,49 @@ void WallsParser::rect()
     }
 }
 
-void WallsParser::incd()
+void WallsSurveyParser::incd()
 {
     expect('=');
     _units.setIncd(length(_units.dUnit()));
 }
 
-void WallsParser::inch()
+void WallsSurveyParser::inch()
 {
     expect('=');
     _units.setInch(length(_units.sUnit()));
 }
 
-void WallsParser::incs()
+void WallsSurveyParser::incs()
 {
     expect('=');
     _units.setIncs(length(_units.sUnit()));
 }
 
-void WallsParser::inca()
+void WallsSurveyParser::inca()
 {
     expect('=');
     _units.setInca(azimuthOffset(_units.aUnit()));
 }
 
-void WallsParser::incab()
+void WallsSurveyParser::incab()
 {
     expect('=');
     _units.setIncab(azimuthOffset(_units.abUnit()));
 }
 
-void WallsParser::incv()
+void WallsSurveyParser::incv()
 {
     expect('=');
     _units.setIncv(inclination(_units.vUnit()));
 }
 
-void WallsParser::incvb()
+void WallsSurveyParser::incvb()
 {
     expect('=');
     _units.setIncvb(inclination(_units.vbUnit()));
 }
 
-void WallsParser::typeab()
+void WallsSurveyParser::typeab()
 {
     expect('=');
     _units.setTypeabCorrected(oneOfMapLowercase(wordRx, correctedValues));
@@ -1203,7 +1203,7 @@ void WallsParser::typeab()
     }
 }
 
-void WallsParser::typevb()
+void WallsSurveyParser::typevb()
 {
     expect('=');
     _units.setTypevbCorrected(oneOfMapLowercase(wordRx, correctedValues));
@@ -1226,13 +1226,13 @@ void WallsParser::typevb()
     }
 }
 
-void WallsParser::case_()
+void WallsSurveyParser::case_()
 {
     expect('=');
     _units.setCase(oneOfMapLowercase(nonwhitespaceRx, caseTypes));
 }
 
-void WallsParser::lrud()
+void WallsSurveyParser::lrud()
 {
     expect('=');
     _units.setLrud(oneOfMapLowercase(wordRx, lrudTypes));
@@ -1242,31 +1242,31 @@ void WallsParser::lrud()
     }
     else
     {
-        _units.setLrudOrder(QList<LrudElement>({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D}));
+        _units.setLrudOrder(QList<LrudMeasurement>({LrudMeasurement::L, LrudMeasurement::R, LrudMeasurement::U, LrudMeasurement::D}));
     }
 }
 
-void WallsParser::lrudOrder()
+void WallsSurveyParser::lrudOrder()
 {
     _units.setLrudOrder(elementChars(lrudElements, requiredLrudElements));
 }
 
-void WallsParser::prefix1()
+void WallsSurveyParser::prefix1()
 {
     prefix(0);
 }
 
-void WallsParser::prefix2()
+void WallsSurveyParser::prefix2()
 {
     prefix(1);
 }
 
-void WallsParser::prefix3()
+void WallsSurveyParser::prefix3()
 {
     prefix(2);
 }
 
-void WallsParser::prefix(int index)
+void WallsSurveyParser::prefix(int index)
 {
     QString prefix;
 
@@ -1277,25 +1277,25 @@ void WallsParser::prefix(int index)
     _units.setPrefix(index, prefix);
 }
 
-void WallsParser::tape()
+void WallsSurveyParser::tape()
 {
     expect('=');
     _units.setTape(oneOfMapLowercase(nonwhitespaceRx, tapingMethods));
 }
 
-void WallsParser::uvh()
+void WallsSurveyParser::uvh()
 {
     expect('=');
     _units.setUvh(unsignedDoubleLiteral());
 }
 
-void WallsParser::uvv()
+void WallsSurveyParser::uvv()
 {
     expect('=');
     _units.setUvv(unsignedDoubleLiteral());
 }
 
-void WallsParser::uv()
+void WallsSurveyParser::uv()
 {
     expect('=');
     double value = unsignedDoubleLiteral();
@@ -1303,7 +1303,7 @@ void WallsParser::uv()
     _units.setUvh(value);
 }
 
-void WallsParser::flag()
+void WallsSurveyParser::flag()
 {
     QString flag;
     if (maybeChar('='))
@@ -1313,7 +1313,7 @@ void WallsParser::flag()
     _units.setFlag(flag);
 }
 
-void WallsParser::vectorLine()
+void WallsSurveyParser::vectorLine()
 {
     maybeWhitespace();
     fromStation();
@@ -1324,7 +1324,7 @@ void WallsParser::vectorLine()
     emit parsedVector(_vector);
 }
 
-void WallsParser::fromStation()
+void WallsSurveyParser::fromStation()
 {
     _fromStationSegment = expect(stationRx, {"<STATION NAME>"}).value();
     QString from = _fromStationSegment.value();
@@ -1335,7 +1335,7 @@ void WallsParser::fromStation()
     _vector.setFrom(from);
 }
 
-void WallsParser::afterFromStation()
+void WallsSurveyParser::afterFromStation()
 {
     oneOfWithLookahead([&]() {
         toStation();
@@ -1351,7 +1351,7 @@ void WallsParser::afterFromStation()
     });
 }
 
-void WallsParser::toStation()
+void WallsSurveyParser::toStation()
 {
     _toStationSegment = expect(stationRx, {"<STATION NAME>"});
     QString to = _toStationSegment.value();
@@ -1366,29 +1366,29 @@ void WallsParser::toStation()
     _vector.setTo(to);
 }
 
-void WallsParser::afterToStation()
+void WallsSurveyParser::afterToStation()
 {
     int k = 0;
     if (_units.vectorType() == VectorType::RECT)
     {
-        foreach(RectElement elem, _units.rectOrder())
+        foreach(RectMeasurement elem, _units.rectOrder())
         {
             if (k++ > 0)
             {
                 whitespace();
             }
-            rectElement(elem);
+            rectMeasurement(elem);
         }
     }
     else
     {
-        foreach(CtElement elem, _units.ctOrder())
+        foreach(CtMeasurement elem, _units.ctOrder())
         {
             if (k++ > 0)
             {
                 whitespace();
             }
-            ctElement(elem);
+            ctMeasurement(elem);
         }
     }
 
@@ -1402,67 +1402,67 @@ void WallsParser::afterToStation()
             throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
 
-        tapingMethodElements();
+        tapingMethodMeasurement();
     }
 
     maybeWhitespace();
     afterVectorMeasurements();
 }
 
-void WallsParser::rectElement(RectElement elem)
+void WallsSurveyParser::rectMeasurement(RectMeasurement elem)
 {
     switch(elem) {
-    case RectElement::E:
+    case RectMeasurement::E:
         east();
         break;
-    case RectElement::N:
+    case RectMeasurement::N:
         north();
         break;
-    case RectElement::U:
+    case RectMeasurement::U:
         rectUp();
         break;
     }
 }
 
-void WallsParser::east()
+void WallsSurveyParser::east()
 {
     _vector.setEast(length(_units.dUnit()));
 }
 
-void WallsParser::north()
+void WallsSurveyParser::north()
 {
     _vector.setNorth(length(_units.dUnit()));
 }
 
-void WallsParser::rectUp()
+void WallsSurveyParser::rectUp()
 {
     _vector.setRectUp(length(_units.dUnit()));
 }
 
-void WallsParser::ctElement(CtElement elem)
+void WallsSurveyParser::ctMeasurement(CtMeasurement elem)
 {
     switch(elem)
     {
-    case CtElement::D:
+    case CtMeasurement::D:
         distance();
         break;
-    case CtElement::A:
+    case CtMeasurement::A:
         azimuth();
         break;
-    case CtElement::V:
+    case CtMeasurement::V:
         inclination();
         break;
     }
 }
 
-void WallsParser::checkCorrectedSign(int segStart, ULength measurement, ULength correction) {
+void WallsSurveyParser::checkCorrectedSign(int segStart, ULength measurement, ULength correction) {
     if (measurement.isNonzero() && correction.isNonzero() &&
             measurement.signum() != (measurement + correction).signum()) {
         throw SegmentParseException(_segment.mid(segStart, _i - segStart), "correction changes sign of measurement");
     }
 }
 
-void WallsParser::distance()
+void WallsSurveyParser::distance()
 {
     int start = _i;
     ULength dist = unsignedLength(_units.dUnit());
@@ -1470,7 +1470,7 @@ void WallsParser::distance()
     _vector.setDistance(dist);
 }
 
-UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
+UAngle WallsSurveyParser::azmDifference(UAngle fs, UAngle bs) {
     if (!_units.typeabCorrected()) {
         if (bs < oneEighty)
         {
@@ -1485,7 +1485,7 @@ UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
     return diff > oneEighty ? UAngle(360.0, Angle::Degrees) - diff : diff;
 }
 
-void WallsParser::azimuth()
+void WallsSurveyParser::azimuth()
 {
     int start = _i;
     UAngle azmFs;
@@ -1522,11 +1522,11 @@ void WallsParser::azimuth()
     }
 }
 
-UAngle WallsParser::incDifference(UAngle fs, UAngle bs) {
+UAngle WallsSurveyParser::incDifference(UAngle fs, UAngle bs) {
     return _units.typevbCorrected() ? uabs(fs - bs) : uabs(fs + bs);
 }
 
-void WallsParser::inclination()
+void WallsSurveyParser::inclination()
 {
     int start = _i;
     UAngle incFs;
@@ -1565,32 +1565,32 @@ void WallsParser::inclination()
     _vector.setBackInclination(incBs);
 }
 
-void WallsParser::tapingMethodElements()
+void WallsSurveyParser::tapingMethodMeasurement()
 {
-    foreach(TapingMethodElement elem, _units.tape())
+    foreach(TapingMethodMeasurement elem, _units.tape())
     {
         if (!maybeWhitespace() ||
-                !maybe([&]() { tapingMethodElement(elem); }))
+                !maybe([&]() { tapingMethodMeasurement(elem); }))
         {
             break;
         }
     }
 }
 
-void WallsParser::tapingMethodElement(TapingMethodElement elem)
+void WallsSurveyParser::tapingMethodMeasurement(TapingMethodMeasurement elem)
 {
     switch(elem)
     {
-    case TapingMethodElement::InstrumentHeight:
+    case TapingMethodMeasurement::InstrumentHeight:
         instrumentHeight();
         break;
-    case TapingMethodElement::TargetHeight:
+    case TapingMethodMeasurement::TargetHeight:
         targetHeight();
         break;
     }
 }
 
-void WallsParser::instrumentHeight()
+void WallsSurveyParser::instrumentHeight()
 {
     int start = _i;
     ULength ih;
@@ -1601,7 +1601,7 @@ void WallsParser::instrumentHeight()
     }
 }
 
-void WallsParser::targetHeight()
+void WallsSurveyParser::targetHeight()
 {
     int start = _i;
     ULength th;
@@ -1612,26 +1612,26 @@ void WallsParser::targetHeight()
     }
 }
 
-void WallsParser::lrudElement(LrudElement elem)
+void WallsSurveyParser::lrudMeasurement(LrudMeasurement elem)
 {
     switch(elem)
     {
-    case LrudElement::L:
+    case LrudMeasurement::L:
         left();
         break;
-    case LrudElement::R:
+    case LrudMeasurement::R:
         right();
         break;
-    case LrudElement::U:
+    case LrudMeasurement::U:
         up();
         break;
-    case LrudElement::D:
+    case LrudMeasurement::D:
         down();
         break;
     }
 }
 
-void WallsParser::left()
+void WallsSurveyParser::left()
 {
     int start = _i;
     ULength left;
@@ -1642,7 +1642,7 @@ void WallsParser::left()
     }
 }
 
-void WallsParser::right()
+void WallsSurveyParser::right()
 {
     int start = _i;
     ULength right;
@@ -1653,7 +1653,7 @@ void WallsParser::right()
     }
 }
 
-void WallsParser::up()
+void WallsSurveyParser::up()
 {
     int start = _i;
     ULength up;
@@ -1664,7 +1664,7 @@ void WallsParser::up()
     }
 }
 
-void WallsParser::down()
+void WallsSurveyParser::down()
 {
     int start = _i;
     ULength down;
@@ -1675,7 +1675,7 @@ void WallsParser::down()
     }
 }
 
-void WallsParser::afterVectorMeasurements()
+void WallsSurveyParser::afterVectorMeasurements()
 {
     if (maybe([&]() { return varianceOverrides(_vector); }))
     {
@@ -1685,7 +1685,7 @@ void WallsParser::afterVectorMeasurements()
 }
 
 template<class T>
-void WallsParser::varianceOverrides(T& target)
+void WallsSurveyParser::varianceOverrides(T& target)
 {
     expect('(');
     maybeWhitespace();
@@ -1709,7 +1709,7 @@ void WallsParser::varianceOverrides(T& target)
     expect(')');
 }
 
-void WallsParser::afterVectorVarianceOverrides()
+void WallsSurveyParser::afterVectorVarianceOverrides()
 {
     if (maybe([&]() { lruds(); }))
     {
@@ -1718,7 +1718,7 @@ void WallsParser::afterVectorVarianceOverrides()
     afterLruds();
 }
 
-void WallsParser::lruds()
+void WallsSurveyParser::lruds()
 {
     oneOfWithLookahead([&]() {
         expect('<');
@@ -1731,7 +1731,7 @@ void WallsParser::lruds()
     });
 }
 
-void WallsParser::lrudContent()
+void WallsSurveyParser::lrudContent()
 {
     oneOfWithLookahead([&]() {
         commaDelimLrudContent();
@@ -1740,11 +1740,11 @@ void WallsParser::lrudContent()
     });
 }
 
-void WallsParser::commaDelimLrudContent()
+void WallsSurveyParser::commaDelimLrudContent()
 {
     maybeWhitespace();
     int m = 0;
-    foreach(LrudElement elem, _units.lrudOrder())
+    foreach(LrudMeasurement elem, _units.lrudOrder())
     {
         if (m++ > 0)
         {
@@ -1752,29 +1752,29 @@ void WallsParser::commaDelimLrudContent()
             expect(',');
             maybeWhitespace();
         }
-        lrudElement(elem);
+        lrudMeasurement(elem);
     }
     maybeWhitespace();
     afterRequiredCommaDelimLrudMeasurements();
 }
 
-void WallsParser::whitespaceDelimLrudContent()
+void WallsSurveyParser::whitespaceDelimLrudContent()
 {
     maybeWhitespace();
     int m = 0;
-    foreach(LrudElement elem, _units.lrudOrder())
+    foreach(LrudMeasurement elem, _units.lrudOrder())
     {
         if (m++ > 0)
         {
             whitespace();
         }
-        lrudElement(elem);
+        lrudMeasurement(elem);
     }
     maybeWhitespace();
     afterRequiredWhitespaceDelimLrudMeasurements();
 }
 
-void WallsParser::afterRequiredCommaDelimLrudMeasurements()
+void WallsSurveyParser::afterRequiredCommaDelimLrudMeasurements()
 {
     if (maybeChar(','))
     {
@@ -1791,7 +1791,7 @@ void WallsParser::afterRequiredCommaDelimLrudMeasurements()
     }
 }
 
-void WallsParser::afterRequiredWhitespaceDelimLrudMeasurements()
+void WallsSurveyParser::afterRequiredWhitespaceDelimLrudMeasurements()
 {
     maybe([&]() {
         oneOf([&]() {
@@ -1805,18 +1805,18 @@ void WallsParser::afterRequiredWhitespaceDelimLrudMeasurements()
     });
 }
 
-void WallsParser::lrudFacingAngle()
+void WallsSurveyParser::lrudFacingAngle()
 {
     _vector.setLrudAngle(azimuth(_units.aUnit()));
 }
 
-void WallsParser::lrudCFlag()
+void WallsSurveyParser::lrudCFlag()
 {
     expect('c', Qt::CaseInsensitive);
     _vector.setCFlag(true);
 }
 
-void WallsParser::afterLruds()
+void WallsSurveyParser::afterLruds()
 {
     if (maybe([&]() { inlineDirective(); }))
     {
@@ -1825,25 +1825,25 @@ void WallsParser::afterLruds()
     inlineCommentOrEndOfLine();
 }
 
-void WallsParser::inlineDirective()
+void WallsSurveyParser::inlineDirective()
 {
     // currently this is the only directive that can be on a vector line
     inlineSegmentDirective(_vector);
 }
 
-void WallsParser::inlineFixDirective()
+void WallsSurveyParser::inlineFixDirective()
 {
     // currently this is the only directive that can be on a fix station line
     inlineSegmentDirective(_fixStation);
 }
 
 template<class T>
-void WallsParser::inlineSegmentDirective(T& target)
+void WallsSurveyParser::inlineSegmentDirective(T& target)
 {
     target.setSegment(segmentDirective().value());
 }
 
-void WallsParser::fixLine()
+void WallsSurveyParser::fixLine()
 {
     maybeWhitespace();
     expect("#fix", Qt::CaseInsensitive);
@@ -1856,62 +1856,62 @@ void WallsParser::fixLine()
     emit parsedFixStation(_fixStation);
 }
 
-void WallsParser::fixedStation()
+void WallsSurveyParser::fixedStation()
 {
     QString fixed = expect(stationRx, {"<STATION NAME>"}).value();
     _fixStation = FixStation();
     _fixStation.setName(fixed);
 }
 
-void WallsParser::afterFixedStation()
+void WallsSurveyParser::afterFixedStation()
 {
     int k = 0;
-    foreach(RectElement elem, _units.rectOrder())
+    foreach(RectMeasurement elem, _units.rectOrder())
     {
         if (k++ > 0)
         {
             whitespace();
         }
-        fixRectElement(elem);
+        fixRectMeasurement(elem);
     }
     maybeWhitespace();
     afterFixMeasurements();
 }
 
-void WallsParser::fixRectElement(RectElement elem)
+void WallsSurveyParser::fixRectMeasurement(RectMeasurement elem)
 {
     switch(elem)
     {
-    case RectElement::E:
+    case RectMeasurement::E:
         fixEast();
         break;
-    case RectElement::N:
+    case RectMeasurement::N:
         fixNorth();
         break;
-    case RectElement::U:
+    case RectMeasurement::U:
         fixUp();
         break;
     }
 }
 
-void WallsParser::fixEast()
+void WallsSurveyParser::fixEast()
 {
     oneOf([&]() { _fixStation.setEast(length(_units.dUnit())); },
     [&]() { _fixStation.setLongitude(longitude()); });
 }
 
-void WallsParser::fixNorth()
+void WallsSurveyParser::fixNorth()
 {
     oneOf([&]() { _fixStation.setNorth(length(_units.dUnit())); },
     [&]() { _fixStation.setLatitude(latitude()); });
 }
 
-void WallsParser::fixUp()
+void WallsSurveyParser::fixUp()
 {
     _fixStation.setRectUp(length(_units.dUnit()));
 }
 
-void WallsParser::afterFixMeasurements()
+void WallsSurveyParser::afterFixMeasurements()
 {
     if (maybe([&]() { varianceOverrides(_fixStation); }))
     {
@@ -1920,7 +1920,7 @@ void WallsParser::afterFixMeasurements()
     afterFixVarianceOverrides();
 }
 
-void WallsParser::afterFixVarianceOverrides()
+void WallsSurveyParser::afterFixVarianceOverrides()
 {
     if (maybe([&]() { inlineNote(_fixStation); }))
     {
@@ -1930,13 +1930,13 @@ void WallsParser::afterFixVarianceOverrides()
 }
 
 template<class T>
-void WallsParser::inlineNote(T& target)
+void WallsSurveyParser::inlineNote(T& target)
 {
     expect('/');
     target.setNote(escapedText([](QChar c) { return c != ';' && c != '#'; }, {"<NOTE>"}).trimmed());
 }
 
-void WallsParser::afterInlineFixNote()
+void WallsSurveyParser::afterInlineFixNote()
 {
     if (maybe([&]() { inlineFixDirective(); }))
     {
@@ -1945,33 +1945,33 @@ void WallsParser::afterInlineFixNote()
     inlineCommentOrEndOfLine(_fixStation);
 }
 
-void WallsParser::inlineCommentOrEndOfLine()
+void WallsSurveyParser::inlineCommentOrEndOfLine()
 {
     oneOf([&]() { inlineComment(); },
     [&]() { endOfLine(); });
 }
 
 template<class T>
-void WallsParser::inlineCommentOrEndOfLine(T& target)
+void WallsSurveyParser::inlineCommentOrEndOfLine(T& target)
 {
     oneOf([&]() { inlineComment(target); },
     [&]() { endOfLine(); });
 }
 
-void WallsParser::comment()
+void WallsSurveyParser::comment()
 {
     expect(';');
     emit parsedComment(remaining().value());
 }
 
-void WallsParser::inlineComment()
+void WallsSurveyParser::inlineComment()
 {
     expect(';');
     emit parsedComment(remaining().value());
 }
 
 template<class T>
-void WallsParser::inlineComment(T& target)
+void WallsSurveyParser::inlineComment(T& target)
 {
     expect(';');
     target.setComment(remaining().value());

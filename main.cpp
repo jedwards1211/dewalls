@@ -17,7 +17,7 @@
 #include "varianceoverride.h"
 #include "wallsvisitor.h"
 #include "cardinaldirection.h"
-#include "wallsparser.h"
+#include "wallssurveyparser.h"
 
 using namespace std;
 using namespace dewalls;
@@ -43,7 +43,7 @@ void quadrantTest()
     cout << quadrant(East, North, UnitizedDouble<Angle>(110.0, Angle::Degrees)) << endl;
 }
 
-void parseLine(WallsParser& parser, QString line)
+void parseLine(WallsSurveyParser& parser, QString line)
 {
     static int lineNumber = 1;
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     QFile file(filename);
     file.open(QFile::ReadOnly);
 
-    WallsParser parser2;
+    WallsSurveyParser parser2;
     PrintingWallsVisitor printingVisitor;
     parser2.setVisitor(&printingVisitor);
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
 
     cout << cap(rx, segment4, 1).underlineInContext().toStdString() << endl;
 
-    WallsParser parser(Segment("hello weird world", "fakefile.txt", 2, 0));
+    WallsSurveyParser parser(Segment("hello weird world", "fakefile.txt", 2, 0));
 
     try {
         parser.expect("hello ");
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
 
     quadrantTest();
 
-    parser = WallsParser(Segment("123.456 -123.456m -123i14.5", "fakefile.txt", 2, 0));
+    parser = WallsSurveyParser(Segment("123.456 -123.456m -123i14.5", "fakefile.txt", 2, 0));
 
     try {
         cout << parser.length(Length::Feet) << endl;

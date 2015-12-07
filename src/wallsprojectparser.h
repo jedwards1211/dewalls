@@ -42,6 +42,9 @@ class WpjBook;
 typedef QSharedPointer<WpjEntry> WpjEntryPtr;
 typedef QSharedPointer<WpjBook> WpjBookPtr;
 
+///
+/// \brief an item in a Walls project tree (a book, survey, or other file)
+///
 class WpjEntry {
 public:
     enum ReviewUnits {
@@ -129,6 +132,9 @@ public:
     static const int WestViewBits;
 };
 
+///
+/// \brief a book in a Walls project tree (data between .BOOK and .ENDBOOK lines)
+///
 class WpjBook : public WpjEntry {
 public:
     WpjBook(WpjBookPtr parent, QString title);
@@ -139,6 +145,11 @@ public:
     QList<WpjEntryPtr> Children;
 };
 
+///
+/// \brief parses a Walls project file (.WPJ).  You may either pass in a file
+/// to parseFile() and get back a project tree, or call parseLine() yourself
+/// on the lines of the file and get the project tree from result().
+///
 class WallsProjectParser : public QObject, public LineParser
 {
     Q_OBJECT

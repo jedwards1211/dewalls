@@ -9,8 +9,8 @@ typedef UnitizedDouble<Angle> UAngle;
 WallsUnitsData::WallsUnitsData()
     : QSharedData(),
       vectorType(VectorType::CT),
-      ctOrder(QList<CtElement>({CtElement::D, CtElement::A, CtElement::V})),
-      rectOrder(QList<RectElement>({RectElement::E, RectElement::N, RectElement::U})),
+      ctOrder(QList<CtMeasurement>({CtMeasurement::D, CtMeasurement::A, CtMeasurement::V})),
+      rectOrder(QList<RectMeasurement>({RectMeasurement::E, RectMeasurement::N, RectMeasurement::U})),
       dUnit(Length::Meters),
       sUnit(Length::Meters),
       aUnit(Angle::Degrees),
@@ -35,8 +35,8 @@ WallsUnitsData::WallsUnitsData()
       typevbNoAverage(false),
       case_(CaseType::Mixed),
       lrud(LrudType::From),
-      lrudOrder(QList<LrudElement>({LrudElement::L, LrudElement::R, LrudElement::U, LrudElement::D})),
-      tape(QList<TapingMethodElement>({TapingMethodElement::InstrumentHeight, TapingMethodElement::TargetHeight})),
+      lrudOrder(QList<LrudMeasurement>({LrudMeasurement::L, LrudMeasurement::R, LrudMeasurement::U, LrudMeasurement::D})),
+      tape(QList<TapingMethodMeasurement>({TapingMethodMeasurement::InstrumentHeight, TapingMethodMeasurement::TargetHeight})),
       flag(QString()),
       prefix(QStringList()),
       uvh(1.0),
@@ -101,7 +101,7 @@ void WallsUnits::rectToCt(ULength north, ULength east, ULength up, ULength& dist
     inc = uatan2(up, ne).in(vUnit()) - incv();
 }
 
-ULength WallsUnits::correctLength(ULength length, ULength correction) const
+ULength WallsUnits::correctLength(ULength length, ULength correction)
 {
     return length.isNonzero() && correction.isNonzero() ? length + correction : length;
 }
@@ -170,7 +170,7 @@ bool WallsUnits::isVertical(UAngle fsInc, UAngle bsInc)
 QString WallsUnits::lrudOrderString() const
 {
     QString result;
-    foreach(LrudElement elem, lrudOrder()) {
+    foreach(LrudMeasurement elem, lrudOrder()) {
         result += char(elem);
     }
     return result;

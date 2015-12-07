@@ -21,7 +21,13 @@
 
 namespace dewalls {
 
-class WallsParser : public QObject, public LineParser
+///
+/// \brief parses Walls .SRV files
+/// You pass in lines frme the .SRV file to parse to parseLine(), and the parser will emit
+/// signals for the various types of data it parses.  The parsed data must be interpreted
+/// in the context of the current units(), date(), and segment().
+///
+class WallsSurveyParser : public QObject, public LineParser
 {
     Q_OBJECT
 
@@ -29,16 +35,46 @@ public:
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle>  UAngle;
     typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
-    typedef void (WallsParser::*OwnProduction)();
+    typedef void (WallsSurveyParser::*OwnProduction)();
 
-    WallsParser();
-    WallsParser(QString line);
-    WallsParser(Segment segment);
+    WallsSurveyParser();
+    WallsSurveyParser(QString line);
+    WallsSurveyParser(Segment segment);
 
+    ///
+    /// \brief parses the current line (which must be set by calling reset(line))
+    ///
+    void parseLine();
+    ///
+    /// \brief parses a line from a .SRV file.  This method is designed for testing
+    /// and doesn't allow you to pass in the source file and line number; prefer
+    /// using parseLine(Segment) instead.
+    ///
+    void parseLine(QString line);
+    ///
+    /// \brief this is the ideal method to call to parse a line of a .SRV file.
+    ///
+    void parseLine(Segment line);
+    ///
+    /// \brief parses units options that come after "#units"
+    /// this can be used to parse options given by a .OPTIONS line in
+    /// a .WPJ file
+    ///
+    void parseUnitsOptions(Segment options);
+
+    ///
+    /// \return the current Walls units (from #units directives)
+    ///
     WallsUnits units() const;
-    QHash<QString, QString> macros() const;
+    ///
+    /// \return the current date associated with the data (from #date directives)
+    ///
     QDate date() const;
+    ///
+    /// \return the current segment associated with the data (from #segment directives)
+    ///
     QString segment() const;
+    QHash<QString, QString> macros() const;
 
     ULength unsignedLengthInches();
     ULength unsignedLengthNonInches(Length::Unit defaultUnit);
@@ -78,11 +114,6 @@ public:
     template<typename T>
     QList<T> elementChars(QHash<QChar, T> elements, QSet<T> requiredElements);
 
-    void parseLine();
-    void parseLine(QString line);
-    void parseLine(Segment line);
-    void parseUnitsOptions(Segment options);
-
     void beginBlockCommentLine();
     void endBlockCommentLine();
     void insideBlockCommentLine();
@@ -97,7 +128,7 @@ public:
     void unitsLine();
     void vectorLine();
 
-    QString combineSegments(QString base, Segment offset);
+    static QString combineSegments(QString base, Segment offset);
 
 signals:
     void parsedVector(Vector parsedVector);
@@ -124,13 +155,13 @@ private:
     static QHash<QChar, CardinalDirection> createNorthSouth();
     static QHash<QChar, CardinalDirection> createEastWest();
     static QHash<QChar, QChar> createEscapedChars();
-    static QHash<QChar, CtElement> createCtElements();
-    static QHash<QChar, RectElement> createRectElements();
-    static QHash<QChar, LrudElement> createLrudElements();
+    static QHash<QChar, CtMeasurement> createCtElements();
+    static QHash<QChar, RectMeasurement> createRectElements();
+    static QHash<QChar, LrudMeasurement> createLrudElements();
     static QHash<QString, bool> createCorrectedValues();
     static QHash<QString, CaseType> createCaseTypes();
     static QHash<QString, LrudType> createLrudTypes();
-    static QHash<QString, QList<TapingMethodElement>> createTapingMethods();
+    static QHash<QString, QList<TapingMethodMeasurement>> createTapingMethods();
     static QHash<QString, int> createPrefixDirectives();
     static QHash<QString, OwnProduction> createUnitsOptionMap();
     static QHash<QString, OwnProduction> createDirectivesMap();
@@ -145,16 +176,16 @@ private:
     static const QHash<QChar, CardinalDirection> northSouth;
     static const QHash<QChar, CardinalDirection> eastWest;
     static const QHash<QChar, QChar> escapedChars;
-    static const QHash<QChar, CtElement> ctElements;
-    static const QSet<CtElement> requiredCtElements;
-    static const QHash<QChar, RectElement> rectElements;
-    static const QSet<RectElement> requiredRectElements;
-    static const QHash<QChar, LrudElement> lrudElements;
-    static const QSet<LrudElement> requiredLrudElements;
+    static const QHash<QChar, CtMeasurement> ctElements;
+    static const QSet<CtMeasurement> requiredCtElements;
+    static const QHash<QChar, RectMeasurement> rectElements;
+    static const QSet<RectMeasurement> requiredRectElements;
+    static const QHash<QChar, LrudMeasurement> lrudElements;
+    static const QSet<LrudMeasurement> requiredLrudElements;
     static const QHash<QString, bool> correctedValues;
     static const QHash<QString, CaseType> caseTypes;
     static const QHash<QString, LrudType> lrudTypes;
-    static const QHash<QString, QList<TapingMethodElement>> tapingMethods;
+    static const QHash<QString, QList<TapingMethodMeasurement>> tapingMethods;
     static const QHash<QString, int> prefixDirectives;
 
     static const QRegExp wordRx;
@@ -251,19 +282,19 @@ private:
     void afterFromStation();
     void toStation();
     void afterToStation();
-    void rectElement(RectElement elem);
+    void rectMeasurement(RectMeasurement elem);
     void east();
     void north();
     void rectUp();
-    void ctElement(CtElement elem);
+    void ctMeasurement(CtMeasurement elem);
     void distance();
     void azimuth();
     void inclination();
-    void tapingMethodElements();
-    void tapingMethodElement(TapingMethodElement elem);
+    void tapingMethodMeasurement();
+    void tapingMethodMeasurement(TapingMethodMeasurement elem);
     void instrumentHeight();
     void targetHeight();
-    void lrudElement(LrudElement elem);
+    void lrudMeasurement(LrudMeasurement elem);
     void left();
     void right();
     void up();
@@ -292,7 +323,7 @@ private:
     void fixLine();
     void fixedStation();
     void afterFixedStation();
-    void fixRectElement(RectElement elem);
+    void fixRectMeasurement(RectMeasurement elem);
     void fixEast();
     void fixNorth();
     void fixUp();
@@ -319,35 +350,35 @@ private:
     FixStation _fixStation;
 };
 
-inline WallsUnits WallsParser::units() const
+inline WallsUnits WallsSurveyParser::units() const
 {
     return _units;
 }
 
-inline QHash<QString, QString> WallsParser::macros() const
+inline QHash<QString, QString> WallsSurveyParser::macros() const
 {
     return _macros;
 }
 
-inline QDate WallsParser::date() const
+inline QDate WallsSurveyParser::date() const
 {
     return _date;
 }
 
-inline QString WallsParser::segment() const
+inline QString WallsSurveyParser::segment() const
 {
     return _segment;
 }
 
 template<typename F>
-QChar WallsParser::escapedChar(F charPredicate, std::initializer_list<QString> expectedItems)
+QChar WallsSurveyParser::escapedChar(F charPredicate, std::initializer_list<QString> expectedItems)
 {
     QChar c = expectChar(charPredicate, expectedItems);
     return c == '\\' ? oneOfMap(escapedChars) : c;
 }
 
 template<typename F>
-QString WallsParser::escapedText(F charPredicate, std::initializer_list<QString> expectedItems)
+QString WallsSurveyParser::escapedText(F charPredicate, std::initializer_list<QString> expectedItems)
 {
     QString result;
     while (maybe([&]() { result.append(escapedChar(charPredicate, expectedItems)); } ));
@@ -355,7 +386,7 @@ QString WallsParser::escapedText(F charPredicate, std::initializer_list<QString>
 }
 
 template<typename R, typename F>
-bool WallsParser::optional(R& result, F production)
+bool WallsSurveyParser::optional(R& result, F production)
 {
     if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
     {
@@ -366,7 +397,7 @@ bool WallsParser::optional(R& result, F production)
 }
 
 template<typename T>
-QList<T> WallsParser::elementChars(QHash<QChar, T> elements, QSet<T> requiredElements)
+QList<T> WallsSurveyParser::elementChars(QHash<QChar, T> elements, QSet<T> requiredElements)
 {
     QList<T> result;
     while (!elements.isEmpty())

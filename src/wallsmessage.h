@@ -6,6 +6,10 @@
 
 namespace dewalls {
 
+///
+/// \brief a message emitted by WallsSurveyParser or WallsProjectParser, usually an error or a
+/// warning
+///
 class WallsMessage {
 public:
     WallsMessage(QString severity, QString message, QString source = QString(),

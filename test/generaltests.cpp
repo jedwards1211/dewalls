@@ -1,5 +1,5 @@
 #include "../lib/catch.hpp"
-#include "../src/wallsparser.h"
+#include "../src/wallssurveyparser.h"
 #include "approx.h"
 #include "unitizedmath.h"
 
@@ -11,7 +11,7 @@ typedef UnitizedDouble<Length> ULength;
 typedef UnitizedDouble<Angle> UAngle;
 
 TEST_CASE( "general tests", "[dewalls]" ) {
-    WallsParser parser;
+    WallsSurveyParser parser;
 
     REQUIRE( parser.units().vectorType() == VectorType::CT );
     REQUIRE( parser.units().dUnit() == Length::Meters );
@@ -45,8 +45,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         Vector vector;
         QList<WallsMessage> messages;
 
-        QObject::connect(&parser, &WallsParser::parsedVector, [&](Vector v) { vector = v; });
-        QObject::connect(&parser, &WallsParser::message, [&](WallsMessage m) { messages << m; });
+        QObject::connect(&parser, &WallsSurveyParser::parsedVector, [&](Vector v) { vector = v; });
+        QObject::connect(&parser, &WallsSurveyParser::message, [&](WallsMessage m) { messages << m; });
 
         parser.parseLine("A1 A2 2.5 350 2.3");
 
@@ -544,7 +544,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     SECTION( "fixed stations" ) {
         FixStation station;
 
-        QObject::connect(&parser, &WallsParser::parsedFixStation, [&](FixStation s) { station = s; });
+        QObject::connect(&parser, &WallsSurveyParser::parsedFixStation, [&](FixStation s) { station = s; });
 
         parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f (?,*) /Entrance #s blah ;dms with ft elevations");
         REQUIRE( station.name() == "A1" );
@@ -624,9 +624,9 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         REQUIRE( parser.units().ctOrder().size() == 3 );
         REQUIRE( parser.units().prefix().size() >= 1 );
 
-        CHECK( parser.units().ctOrder()[0] == CtElement::V );
-        CHECK( parser.units().ctOrder()[1] == CtElement::A );
-        CHECK( parser.units().ctOrder()[2] == CtElement::D );
+        CHECK( parser.units().ctOrder()[0] == CtMeasurement::V );
+        CHECK( parser.units().ctOrder()[1] == CtMeasurement::A );
+        CHECK( parser.units().ctOrder()[2] == CtMeasurement::D );
 
         CHECK( parser.units().prefix()[0] == "hello" );
         CHECK( parser.units().dUnit() == Length::Feet );
