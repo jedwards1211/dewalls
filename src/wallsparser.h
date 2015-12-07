@@ -1,6 +1,7 @@
 #ifndef DEWALLS_WALLSPARSER_H
 #define DEWALLS_WALLSPARSER_H
 
+#include <QObject>
 #include <QString>
 #include <QHash>
 #include <QSharedPointer>
@@ -14,14 +15,16 @@
 #include "varianceoverride.h"
 #include "wallstypes.h"
 #include "wallsunits.h"
-#include "wallsvisitor.h"
 #include "vector.h"
 #include "fixstation.h"
+#include "wallsmessage.h"
 
 namespace dewalls {
 
-class WallsParser : public LineParser
+class WallsParser : public QObject, public LineParser
 {
+    Q_OBJECT
+
 public:
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle>  UAngle;
@@ -33,9 +36,6 @@ public:
     WallsParser();
     WallsParser(QString line);
     WallsParser(Segment segment);
-
-    WallsVisitor* visitor() const;
-    void setVisitor(WallsVisitor* visitor);
 
     WallsUnits units() const;
     QHash<QString, QString> macros() const;
@@ -100,6 +100,18 @@ public:
     void vectorLine();
 
     QString combineSegments(QString base, Segment offset);
+
+signals:
+    void parsedVector(Vector parsedVector);
+    void parsedFixStation(FixStation station);
+    void parsedComment(QString parsedComment);
+    void parsedNote(QString station, QString parsedNote);
+    void parsedDate(QDate date);
+    void parsedFlag(QStringList stations, QString flag);
+    void willParseUnits();
+    void parsedUnits();
+    void parsedSegment(QString segment);
+    void message(WallsMessage message);
 
 private:
     static double approx(double val);
@@ -259,7 +271,7 @@ private:
     void up();
     void down();
     void afterVectorMeasurements();
-    void varianceOverrides();
+    template<class T> void varianceOverrides(T& target);
     void afterVectorVarianceOverrides();
     void lruds();
     void lrudContent();
@@ -271,7 +283,14 @@ private:
     void lrudCFlag();
     void afterLruds();
     void inlineDirective();
-    void inlineSegmentDirective();
+    template<class T> void inlineNote(T& target);
+    template<class T> void inlineSegmentDirective(T& target);
+    template<class T> void inlineCommentOrEndOfLine(T& target);
+    template<class T> void inlineComment(T& target);
+
+    void inlineCommentOrEndOfLine();
+    void inlineComment();
+
     void fixLine();
     void fixedStation();
     void afterFixedStation();
@@ -281,14 +300,11 @@ private:
     void fixUp();
     void afterFixMeasurements();
     void afterFixVarianceOverrides();
-    void inlineNote();
-    void afterFixInlineNote();
+    void afterInlineFixNote();
+    void inlineFixDirective();
+
     void comment();
 
-    void inlineCommentOrEndOfLine();
-    void inlineComment();
-
-    WallsVisitor* _visitor;
     bool _inBlockComment;
     WallsUnits _units;
     QStack<WallsUnits> _stack;
@@ -297,28 +313,13 @@ private:
     QDate _date;
 
     Segment _fromStationSegment;
-    QString _fromStation;
     Segment _toStationSegment;
-    QString _toStation;
-
     Segment _azmSegment;
-    UAngle  _azmFs;
-    UAngle  _azmBs;
-
     Segment _incSegment;
-    UAngle  _incFs;
-    UAngle  _incBs;
+
+    Vector _vector;
+    FixStation _fixStation;
 };
-
-inline WallsVisitor* WallsParser::visitor() const
-{
-    return _visitor;
-}
-
-inline void WallsParser::setVisitor(WallsVisitor* visitor)
-{
-    _visitor = visitor;
-}
 
 inline WallsUnits WallsParser::units() const
 {

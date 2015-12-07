@@ -1,8 +1,9 @@
 #include "../lib/catch.hpp"
 #include "../src/wallsparser.h"
-#include "wallsvisitor.h"
 #include "approx.h"
 #include "unitizedmath.h"
+
+#include <iostream>
 
 using namespace dewalls;
 
@@ -40,40 +41,42 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.units().uvh() == 1.0 );
     REQUIRE( parser.units().uvv() == 1.0 );
 
-    CapturingWallsVisitor visitor;
-
-    parser.setVisitor(&visitor);
-
     SECTION( "vector line parsing tests" ) {
+        Vector vector;
+        QList<WallsMessage> messages;
+
+        QObject::connect(&parser, &WallsParser::parsedVector, [&](Vector v) { vector = v; });
+        QObject::connect(&parser, &WallsParser::message, [&](WallsMessage m) { messages << m; });
+
         parser.parseLine("A1 A2 2.5 350 2.3");
 
-        REQUIRE( visitor.from == "A1" );
-        REQUIRE( visitor.to == "A2" );
-        REQUIRE( visitor.distance == ULength(2.5, Length::meters()) );
-        REQUIRE( visitor.frontsightAzimuth == UAngle(350, Angle::degrees()) );
-        REQUIRE( !visitor.backsightAzimuth.isValid() );
-        REQUIRE( visitor.frontsightInclination == UAngle(2.3, Angle::degrees()) );
-        REQUIRE( !visitor.backsightInclination.isValid() );
+        REQUIRE( vector.from() == "A1" );
+        REQUIRE( vector.to() == "A2" );
+        REQUIRE( vector.distance() == ULength(2.5, Length::meters()) );
+        REQUIRE( vector.frontAzimuth() == UAngle(350, Angle::degrees()) );
+        REQUIRE( !vector.backAzimuth().isValid() );
+        REQUIRE( vector.frontInclination() == UAngle(2.3, Angle::degrees()) );
+        REQUIRE( !vector.backInclination().isValid() );
 
         SECTION( "backsights" ) {
             parser.parseLine("A1 A2 2.5 350/349 2.3/2.4");
 
-            REQUIRE( visitor.from == "A1" );
-            REQUIRE( visitor.to == "A2" );
-            REQUIRE( visitor.distance == ULength(2.5, Length::meters()) );
-            REQUIRE( visitor.frontsightAzimuth == UAngle(350, Angle::degrees()) );
-            REQUIRE( visitor.backsightAzimuth == UAngle(349, Angle::degrees()) );
-            REQUIRE( visitor.frontsightInclination == UAngle(2.3, Angle::degrees()) );
-            REQUIRE( visitor.backsightInclination == UAngle(2.4, Angle::degrees()) );
+            REQUIRE( vector.from() == "A1" );
+            REQUIRE( vector.to() == "A2" );
+            REQUIRE( vector.distance() == ULength(2.5, Length::meters()) );
+            REQUIRE( vector.frontAzimuth() == UAngle(350, Angle::degrees()) );
+            REQUIRE( vector.backAzimuth() == UAngle(349, Angle::degrees()) );
+            REQUIRE( vector.frontInclination() == UAngle(2.3, Angle::degrees()) );
+            REQUIRE( vector.backInclination() == UAngle(2.4, Angle::degrees()) );
          }
 
         SECTION( "frontsights/backsights can be omitted" ) {
             parser.parseLine("A1 A2 2.5 350/-- --/2.4");
 
-            REQUIRE( visitor.frontsightAzimuth == UAngle(350, Angle::degrees()) );
-            REQUIRE( !visitor.backsightAzimuth.isValid() );
-            REQUIRE( !visitor.frontsightInclination.isValid() );
-            REQUIRE( visitor.backsightInclination == UAngle(2.4, Angle::degrees()) );
+            REQUIRE( vector.frontAzimuth() == UAngle(350, Angle::degrees()) );
+            REQUIRE( !vector.backAzimuth().isValid() );
+            REQUIRE( !vector.frontInclination().isValid() );
+            REQUIRE( vector.backInclination() == UAngle(2.4, Angle::degrees()) );
         }
 
         SECTION( "distance" ) {
@@ -88,13 +91,13 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "dUnit affects distance" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 2.5 350 4");
-                REQUIRE( visitor.distance == ULength(2.5, Length::feet()) );
+                REQUIRE( vector.distance() == ULength(2.5, Length::feet()) );
             }
 
             SECTION( "sUnit doesn't affect distance" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 2.5 350 4");
-                REQUIRE( visitor.distance == ULength(2.5, Length::meters()) );
+                REQUIRE( vector.distance() == ULength(2.5, Length::meters()) );
             }
         }
 
@@ -134,48 +137,59 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "aUnit" ) {
                 parser.parseLine("#units a=grads");
                 parser.parseLine("A B 1 2/3 4");
-                REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::gradians()) );
-                REQUIRE( visitor.backsightAzimuth == UAngle(3, Angle::degrees()) );
+                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::gradians()) );
+                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::degrees()) );
             }
 
             SECTION( "abUnit" ) {
                 parser.parseLine("#units ab=grads");
                 parser.parseLine("A B 1 2/3 4");
-                REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::degrees()) );
-                REQUIRE( visitor.backsightAzimuth == UAngle(3, Angle::gradians()) );
+                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::degrees()) );
+                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::gradians()) );
             }
 
             SECTION( "a/ab unit" ) {
                 parser.parseLine("#units a/ab=grads");
                 parser.parseLine("A B 1 2/3 4");
-                REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::gradians()) );
-                REQUIRE( visitor.backsightAzimuth == UAngle(3, Angle::gradians()) );
+                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::gradians()) );
+                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::gradians()) );
             }
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
+                messages.clear();
                 parser.parseLine("A B 1 1/179 4");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
                 parser.parseLine("A B 1 1/183 4");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
                 parser.parseLine("A B 1 1/184 4");
-                REQUIRE( visitor.messages.size() == 1 );
-                REQUIRE( visitor.messages[0].message().contains("exceeds") );
+                REQUIRE( messages.size() == 1 );
+                REQUIRE( messages[0].message().contains("exceeds") );
 
+                messages.clear();
                 parser.parseLine("#units typeab=c");
                 parser.parseLine("A B 1 1/3 4");
-                REQUIRE( visitor.messages.size() == 0 );
-                parser.parseLine("A B 1 1/359 4");
-                REQUIRE( visitor.messages.size() == 0 );
-                parser.parseLine("A B 1 359/1 4");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
+                parser.parseLine("A B 1 1/359 4");
+                REQUIRE( messages.size() == 0 );
+
+                messages.clear();
+                parser.parseLine("A B 1 359/1 4");
+                REQUIRE( messages.size() == 0 );
+
+                messages.clear();
                 parser.parseLine("#units typeab=c,5");
                 parser.parseLine("A B 1 1/6 4");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
+
+                messages.clear();
                 parser.parseLine("A B 1 1/7 4");
-                REQUIRE( visitor.messages.size() == 1 );
+                REQUIRE( messages.size() == 1 );
             }
         }
 
@@ -183,8 +197,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "vUnit" ) {
                 parser.parseLine("#units v=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::gradians()) );
-                REQUIRE( visitor.backsightInclination == UAngle(4, Angle::degrees()) );
+                REQUIRE( vector.frontInclination() == UAngle(3, Angle::gradians()) );
+                REQUIRE( vector.backInclination() == UAngle(4, Angle::degrees()) );
             }
 
             SECTION( "backsight inclination can be omitted without dashes" ) {
@@ -194,64 +208,73 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "vbUnit" ) {
                 parser.parseLine("#units vb=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::degrees()) );
-                REQUIRE( visitor.backsightInclination == UAngle(4, Angle::gradians()) );
+                REQUIRE( vector.frontInclination() == UAngle(3, Angle::degrees()) );
+                REQUIRE( vector.backInclination() == UAngle(4, Angle::gradians()) );
             }
 
             SECTION( "v/vb unit" ) {
                 parser.parseLine("#units v/vb=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( visitor.frontsightInclination == UAngle(3, Angle::gradians()) );
-                REQUIRE( visitor.backsightInclination == UAngle(4, Angle::gradians()) );
+                REQUIRE( vector.frontInclination() == UAngle(3, Angle::gradians()) );
+                REQUIRE( vector.backInclination() == UAngle(4, Angle::gradians()) );
             }
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
+                messages.clear();
                 parser.parseLine("A B 1 2 4/-6");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
                 parser.parseLine("A B 1 2 4/-2");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
                 parser.parseLine("A B 1 2 4/-7");
-                REQUIRE( visitor.messages.size() == 1 );
-                REQUIRE( visitor.messages[0].message().contains("exceeds") );
+                REQUIRE( messages.size() == 1 );
+                REQUIRE( messages[0].message().contains("exceeds") );
 
+                messages.clear();
                 parser.parseLine("#units typevb=c");
                 parser.parseLine("A B 1 2 1/3");
-                REQUIRE( visitor.messages.size() == 0 );
-                parser.parseLine("A B 1 2 1/-1");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
 
+                messages.clear();
+                parser.parseLine("A B 1 2 1/-1");
+                REQUIRE( messages.size() == 0 );
+
+                messages.clear();
                 parser.parseLine("#units typevb=c,5");
                 parser.parseLine("A B 1 2 1/6");
-                REQUIRE( visitor.messages.size() == 0 );
+                REQUIRE( messages.size() == 0 );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 1/7");
-                REQUIRE( visitor.messages.size() == 1 );
+                REQUIRE( messages.size() == 1 );
             }
         }
 
         SECTION( "rect data lines" ) {
             parser.parseLine("#units rect");
             parser.parseLine("A B 1 2 3");
-            REQUIRE( visitor.east == ULength(1, Length::meters()) );
-            REQUIRE( visitor.north == ULength(2, Length::meters()) );
-            REQUIRE( visitor.rectUp == ULength(3, Length::meters()) );
+            REQUIRE( vector.east() == ULength(1, Length::meters()) );
+            REQUIRE( vector.north() == ULength(2, Length::meters()) );
+            REQUIRE( vector.rectUp() == ULength(3, Length::meters()) );
 
             REQUIRE_THROWS( parser.parseLine("A B 1 2") );
 
             SECTION( "measurements can be reordered" ) {
                 parser.parseLine("#units order=nue");
                 parser.parseLine("A B 1 2 3");
-                REQUIRE( visitor.north == ULength(1, Length::meters()) );
-                REQUIRE( visitor.rectUp == ULength(2, Length::meters()) );
-                REQUIRE( visitor.east == ULength(3, Length::meters()) );
+                REQUIRE( vector.north() == ULength(1, Length::meters()) );
+                REQUIRE( vector.rectUp() == ULength(2, Length::meters()) );
+                REQUIRE( vector.east() == ULength(3, Length::meters()) );
             }
 
             SECTION( "up can be omitted" ) {
                 parser.parseLine("#units order=ne");
                 parser.parseLine("A B 1 2");
-                REQUIRE( visitor.north == ULength(1, Length::meters()) );
-                REQUIRE( visitor.east == ULength(2, Length::meters()) );
+                REQUIRE( vector.north() == ULength(1, Length::meters()) );
+                REQUIRE( vector.east() == ULength(2, Length::meters()) );
             }
         }
 
@@ -264,50 +287,50 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         SECTION( "compass/tape measurements can be reordered" ) {
             parser.parseLine("#units order=avd");
             parser.parseLine("A B 1 2 3");
-            REQUIRE( visitor.frontsightAzimuth == UAngle(1, Angle::degrees()) );
-            REQUIRE( visitor.frontsightInclination == UAngle(2, Angle::degrees()) );
-            REQUIRE( visitor.distance == ULength(3, Length::meters()) );
+            REQUIRE( vector.frontAzimuth() == UAngle(1, Angle::degrees()) );
+            REQUIRE( vector.frontInclination() == UAngle(2, Angle::degrees()) );
+            REQUIRE( vector.distance() == ULength(3, Length::meters()) );
         }
 
         SECTION( "inclination can be omitted from order" ) {
             parser.parseLine("#units order=da");
             parser.parseLine("A B 1 2");
-            REQUIRE( visitor.distance == ULength(1, Length::meters()) );
-            REQUIRE( visitor.frontsightAzimuth == UAngle(2, Angle::degrees()) );
-            REQUIRE( !visitor.frontsightInclination.isValid() );
+            REQUIRE( vector.distance() == ULength(1, Length::meters()) );
+            REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::degrees()) );
+            REQUIRE( !vector.frontInclination().isValid() );
         }
 
         SECTION( "instrument and target heights" ) {
             parser.parseLine("A B 1 2 3 4 5");
-            REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
-            REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
+            REQUIRE( vector.instHeight() == ULength(4, Length::meters()) );
+            REQUIRE( vector.targetHeight() == ULength(5, Length::meters()) );
 
             SECTION( "are affected by sUnit" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 1 2 3 4 5");
-                REQUIRE( visitor.instrumentHeight == ULength(4, Length::feet()) );
-                REQUIRE( visitor.targetHeight == ULength(5, Length::feet()) );
+                REQUIRE( vector.instHeight() == ULength(4, Length::feet()) );
+                REQUIRE( vector.targetHeight() == ULength(5, Length::feet()) );
             }
 
             SECTION( "are not affected by dUnit" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 1 2 3 4 5");
-                REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
-                REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
+                REQUIRE( vector.instHeight() == ULength(4, Length::meters()) );
+                REQUIRE( vector.targetHeight() == ULength(5, Length::meters()) );
             }
 
             SECTION( "target only" ) {
                 parser.parseLine("#units tape=st");
                 parser.parseLine("A B 1 2 3 4");
-                REQUIRE( !visitor.instrumentHeight.isValid() );
-                REQUIRE( visitor.targetHeight == ULength(4, Length::meters()) );
+                REQUIRE( !vector.instHeight().isValid() );
+                REQUIRE( vector.targetHeight() == ULength(4, Length::meters()) );
                 REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4 5") );
             }
 
             SECTION( "with inclination omitted" ) {
                 parser.parseLine("A B 1 2 -- 4 5");
-                REQUIRE( visitor.instrumentHeight == ULength(4, Length::meters()) );
-                REQUIRE( visitor.targetHeight == ULength(5, Length::meters()) );
+                REQUIRE( vector.instHeight() == ULength(4, Length::meters()) );
+                REQUIRE( vector.targetHeight() == ULength(5, Length::meters()) );
             }
 
             SECTION( "disabled" ) {
@@ -328,58 +351,58 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
             SECTION( "one can be omitted" ) {
                 parser.parseLine("A B 1 2 3 (?,)");
-                CHECK( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
-                CHECK( visitor.verticalVarianceOverride.isNull() );
+                CHECK( vector.horizVariance() == VarianceOverride::FLOATED );
+                CHECK( vector.vertVariance().isNull() );
 
                 parser.parseLine("A B 1 2 3 (,?)");
-                CHECK( visitor.horizontalVarianceOverride.isNull() );
-                CHECK( visitor.verticalVarianceOverride == VarianceOverride::FLOATED );
+                CHECK( vector.horizVariance().isNull() );
+                CHECK( vector.vertVariance() == VarianceOverride::FLOATED );
             }
 
             SECTION( "various types" ) {
                 parser.parseLine("A B 1 2 3 (?,*)");
-                CHECK( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
-                CHECK( visitor.verticalVarianceOverride == VarianceOverride::FLOATED_TRAVERSE );
+                CHECK( vector.horizVariance() == VarianceOverride::FLOATED );
+                CHECK( vector.vertVariance() == VarianceOverride::FLOATED_TRAVERSE );
 
                 parser.parseLine("A B 1 2 3 (1000f,r4.5f)");
-                REQUIRE( visitor.horizontalVarianceOverride->type() == VarianceOverride::Type::LENGTH_OVERRIDE );
-                CHECK( visitor.horizontalVarianceOverride.staticCast<LengthOverride>()->lengthOverride() == ULength(1000, Length::feet()) );
-                REQUIRE( visitor.verticalVarianceOverride->type() == VarianceOverride::Type::RMS_ERROR );
-                CHECK( visitor.verticalVarianceOverride.staticCast<RMSError>()->error() == ULength(4.5, Length::feet()) );
+                REQUIRE( vector.horizVariance()->type() == VarianceOverride::Type::LENGTH_OVERRIDE );
+                CHECK( vector.horizVariance().staticCast<LengthOverride>()->lengthOverride() == ULength(1000, Length::feet()) );
+                REQUIRE( vector.vertVariance()->type() == VarianceOverride::Type::RMS_ERROR );
+                CHECK( vector.vertVariance().staticCast<RMSError>()->error() == ULength(4.5, Length::feet()) );
             }
         }
 
         SECTION( "lruds" ) {
             parser.parseLine("A B 1 2 3 *4,5,6,7*");
-            REQUIRE( visitor.left == ULength(4, Length::meters()) );
-            REQUIRE( visitor.right == ULength(5, Length::meters()) );
-            REQUIRE( visitor.up == ULength(6, Length::meters()) );
-            REQUIRE( visitor.down == ULength(7, Length::meters()) );
+            REQUIRE( vector.left() == ULength(4, Length::meters()) );
+            REQUIRE( vector.right() == ULength(5, Length::meters()) );
+            REQUIRE( vector.up() == ULength(6, Length::meters()) );
+            REQUIRE( vector.down() == ULength(7, Length::meters()) );
 
             parser.parseLine("A B 1 2 3 *4 5 6 7*");
-            REQUIRE( visitor.left == ULength(4, Length::meters()) );
-            REQUIRE( visitor.right == ULength(5, Length::meters()) );
-            REQUIRE( visitor.up == ULength(6, Length::meters()) );
-            REQUIRE( visitor.down == ULength(7, Length::meters()) );
+            REQUIRE( vector.left() == ULength(4, Length::meters()) );
+            REQUIRE( vector.right() == ULength(5, Length::meters()) );
+            REQUIRE( vector.up() == ULength(6, Length::meters()) );
+            REQUIRE( vector.down() == ULength(7, Length::meters()) );
 
             parser.parseLine("A B 1 2 3 <4 5 6 7>");
-            REQUIRE( visitor.left == ULength(4, Length::meters()) );
-            REQUIRE( visitor.right == ULength(5, Length::meters()) );
-            REQUIRE( visitor.up == ULength(6, Length::meters()) );
-            REQUIRE( visitor.down == ULength(7, Length::meters()) );
+            REQUIRE( vector.left() == ULength(4, Length::meters()) );
+            REQUIRE( vector.right() == ULength(5, Length::meters()) );
+            REQUIRE( vector.up() == ULength(6, Length::meters()) );
+            REQUIRE( vector.down() == ULength(7, Length::meters()) );
 
             parser.parseLine("A B 1 2 3 <4,5,6,7>");
-            REQUIRE( visitor.left == ULength(4, Length::meters()) );
-            REQUIRE( visitor.right == ULength(5, Length::meters()) );
-            REQUIRE( visitor.up == ULength(6, Length::meters()) );
-            REQUIRE( visitor.down == ULength(7, Length::meters()) );
+            REQUIRE( vector.left() == ULength(4, Length::meters()) );
+            REQUIRE( vector.right() == ULength(5, Length::meters()) );
+            REQUIRE( vector.up() == ULength(6, Length::meters()) );
+            REQUIRE( vector.down() == ULength(7, Length::meters()) );
 
             SECTION( "can omit lruds" ) {
                 parser.parseLine("A B 1 2 3 <4,--,6,-->");
-                REQUIRE( visitor.left == ULength(4, Length::meters()) );
-                REQUIRE( !visitor.right.isValid() );
-                REQUIRE( visitor.up == ULength(6, Length::meters()) );
-                REQUIRE( !visitor.down.isValid() );
+                REQUIRE( vector.left() == ULength(4, Length::meters()) );
+                REQUIRE( !vector.right().isValid() );
+                REQUIRE( vector.up() == ULength(6, Length::meters()) );
+                REQUIRE( !vector.down().isValid() );
             }
 
             SECTION( "negative numbers not allowed" ) {
@@ -388,28 +411,28 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
             SECTION( "can unitize individual lruds" ) {
                 parser.parseLine("A B 1 2 3 *4f,5m,6i3,i7*");
-                REQUIRE( visitor.left == ULength(4, Length::feet()) );
-                REQUIRE( visitor.right == ULength(5, Length::meters()) );
-                REQUIRE( visitor.up == ULength(6 * 12 + 3, Length::inches()) );
-                REQUIRE( visitor.down == ULength(7, Length::inches()) );
+                REQUIRE( vector.left() == ULength(4, Length::feet()) );
+                REQUIRE( vector.right() == ULength(5, Length::meters()) );
+                REQUIRE( vector.up() == ULength(6 * 12 + 3, Length::inches()) );
+                REQUIRE( vector.down() == ULength(7, Length::inches()) );
             }
 
             SECTION( "sUnit affects lruds" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
-                REQUIRE( visitor.left == ULength(4, Length::feet()) );
-                REQUIRE( visitor.right == ULength(5, Length::feet()) );
-                REQUIRE( visitor.up == ULength(6, Length::feet()) );
-                REQUIRE( visitor.down == ULength(7, Length::feet()) );
+                REQUIRE( vector.left() == ULength(4, Length::feet()) );
+                REQUIRE( vector.right() == ULength(5, Length::feet()) );
+                REQUIRE( vector.up() == ULength(6, Length::feet()) );
+                REQUIRE( vector.down() == ULength(7, Length::feet()) );
             }
 
             SECTION( "dUnit doesn't affect lruds" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
-                REQUIRE( visitor.left == ULength(4, Length::meters()) );
-                REQUIRE( visitor.right == ULength(5, Length::meters()) );
-                REQUIRE( visitor.up == ULength(6, Length::meters()) );
-                REQUIRE( visitor.down == ULength(7, Length::meters()) );
+                REQUIRE( vector.left() == ULength(4, Length::meters()) );
+                REQUIRE( vector.right() == ULength(5, Length::meters()) );
+                REQUIRE( vector.up() == ULength(6, Length::meters()) );
+                REQUIRE( vector.down() == ULength(7, Length::meters()) );
             }
 
             SECTION( "malformed lruds" ) {
@@ -427,73 +450,73 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "can change lrud order" ) {
                 parser.parseLine("#units lrud=from:urld");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
-                REQUIRE( visitor.up == ULength(4, Length::meters()) );
-                REQUIRE( visitor.right == ULength(5, Length::meters()) );
-                REQUIRE( visitor.left == ULength(6, Length::meters()) );
-                REQUIRE( visitor.down == ULength(7, Length::meters()) );
+                REQUIRE( vector.up() == ULength(4, Length::meters()) );
+                REQUIRE( vector.right() == ULength(5, Length::meters()) );
+                REQUIRE( vector.left() == ULength(6, Length::meters()) );
+                REQUIRE( vector.down() == ULength(7, Length::meters()) );
             }
         }
 
         SECTION( "lrud/station name ambiguity" ) {
             parser.parseLine("A *1 2 3 4");
-            CHECK( visitor.to == "*1" );
-            CHECK( visitor.distance == ULength(2, Length::meters()) );
-            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
-            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
-            CHECK( visitor.left == ULength() );
-            CHECK( visitor.right == ULength() );
-            CHECK( visitor.up == ULength() );
-            CHECK( visitor.down == ULength() );
+            CHECK( vector.to() == "*1" );
+            CHECK( vector.distance() == ULength(2, Length::meters()) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::degrees()) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::degrees()) );
+            CHECK( vector.left() == ULength() );
+            CHECK( vector.right() == ULength() );
+            CHECK( vector.up() == ULength() );
+            CHECK( vector.down() == ULength() );
 
             parser.parseLine("A <1 2 3 4");
-            CHECK( visitor.to == "<1" );
-            CHECK( visitor.distance == ULength(2, Length::meters()) );
-            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
-            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
-            CHECK( visitor.left == ULength() );
-            CHECK( visitor.right == ULength() );
-            CHECK( visitor.up == ULength() );
-            CHECK( visitor.down == ULength() );
+            CHECK( vector.to() == "<1" );
+            CHECK( vector.distance() == ULength(2, Length::meters()) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::degrees()) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::degrees()) );
+            CHECK( vector.left() == ULength() );
+            CHECK( vector.right() == ULength() );
+            CHECK( vector.up() == ULength() );
+            CHECK( vector.down() == ULength() );
 
             parser.parseLine("A *1 2 3 4 *5,6,7,8*");
-            CHECK( visitor.to == "*1" );
-            CHECK( visitor.distance == ULength(2, Length::meters()) );
-            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
-            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
-            CHECK( visitor.left == ULength(5, Length::meters()) );
-            CHECK( visitor.right == ULength(6, Length::meters()) );
-            CHECK( visitor.up == ULength(7, Length::meters()) );
-            CHECK( visitor.down == ULength(8, Length::meters()) );
+            CHECK( vector.to() == "*1" );
+            CHECK( vector.distance() == ULength(2, Length::meters()) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::degrees()) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::degrees()) );
+            CHECK( vector.left() == ULength(5, Length::meters()) );
+            CHECK( vector.right() == ULength(6, Length::meters()) );
+            CHECK( vector.up() == ULength(7, Length::meters()) );
+            CHECK( vector.down() == ULength(8, Length::meters()) );
 
             parser.parseLine("A *1 2 3 4 *");
-            CHECK( visitor.to == QString() );
-            CHECK( visitor.distance == ULength() );
-            CHECK( visitor.frontsightAzimuth == UAngle() );
-            CHECK( visitor.frontsightInclination == UAngle() );
-            CHECK( visitor.left == ULength(1, Length::meters()) );
-            CHECK( visitor.right == ULength(2, Length::meters()) );
-            CHECK( visitor.up == ULength(3, Length::meters()) );
-            CHECK( visitor.down == ULength(4, Length::meters()) );
+            CHECK( vector.to() == QString() );
+            CHECK( vector.distance() == ULength() );
+            CHECK( vector.frontAzimuth() == UAngle() );
+            CHECK( vector.frontInclination() == UAngle() );
+            CHECK( vector.left() == ULength(1, Length::meters()) );
+            CHECK( vector.right() == ULength(2, Length::meters()) );
+            CHECK( vector.up() == ULength(3, Length::meters()) );
+            CHECK( vector.down() == ULength(4, Length::meters()) );
 
             parser.parseLine("A <1 2 3 4 <5,6,7,8>");
-            CHECK( visitor.to == "<1" );
-            CHECK( visitor.distance == ULength(2, Length::meters()) );
-            CHECK( visitor.frontsightAzimuth == UAngle(3, Angle::degrees()) );
-            CHECK( visitor.frontsightInclination == UAngle(4, Angle::degrees()) );
-            CHECK( visitor.left == ULength(5, Length::meters()) );
-            CHECK( visitor.right == ULength(6, Length::meters()) );
-            CHECK( visitor.up == ULength(7, Length::meters()) );
-            CHECK( visitor.down == ULength(8, Length::meters()) );
+            CHECK( vector.to() == "<1" );
+            CHECK( vector.distance() == ULength(2, Length::meters()) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::degrees()) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::degrees()) );
+            CHECK( vector.left() == ULength(5, Length::meters()) );
+            CHECK( vector.right() == ULength(6, Length::meters()) );
+            CHECK( vector.up() == ULength(7, Length::meters()) );
+            CHECK( vector.down() == ULength(8, Length::meters()) );
 
             parser.parseLine("A <1 2 3 4 >");
-            CHECK( visitor.to == QString() );
-            CHECK( visitor.distance == ULength() );
-            CHECK( visitor.frontsightAzimuth == UAngle() );
-            CHECK( visitor.frontsightInclination == UAngle() );
-            CHECK( visitor.left == ULength(1, Length::meters()) );
-            CHECK( visitor.right == ULength(2, Length::meters()) );
-            CHECK( visitor.up == ULength(3, Length::meters()) );
-            CHECK( visitor.down == ULength(4, Length::meters()) );
+            CHECK( vector.to() == QString() );
+            CHECK( vector.distance() == ULength() );
+            CHECK( vector.frontAzimuth() == UAngle() );
+            CHECK( vector.frontInclination() == UAngle() );
+            CHECK( vector.left() == ULength(1, Length::meters()) );
+            CHECK( vector.right() == ULength(2, Length::meters()) );
+            CHECK( vector.up() == ULength(3, Length::meters()) );
+            CHECK( vector.down() == ULength(4, Length::meters()) );
         }
 
         SECTION( "valid spacing" ) {
@@ -519,37 +542,41 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     }
 
     SECTION( "fixed stations" ) {
+        FixStation station;
+
+        QObject::connect(&parser, &WallsParser::parsedFixStation, [&](FixStation s) { station = s; });
+
         parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f (?,*) /Entrance #s blah ;dms with ft elevations");
-        REQUIRE( visitor.fixedStation == "A1" );
-        REQUIRE( visitor.longitude == UAngle(-97 - (43 + 52.5 / 60.0) / 60.0, Angle::degrees()) );
-        REQUIRE( visitor.latitude == UAngle(31 + (16 + 45 / 60.0) / 60.0, Angle::degrees()) );
-        REQUIRE( visitor.rectUp == ULength(323, Length::feet()) );
-        REQUIRE( visitor.horizontalVarianceOverride == VarianceOverride::FLOATED );
-        REQUIRE( visitor.verticalVarianceOverride == VarianceOverride::FLOATED_TRAVERSE );
-        REQUIRE( visitor.inlineNote == "Entrance" );
-        REQUIRE( visitor.inlineSegment == "blah" );
-        REQUIRE( visitor.inlineComment == "dms with ft elevations");
+        REQUIRE( station.name() == "A1" );
+        REQUIRE( station.longitude() == UAngle(-97 - (43 + 52.5 / 60.0) / 60.0, Angle::degrees()) );
+        REQUIRE( station.latitude() == UAngle(31 + (16 + 45 / 60.0) / 60.0, Angle::degrees()) );
+        REQUIRE( station.rectUp() == ULength(323, Length::feet()) );
+        REQUIRE( station.horizVariance() == VarianceOverride::FLOATED );
+        REQUIRE( station.vertVariance() == VarianceOverride::FLOATED_TRAVERSE );
+        REQUIRE( station.note() == "Entrance" );
+        REQUIRE( station.segment() == "blah" );
+        REQUIRE( station.comment() == "dms with ft elevations");
 
         parser.parseLine("#FIX A4 620775.38 3461050.67 98.45");
-        REQUIRE( visitor.fixedStation == "A4" );
-        REQUIRE( visitor.east == ULength(620775.38, Length::meters()) );
-        REQUIRE( visitor.north == ULength(3461050.67, Length::meters()) );
-        REQUIRE( visitor.rectUp == ULength(98.45, Length::meters()) );
+        REQUIRE( station.name() == "A4" );
+        REQUIRE( station.east() == ULength(620775.38, Length::meters()) );
+        REQUIRE( station.north() == ULength(3461050.67, Length::meters()) );
+        REQUIRE( station.rectUp() == ULength(98.45, Length::meters()) );
 
         SECTION( "measurements can be reordered" ) {
             parser.parseLine("#units order=nue");
             parser.parseLine("#fix a 1 2 3");
-            REQUIRE( visitor.north == ULength(1, Length::meters()) );
-            REQUIRE( visitor.rectUp == ULength(2, Length::meters()) );
-            REQUIRE( visitor.east == ULength(3, Length::meters()) );
+            REQUIRE( station.north() == ULength(1, Length::meters()) );
+            REQUIRE( station.rectUp() == ULength(2, Length::meters()) );
+            REQUIRE( station.east() == ULength(3, Length::meters()) );
         }
 
         SECTION( "affected by dUnit" ) {
             parser.parseLine("#units d=feet");
             parser.parseLine("#fix a 1 2 3");
-            REQUIRE( visitor.east == ULength(1, Length::feet()) );
-            REQUIRE( visitor.north == ULength(2, Length::feet()) );
-            REQUIRE( visitor.rectUp == ULength(3, Length::feet()) );
+            REQUIRE( station.east() == ULength(1, Length::feet()) );
+            REQUIRE( station.north() == ULength(2, Length::feet()) );
+            REQUIRE( station.rectUp() == ULength(3, Length::feet()) );
         }
 
         SECTION( "valid spacing" ) {

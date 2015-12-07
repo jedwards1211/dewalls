@@ -1,8 +1,6 @@
 #include "wallsparser.h"
 #include "unitizedmath.h"
 
-#include <iostream>
-
 namespace dewalls {
 
 typedef UnitizedDouble<Length> ULength;
@@ -309,13 +307,18 @@ WallsParser::WallsParser(QString line)
 
 WallsParser::WallsParser(Segment segment)
     : LineParser(segment),
-      _visitor(NULL),
       _inBlockComment(false),
       _units(),
       _stack(),
       _macros(),
       _segment(),
-      _date()
+      _date(),
+      _fromStationSegment(),
+      _toStationSegment(),
+      _azmSegment(),
+      _incSegment(),
+      _vector(),
+      _fixStation()
 {
 
 }
@@ -712,7 +715,6 @@ void WallsParser::beginBlockCommentLine()
     maybeWhitespace();
     expect("#[");
     _inBlockComment = true;
-    _visitor->visitBlockCommentLine(remaining().value());
 }
 
 void WallsParser::endBlockCommentLine()
@@ -725,7 +727,7 @@ void WallsParser::endBlockCommentLine()
 
 void WallsParser::insideBlockCommentLine()
 {
-    _visitor->visitBlockCommentLine(remaining().value());
+    emit parsedComment(remaining().value());
 }
 
 Segment WallsParser::untilComment(std::initializer_list<QString> expectedItems)
@@ -826,9 +828,9 @@ void WallsParser::noteDirective()
     whitespace();
     QString station = expect(stationRx, {"<STATION NAME>"}).value();
     whitespace();
-    QString note = escapedText([](QChar c) { return c != ';'; }, {"<NOTE>"});
+    QString _note = escapedText([](QChar c) { return c != ';'; }, {"<NOTE>"});
 
-    _visitor->visitNoteLine(station, note);
+    emit parsedNote(station, _note);
 }
 
 void WallsParser::flagLine()
@@ -862,13 +864,13 @@ void WallsParser::flagDirective()
         maybeWhitespace();
     }
 
-    QString flag;
-    bool hasFlag = maybe(flag, [&]() { return slashPrefixedFlag(); });
+    QString _flag;
+    bool hasFlag = maybe(_flag, [&]() { return slashPrefixedFlag(); });
     maybeWhitespace();
 
     if (stations.isEmpty())
     {
-        _units.flag() = flag;
+        _units.flag() = _flag;
     }
     else
     {
@@ -876,7 +878,7 @@ void WallsParser::flagDirective()
         {
             throwAllExpected();
         }
-        _visitor->visitFlaggedStations(flag, stations);
+        emit parsedFlag(stations, _flag);
     }
 
     inlineCommentOrEndOfLine();
@@ -902,7 +904,7 @@ void WallsParser::symbolLine()
 void WallsParser::dateLine()
 {
     maybeWhitespace();
-    _visitor->visitDateLine(dateDirective());
+    emit parsedDate(dateDirective());
     maybeWhitespace();
     inlineCommentOrEndOfLine();
 }
@@ -948,49 +950,20 @@ void WallsParser::unitsLine()
     oneOf([&]() { expect("#units", Qt::CaseInsensitive); },
     [&]() { expect("#u", Qt::CaseInsensitive); });
 
-    _visitor->beginUnitsLine();
+    emit willParseUnits();
 
-    try
+    if (maybeWhitespace())
     {
-        if (maybeWhitespace())
-        {
-            unitsOptions();
-        }
-        _visitor->endUnitsLine();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        _visitor->abortUnitsLine();
-        throw ex;
-    }
-    catch (const SegmentParseException& ex)
-    {
-        _visitor->abortUnitsLine();
-        throw ex;
+        unitsOptions();
+        emit parsedUnits();
     }
 }
 
 void WallsParser::parseUnitsOptions(Segment options)
 {
     reset(options);
-
-    _visitor->beginUnitsLine();
-
-    try
-    {
-        unitsOptions();
-        _visitor->endUnitsLine();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        _visitor->abortUnitsLine();
-        throw ex;
-    }
-    catch (const SegmentParseException& ex)
-    {
-        _visitor->abortUnitsLine();
-        throw ex;
-    }
+    unitsOptions();
+    emit parsedUnits();
 }
 
 void WallsParser::unitsOptions()
@@ -1346,35 +1319,22 @@ void WallsParser::vectorLine()
 {
     maybeWhitespace();
     fromStation();
-    try
-    {
-        whitespace();
-        afterFromStation();
-        maybeWhitespace();
-        endOfLine();
-        _visitor->endVectorLine();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        _visitor->abortVectorLine();
-        throw ex;
-    }
-    catch (const SegmentParseException& ex)
-    {
-        _visitor->abortVectorLine();
-        throw ex;
-    }
+    whitespace();
+    afterFromStation();
+    maybeWhitespace();
+    endOfLine();
+    emit parsedVector(_vector);
 }
 
 void WallsParser::fromStation()
 {
     _fromStationSegment = expect(stationRx, {"<STATION NAME>"}).value();
-    _fromStation = _fromStationSegment.value();
-    if (optionalStationRx.indexIn(_fromStation) >= 0) {
-        _fromStation.clear();
+    QString from = _fromStationSegment.value();
+    if (optionalStationRx.indexIn(from) >= 0) {
+        from.clear();
     }
-    _visitor->beginVectorLine();
-    _visitor->visitFrom(_fromStation);
+    _vector = Vector();
+    _vector.setFrom(from);
 }
 
 void WallsParser::afterFromStation()
@@ -1384,7 +1344,10 @@ void WallsParser::afterFromStation()
         whitespace();
         afterToStation();
     }, [&]() {
-        _visitor->cancelShotMeasurements();
+        // clear all measurements
+        QString from = _vector.from();
+        _vector = Vector();
+        _vector.setFrom(from);
         lruds();
         afterLruds();
     });
@@ -1393,15 +1356,16 @@ void WallsParser::afterFromStation()
 void WallsParser::toStation()
 {
     _toStationSegment = expect(stationRx, {"<STATION NAME>"});
-    _toStation = _toStationSegment.value();
-    if (optionalStationRx.indexIn(_toStation) >= 0)
+    QString to = _toStationSegment.value();
+    if (optionalStationRx.indexIn(to) >= 0)
     {
-        _toStation.clear();
+        to.clear();
     }
-    if (_fromStation.isEmpty() && _toStation.isEmpty()) {
+    if (_vector.from().isEmpty() && to.isEmpty())
+    {
         throw SegmentParseException(_toStationSegment, "from and to station can't both be omitted");
     }
-    _visitor->visitTo(_toStation);
+    _vector.setTo(to);
 }
 
 void WallsParser::afterToStation()
@@ -1434,7 +1398,8 @@ void WallsParser::afterToStation()
 
     if (_units.vectorType() == VectorType::CT)
     {
-        if (!_azmFs.isValid() && !_azmBs.isValid() && !WallsUnits::isVertical(_incFs, _incBs))
+        if (!_vector.frontAzimuth().isValid() && !_vector.backAzimuth().isValid() &&
+                !WallsUnits::isVertical(_vector.frontInclination(), _vector.backInclination()))
         {
             throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
@@ -1463,17 +1428,17 @@ void WallsParser::rectElement(RectElement elem)
 
 void WallsParser::east()
 {
-    _visitor->visitEast(length(_units.dUnit()));
+    _vector.setEast(length(_units.dUnit()));
 }
 
 void WallsParser::north()
 {
-    _visitor->visitNorth(length(_units.dUnit()));
+    _vector.setNorth(length(_units.dUnit()));
 }
 
 void WallsParser::rectUp()
 {
-    _visitor->visitRectUp(length(_units.dUnit()));
+    _vector.setRectUp(length(_units.dUnit()));
 }
 
 void WallsParser::ctElement(CtElement elem)
@@ -1504,7 +1469,7 @@ void WallsParser::distance()
     int start = _i;
     ULength dist = unsignedLength(_units.dUnit());
     checkCorrectedSign(start, dist, _units.incd());
-    _visitor->visitDistance(dist);
+    _vector.setDistance(dist);
 }
 
 UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
@@ -1525,40 +1490,36 @@ UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
 void WallsParser::azimuth()
 {
     int start = _i;
-    _azmFs.clear();
-    _azmBs.clear();
+    UAngle azmFs;
+    UAngle azmBs;
 
     oneOf([&]() {
-        optional(_azmFs, [&]() { return azimuth(_units.aUnit()); });
+        optional(azmFs, [&]() { return azimuth(_units.aUnit()); });
         maybe([&]() {
             expect('/');
-            optional(_azmBs, [&]() { return azimuth(_units.abUnit()); });
+            optional(azmBs, [&]() { return azimuth(_units.abUnit()); });
         });
     },
     [&]() {
         expect('/');
-        optional(_azmBs, [&]() { return azimuth(_units.abUnit()); });
+        optional(azmBs, [&]() { return azimuth(_units.abUnit()); });
     });
 
-    if (_azmFs.isValid()) {
-        _visitor->visitFrontsightAzimuth(_azmFs);
-    }
-    if (_azmBs.isValid()) {
-        _visitor->visitBacksightAzimuth(_azmBs);
-    }
+    _vector.setFrontAzimuth(azmFs);
+    _vector.setBackAzimuth(azmBs);
 
     _azmSegment = _line.mid(start, _i - start);
 
-    if (_azmFs.isValid() && _azmBs.isValid())
+    if (azmFs.isValid() && azmBs.isValid())
     {
-        UAngle diff = azmDifference(_azmFs, _azmBs);
+        UAngle diff = azmDifference(azmFs, azmBs);
         if (diff > _units.typeabTolerance())
         {
-            _visitor->message(WallsMessage("warning",
-                                           QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
-                                           .arg(diff.toString())
-                                           .arg(_units.typevbTolerance().toString()),
-                                           _azmSegment));
+            emit message(WallsMessage("warning",
+                                      QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
+                                      .arg(diff.toString())
+                                      .arg(_units.typeabTolerance().toString()),
+                                      _azmSegment));
         }
     }
 }
@@ -1570,54 +1531,40 @@ UAngle WallsParser::incDifference(UAngle fs, UAngle bs) {
 void WallsParser::inclination()
 {
     int start = _i;
-    _incFs.clear();
-    _incBs.clear();
+    UAngle incFs;
+    UAngle incBs;
 
     oneOf([&]() {
-        optional(_incFs, [&]() { return inclination(_units.vUnit()); });
+        optional(incFs, [&]() { return inclination(_units.vUnit()); });
         maybe([&]() {
             expect('/');
-            optional(_incBs, [&]() { return inclination(_units.vbUnit()); });
+            optional(incBs, [&]() { return inclination(_units.vbUnit()); });
         });
     },
     [&]() {
         expect('/');
-        optional(_incBs, [&]() { return inclination(_units.vbUnit()); });
+        optional(incBs, [&]() { return inclination(_units.vbUnit()); });
     });
-
-    if (_incFs.isValid()) {
-        _visitor->visitFrontsightInclination(_incFs);
-    }
-    if (_incBs.isValid()) {
-        _visitor->visitBacksightInclination(_incBs);
-    }
 
     _incSegment = _line.mid(start, _i - start);
 
-    if (!_incFs.isValid() && !_incBs.isValid()) {
-        _incFs = UAngle(0, _units.vUnit());
-        _visitor->visitFrontsightInclination(_incFs);
+    if (!incFs.isValid() && !incBs.isValid()) {
+        incFs = UAngle(0, _units.vUnit());
     }
-    else {
-        if (_incFs.isValid()) {
-            _visitor->visitFrontsightInclination(_incFs);
-        }
-        if (_incBs.isValid()) {
-            _visitor->visitBacksightInclination(_incBs);
-        }
-        if (_incFs.isValid() && _incBs.isValid())
+    else if (incFs.isValid() && incBs.isValid()) {
+        UAngle diff = incDifference(incFs, incBs);
+        if (diff > _units.typevbTolerance())
         {
-            UAngle diff = incDifference(_incFs, _incBs);
-            if (diff > _units.typevbTolerance())
-            {
-                _visitor->message(WallsMessage("warning",
-                                               QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
-                                               .arg(diff.toString())
-                                               .arg(_units.typevbTolerance().toString()),
-                                               _incSegment));
-            }
+            emit message(WallsMessage("warning",
+                                      QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")
+                                      .arg(diff.toString())
+                                      .arg(_units.typevbTolerance().toString()),
+                                      _incSegment));
         }
     }
+
+    _vector.setFrontInclination(incFs);
+    _vector.setBackInclination(incBs);
 }
 
 void WallsParser::tapingMethodElements()
@@ -1652,7 +1599,7 @@ void WallsParser::instrumentHeight()
     if (optional(ih, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, ih, _units.incs());
-        _visitor->visitInstrumentHeight(ih);
+        _vector.setInstHeight(ih);
     }
 }
 
@@ -1663,7 +1610,7 @@ void WallsParser::targetHeight()
     if (optional(th, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, th, _units.incs());
-        _visitor->visitTargetHeight(th);
+        _vector.setTargetHeight(th);
     }
 }
 
@@ -1693,7 +1640,7 @@ void WallsParser::left()
     if (optional(left, [&]() { return unsignedLength(_units.sUnit()); }))
     {
         checkCorrectedSign(start, left, _units.incs());
-        _visitor->visitLeft(left);
+        _vector.setLeft(left);
     }
 }
 
@@ -1704,7 +1651,7 @@ void WallsParser::right()
     if (optional(right, [&]() { return unsignedLength(_units.sUnit()); }))
     {
         checkCorrectedSign(start, right, _units.incs());
-        _visitor->visitRight(right);
+        _vector.setRight(right);
     }
 }
 
@@ -1715,7 +1662,7 @@ void WallsParser::up()
     if (optional(up, [&]() { return unsignedLength(_units.sUnit()); }))
     {
         checkCorrectedSign(start, up, _units.incs());
-        _visitor->visitUp(up);
+        _vector.setUp(up);
     }
 }
 
@@ -1726,28 +1673,26 @@ void WallsParser::down()
     if (optional(down, [&]() { return unsignedLength(_units.sUnit()); }))
     {
         checkCorrectedSign(start, down, _units.incs());
-        _visitor->visitDown(down);
+        _vector.setDown(down);
     }
 }
 
 void WallsParser::afterVectorMeasurements()
 {
-    if (maybe([&]() { return varianceOverrides(); }))
+    if (maybe([&]() { return varianceOverrides(_vector); }))
     {
         maybeWhitespace();
     }
     afterVectorVarianceOverrides();
 }
 
-void WallsParser::varianceOverrides()
+template<class T>
+void WallsParser::varianceOverrides(T& target)
 {
     expect('(');
     maybeWhitespace();
     VarianceOverridePtr horizontal = varianceOverride(_units.dUnit());
-    if (!horizontal.isNull())
-    {
-        _visitor->visitHorizontalVarianceOverride(horizontal);
-    }
+    target.setHorizVariance(horizontal);
     maybeWhitespace();
     if (maybeChar(','))
     {
@@ -1757,13 +1702,11 @@ void WallsParser::varianceOverrides()
         {
             throw allExpected();
         }
-        if (!vertical.isNull()) {
-            _visitor->visitVerticalVarianceOverride(vertical);
-        }
+        target.setVertVariance(vertical);
     }
     else if (!horizontal.isNull())
     {
-        _visitor->visitVerticalVarianceOverride(horizontal);
+        target.setVertVariance(horizontal);
     }
     expect(')');
 }
@@ -1866,12 +1809,13 @@ void WallsParser::afterRequiredWhitespaceDelimLrudMeasurements()
 
 void WallsParser::lrudFacingAngle()
 {
-    _visitor->visitLrudFacingAngle(azimuth(_units.aUnit()));
+    _vector.setLrudAngle(azimuth(_units.aUnit()));
 }
 
 void WallsParser::lrudCFlag()
 {
     expect('c', Qt::CaseInsensitive);
+    _vector.setCFlag(true);
 }
 
 void WallsParser::afterLruds()
@@ -1886,12 +1830,19 @@ void WallsParser::afterLruds()
 void WallsParser::inlineDirective()
 {
     // currently this is the only directive that can be on a vector line
-    inlineSegmentDirective();
+    inlineSegmentDirective(_vector);
 }
 
-void WallsParser::inlineSegmentDirective()
+void WallsParser::inlineFixDirective()
 {
-    _visitor->visitInlineSegment(segmentDirective().value());
+    // currently this is the only directive that can be on a fix station line
+    inlineSegmentDirective(_fixStation);
+}
+
+template<class T>
+void WallsParser::inlineSegmentDirective(T& target)
+{
+    target.setSegment(segmentDirective().value());
 }
 
 void WallsParser::fixLine()
@@ -1900,31 +1851,18 @@ void WallsParser::fixLine()
     expect("#fix", Qt::CaseInsensitive);
     whitespace();
     fixedStation();
-    try
-    {
-        whitespace();
-        afterFixedStation();
-        maybeWhitespace();
-        endOfLine();
-        _visitor->endFixLine();
-    }
-    catch (const SegmentParseExpectedException& ex)
-    {
-        _visitor->abortFixLine();
-        throw ex;
-    }
-    catch (const SegmentParseException& ex)
-    {
-        _visitor->abortFixLine();
-        throw ex;
-    }
+    whitespace();
+    afterFixedStation();
+    maybeWhitespace();
+    endOfLine();
+    emit parsedFixStation(_fixStation);
 }
 
 void WallsParser::fixedStation()
 {
     QString fixed = expect(stationRx, {"<STATION NAME>"}).value();
-    _visitor->beginFixLine();
-    _visitor->visitFixedStation(fixed);
+    _fixStation = FixStation();
+    _fixStation.setName(fixed);
 }
 
 void WallsParser::afterFixedStation()
@@ -1960,24 +1898,24 @@ void WallsParser::fixRectElement(RectElement elem)
 
 void WallsParser::fixEast()
 {
-    oneOf([&]() { _visitor->visitEast(length(_units.dUnit())); },
-    [&]() { _visitor->visitLongitude(longitude()); });
+    oneOf([&]() { _fixStation.setEast(length(_units.dUnit())); },
+    [&]() { _fixStation.setLongitude(longitude()); });
 }
 
 void WallsParser::fixNorth()
 {
-    oneOf([&]() { _visitor->visitNorth(length(_units.dUnit())); },
-    [&]() { _visitor->visitLatitude(latitude()); });
+    oneOf([&]() { _fixStation.setNorth(length(_units.dUnit())); },
+    [&]() { _fixStation.setLatitude(latitude()); });
 }
 
 void WallsParser::fixUp()
 {
-    _visitor->visitRectUp(length(_units.dUnit()));
+    _fixStation.setRectUp(length(_units.dUnit()));
 }
 
 void WallsParser::afterFixMeasurements()
 {
-    if (maybe([&]() { varianceOverrides(); }))
+    if (maybe([&]() { varianceOverrides(_fixStation); }))
     {
         maybeWhitespace();
     }
@@ -1986,26 +1924,27 @@ void WallsParser::afterFixMeasurements()
 
 void WallsParser::afterFixVarianceOverrides()
 {
-    if (maybe([&]() { inlineNote(); }))
+    if (maybe([&]() { inlineNote(_fixStation); }))
     {
         maybeWhitespace();
     }
-    afterFixInlineNote();
+    afterInlineFixNote();
 }
 
-void WallsParser::inlineNote()
+template<class T>
+void WallsParser::inlineNote(T& target)
 {
     expect('/');
-    _visitor->visitInlineNote(escapedText([](QChar c) { return c != ';' && c != '#'; }, {"<NOTE>"}).trimmed());
+    target.setNote(escapedText([](QChar c) { return c != ';' && c != '#'; }, {"<NOTE>"}).trimmed());
 }
 
-void WallsParser::afterFixInlineNote()
+void WallsParser::afterInlineFixNote()
 {
-    if (maybe([&]() { inlineDirective(); }))
+    if (maybe([&]() { inlineFixDirective(); }))
     {
         maybeWhitespace();
     }
-    inlineCommentOrEndOfLine();
+    inlineCommentOrEndOfLine(_fixStation);
 }
 
 void WallsParser::inlineCommentOrEndOfLine()
@@ -2014,16 +1953,31 @@ void WallsParser::inlineCommentOrEndOfLine()
     [&]() { endOfLine(); });
 }
 
+template<class T>
+void WallsParser::inlineCommentOrEndOfLine(T& target)
+{
+    oneOf([&]() { inlineComment(target); },
+    [&]() { endOfLine(); });
+}
+
 void WallsParser::comment()
 {
     expect(';');
-    _visitor->visitCommentLine(remaining().value());
+    emit parsedComment(remaining().value());
 }
 
 void WallsParser::inlineComment()
 {
     expect(';');
-    _visitor->visitInlineComment(remaining().value());
+    emit parsedComment(remaining().value());
 }
+
+template<class T>
+void WallsParser::inlineComment(T& target)
+{
+    expect(';');
+    target.setComment(remaining().value());
+}
+
 
 } // namespace dewalls
