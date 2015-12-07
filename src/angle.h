@@ -2,37 +2,27 @@
 #define DEWALLS_ANGLE_H
 
 #include <QString>
-#include <QSharedPointer>
 #include "unittype.h"
 
 namespace dewalls {
 
-class Angle : public UnitType<Angle>
+class Angle
 {
 public:
-    static void init();
+    enum Unit {
+        Invalid = 0,
+        Radians = 1,
+        Degrees = 2,
+        Gradians = 3,
+        MilsNATO = 4,
+        PercentGrade = 5
+    };
 
-    static const Angle *       type() { init(); return _type.data(); }
-    static const Unit<Angle> * degrees() { init(); return _type->_degrees; }
-    static const Unit<Angle> * deg() { init(); return _type->_degrees; }
-    static const Unit<Angle> * radians() { init(); return _type->_radians; }
-    static const Unit<Angle> * rad() { init(); return _type->_radians; }
-    static const Unit<Angle> * gradians() { init(); return _type->_gradians; }
-    static const Unit<Angle> * grad() { init(); return _type->_gradians; }
-    static const Unit<Angle> * milsNATO() { init(); return _type->_milsNATO; }
-    static const Unit<Angle> * mil() { init(); return _type->_milsNATO; }
-    static const Unit<Angle> * percentGrade() { init(); return _type->_percentGrade; }
-    static const Unit<Angle> * percent() { init(); return _type->_percentGrade; }
+    static QString Name;
 
-private:
-    Angle();
-
-    static QSharedPointer<Angle> _type;
-    const Unit<Angle> * _degrees;
-    const Unit<Angle> * _radians;
-    const Unit<Angle> * _gradians;
-    const Unit<Angle> * _milsNATO;
-    const Unit<Angle> * _percentGrade;
+    static long double toBase(long double quantity, Unit fromUnit);
+    static long double fromBase(long double quantity, Unit toUnit);
+    static long double convert(long double quantity, Unit fromUnit, Unit toUnit);
 };
 
 } // namespace dewalls

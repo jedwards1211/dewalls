@@ -1,35 +1,54 @@
 #include "angle.h"
-#include "defaultunit.h"
-#include "percentgrade.h"
-
-const long double PI = acosl(-1.0L);
+#include <cmath>
 
 namespace dewalls {
 
-Angle::Angle():
-    UnitType<Angle>("angle")
-{
-    _degrees 		= new DefaultUnit<Angle>("deg", this, PI / 180.0L, 180.0L / PI);
-    _radians 		= new DefaultUnit<Angle>("rad", this, 1.0L, 1.0L);
-    _gradians	 	= new DefaultUnit<Angle>("grad", this, PI / 200.0L, 200.0L / PI);
-    _milsNATO	 	= new DefaultUnit<Angle>("mil", this, PI / 3200.0L, 3200.0L / PI);
-    _percentGrade   = new PercentGrade("%", this);
+constexpr long double PI = acosl(-1.0L);
+constexpr long double DegreesToRadians = PI / 180.0L;
+constexpr long double GradiansToRadians = PI / 200.0L;
+constexpr long double MilsNATOToRadians = PI / 3200.0L;
+constexpr long double RadiansToDegrees = 180.0L / PI;
+constexpr long double RadiansToGradians = 200.0L / PI;
+constexpr long double RadiansToMilsNATO = 3200.0L / PI;
 
-    addUnit(_degrees);
-    addUnit(_radians);
-    addUnit(_gradians);
-    addUnit(_milsNATO);
-    addUnit(_percentGrade);
+QString Angle::Name("angle");
+
+long double Angle::toBase(long double quantity, Unit fromUnit) {
+    switch (fromUnit) {
+    case Radians:
+        return quantity;
+    case Degrees:
+        return quantity * DegreesToRadians;
+    case Gradians:
+        return quantity * GradiansToRadians;
+    case MilsNATO:
+        return quantity * MilsNATOToRadians;
+    case PercentGrade:
+        return atan(quantity * 0.01L);
+    default:
+        return NAN;
+    }
 }
 
-QSharedPointer<Angle> Angle::_type = QSharedPointer<Angle>();
-
-void Angle::init()
-{
-    if (_type.isNull())
-    {
-        _type = QSharedPointer<Angle>(new Angle());
+long double Angle::fromBase(long double quantity, Unit toUnit) {
+    switch (toUnit) {
+    case Radians:
+        return quantity;
+    case Degrees:
+        return quantity * RadiansToDegrees;
+    case Gradians:
+        return quantity * RadiansToGradians;
+    case MilsNATO:
+        return quantity * RadiansToMilsNATO;
+    case PercentGrade:
+        return 100.0L * tan(quantity);
+    default:
+        return NAN;
     }
+}
+
+long double Angle::convert(long double quantity, Unit fromUnit, Unit toUnit) {
+    return fromBase(toBase(quantity, fromUnit), toUnit);
 }
 
 } // namespace dewalls

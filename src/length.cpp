@@ -1,36 +1,61 @@
 #include "length.h"
 #include "defaultunit.h"
-#include <QReadWriteLock>
-#include <QReadLocker>
+#include <QGlobalStatic>
+
+#include <iostream>
 
 namespace dewalls {
 
-Length::Length()
-    : UnitType<Length>("length")
-{
-    _meters = new DefaultUnit<Length>("m", this, 1.0L, 1.0L);
-    _centimeters = new DefaultUnit<Length>("cm", this, 0.001L, _meters);
-    _kilometers = new DefaultUnit<Length>("km", this, 1000.0L, _meters);
-    _feet = new DefaultUnit<Length>("ft", this, 0.3048L, _meters);
-    _yards = new DefaultUnit<Length>("yd", this, 3.0L, _feet);
-    _inches = new DefaultUnit<Length>("in", this, 1.0L / 12.0L, _feet);
+QString Length::Name("length");
 
-    addUnit(_meters);
-    addUnit(_centimeters);
-    addUnit(_kilometers);
-    addUnit(_feet);
-    addUnit(_yards);
-    addUnit(_inches);
+constexpr long double FeetToMeters = 0.3048L;
+constexpr long double YardsToMeters = 3.0L * FeetToMeters;
+constexpr long double InchesToMeters = FeetToMeters / 12.0L;
+
+constexpr long double MetersToFeet = 1.0L / FeetToMeters;
+constexpr long double MetersToYards = 1.0L / YardsToMeters;
+constexpr long double MetersToInches = 1.0L / InchesToMeters;
+
+long double Length::toBase(long double quantity, Unit fromUnit) {
+    switch(fromUnit) {
+    case Meters:
+        return quantity;
+    case Centimeters:
+        return quantity * 0.01L;
+    case Kilometers:
+        return quantity * 1000.0L;
+    case Feet:
+        return quantity * FeetToMeters;
+    case Yards:
+        return quantity * YardsToMeters;
+    case Inches:
+        return quantity * InchesToMeters;
+    default:
+        return NAN;
+    }
 }
 
-QSharedPointer<Length> Length::_type = QSharedPointer<Length>();
-
-void Length::init()
-{
-    if (_type.isNull())
-    {
-        _type = QSharedPointer<Length>(new Length());
+long double Length::fromBase(long double quantity, Unit toUnit) {
+    switch(toUnit) {
+    case Meters:
+        return quantity;
+    case Centimeters:
+        return quantity * 100.0L;
+    case Kilometers:
+        return quantity * 0.001L;
+    case Feet:
+        return quantity * MetersToFeet;
+    case Yards:
+        return quantity * MetersToYards;
+    case Inches:
+        return quantity * MetersToInches;
+    default:
+        return NAN;
     }
+}
+
+long double Length::convert(long double quantity, Unit fromUnit, Unit toUnit) {
+    return fromBase(toBase(quantity, fromUnit), toUnit);
 }
 
 } // namespace dewalls
