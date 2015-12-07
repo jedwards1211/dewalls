@@ -1330,7 +1330,7 @@ void WallsParser::fromStation()
 {
     _fromStationSegment = expect(stationRx, {"<STATION NAME>"}).value();
     QString from = _fromStationSegment.value();
-    if (optionalStationRx.indexIn(from) >= 0) {
+    if (optionalStationRx.exactMatch(from)) {
         from.clear();
     }
     _vector = Vector();
@@ -1357,7 +1357,7 @@ void WallsParser::toStation()
 {
     _toStationSegment = expect(stationRx, {"<STATION NAME>"});
     QString to = _toStationSegment.value();
-    if (optionalStationRx.indexIn(to) >= 0)
+    if (optionalStationRx.exactMatch(to))
     {
         to.clear();
     }
