@@ -346,15 +346,15 @@ void WallsProjectParser::refLine() {
     expect(".REF", Qt::CaseInsensitive);
     whitespace();
     GeoReference ref;
-    ref.northing = ULength(doubleLiteral(), Length::meters());
+    ref.northing = ULength(doubleLiteral(), Length::Meters);
     whitespace();
-    ref.easting = ULength(doubleLiteral(), Length::meters());
+    ref.easting = ULength(doubleLiteral(), Length::Meters);
     whitespace();
     ref.zone = intLiteral();
     whitespace();
-    ref.gridConvergence = UAngle(doubleLiteral(), Angle::degrees());
+    ref.gridConvergence = UAngle(doubleLiteral(), Angle::Degrees);
     whitespace();
-    ref.elevation = ULength(doubleLiteral(), Length::meters());
+    ref.elevation = ULength(doubleLiteral(), Length::Meters);
     whitespace();
     doubleLiteral(); // don't know what this field represents
     whitespace();
@@ -367,7 +367,7 @@ void WallsProjectParser::refLine() {
     whitespace();
     seconds = unsignedDoubleLiteral();
     whitespace();
-    ref.latitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::degrees());
+    ref.latitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::Degrees);
 
     degrees = intLiteral();
     whitespace();
@@ -375,7 +375,7 @@ void WallsProjectParser::refLine() {
     whitespace();
     seconds = unsignedDoubleLiteral();
     whitespace();
-    ref.longitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::degrees());
+    ref.longitude = UAngle(degrees + ((minutes + seconds / 60.0) / 60.0) * signum(degrees), Angle::Degrees);
 
     ref.wallsDatumIndex = unsignedIntLiteral();
     whitespace();

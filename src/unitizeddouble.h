@@ -2,7 +2,7 @@
 #define DEWALLS_UNITIZEDDOUBLE_H
 
 #include <iostream>
-#include "unit.h"
+#include <cmath>
 
 namespace dewalls {
 
@@ -10,16 +10,18 @@ template<class T>
 class UnitizedDouble
 {
 public:
+    typedef typename T::Unit Unit;
+
     UnitizedDouble();
-    UnitizedDouble(double quantity, const Unit<T> *unit);
+    UnitizedDouble(double quantity, Unit unit);
     UnitizedDouble(UnitizedDouble&& other);
     UnitizedDouble(const UnitizedDouble& other) = default;
 
-    const Unit<T> *unit() const;
-    double get(const Unit<T> *toUnit) const;
-    UnitizedDouble<T> in(const Unit<T> *unit) const;
-    inline bool isValid() const { return _unit != NULL; }
-    inline void clear() { _unit = NULL; }
+    Unit unit() const;
+    double get(Unit toUnit) const;
+    UnitizedDouble<T> in(Unit unit) const;
+    inline bool isValid() const { return _unit != T::Invalid; }
+    inline void clear() { _unit = T::Invalid; }
 
     inline bool isZero() const { return _unit && _quantity == 0.0; }
     inline bool isNonzero() const { return _unit && _quantity != 0.0; }
@@ -49,13 +51,13 @@ public:
     }
 
 private:
-    const Unit<T> *_unit;
+    Unit _unit;
     double _quantity;
 };
 
 template<class T>
 inline UnitizedDouble<T>::UnitizedDouble()
-    : _unit(NULL)
+    : _unit(T::Invalid)
 {
 
 }
@@ -86,7 +88,7 @@ inline UnitizedDouble<T>& UnitizedDouble<T>::operator =(UnitizedDouble<T> other)
 template<class T>
 inline UnitizedDouble<T>& UnitizedDouble<T>::operator +=(const UnitizedDouble<T>& rhs)
 {
-    if (!rhs._unit) _unit = NULL;
+    if (!rhs._unit) _unit = T::Invalid;
     else if (_unit) _quantity += rhs.get(_unit);
     return *this;
 }
@@ -100,7 +102,7 @@ inline UnitizedDouble<T> UnitizedDouble<T>::operator -()
 template<class T>
 inline UnitizedDouble<T>& UnitizedDouble<T>::operator -=(const UnitizedDouble<T>& rhs)
 {
-    if (!rhs._unit) _unit = NULL;
+    if (!rhs._unit) _unit = T::Invalid;
     else if (_unit) _quantity -= rhs.get(_unit);
     return *this;
 }
@@ -122,7 +124,7 @@ inline UnitizedDouble<T>& UnitizedDouble<T>::operator /=(const double& rhs)
 template<class T>
 inline UnitizedDouble<T>& UnitizedDouble<T>::operator %=(const UnitizedDouble<T>& rhs)
 {
-    if (!rhs._unit) _unit = NULL;
+    if (!rhs._unit) _unit = T::Invalid;
     else if (_unit) _quantity = fmod(_quantity, rhs.get(_unit));
     return *this;
 }
@@ -220,7 +222,7 @@ inline UnitizedDouble<T> operator %(UnitizedDouble<T> lhs, const UnitizedDouble<
 }
 
 template<class T>
-inline UnitizedDouble<T>::UnitizedDouble(double quantity, const Unit<T> *unit):
+inline UnitizedDouble<T>::UnitizedDouble(double quantity, Unit unit):
     _unit(unit),
     _quantity(quantity)
 {
@@ -228,19 +230,19 @@ inline UnitizedDouble<T>::UnitizedDouble(double quantity, const Unit<T> *unit):
 }
 
 template<class T>
-inline const Unit<T> *UnitizedDouble<T>::unit() const
+inline typename T::Unit UnitizedDouble<T>::unit() const
 {
     return _unit;
 }
 
 template<class T>
-inline double UnitizedDouble<T>::get(const Unit<T> *toUnit) const
+inline double UnitizedDouble<T>::get(Unit toUnit) const
 {
-    return _unit ? _unit->convert(_quantity, toUnit) : NAN;
+    return T::convert(_quantity, _unit, toUnit);
 }
 
 template<class T>
-inline UnitizedDouble<T> UnitizedDouble<T>::in(const Unit<T> *unit) const
+inline UnitizedDouble<T> UnitizedDouble<T>::in(typename T::Unit unit) const
 {
     return UnitizedDouble<T>(get(unit), unit);
 }
@@ -248,8 +250,8 @@ inline UnitizedDouble<T> UnitizedDouble<T>::in(const Unit<T> *unit) const
 template<class T>
 inline QString UnitizedDouble<T>::toString() const
 {
-    if (!_unit) return "<no value>";
-    return QString("%1").arg(_quantity) + " " + _unit->name();
+    if (!_unit) return "";
+    return QString("%1 %2").arg(_quantity).arg(T::symbolFor(_unit));
 }
 
 } // namespace dewalls

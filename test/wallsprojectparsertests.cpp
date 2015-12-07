@@ -30,11 +30,11 @@ TEST_CASE( "WallsProjectParser parses example file", "[WallsProjectParser]" ) {
     CHECK( projectRoot->gridRelative() );
 
     REQUIRE( !projectRoot->reference().isNull() );
-    CHECK( projectRoot->reference()->northing == ULength(2308521.655, Length::meters()) );
-    CHECK( projectRoot->reference()->easting == ULength(324341.706, Length::meters()) );
+    CHECK( projectRoot->reference()->northing == ULength(2308521.655, Length::Meters) );
+    CHECK( projectRoot->reference()->easting == ULength(324341.706, Length::Meters) );
     CHECK( projectRoot->reference()->zone == 16 );
-    CHECK( projectRoot->reference()->gridConvergence == UAngle(-0.602, Angle::degrees()) );
-    CHECK( projectRoot->reference()->elevation == ULength(27, Length::meters()) );
+    CHECK( projectRoot->reference()->gridConvergence == UAngle(-0.602, Angle::Degrees) );
+    CHECK( projectRoot->reference()->elevation == ULength(27, Length::Meters) );
 
     REQUIRE( projectRoot->Children.size() == 5 );
 

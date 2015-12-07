@@ -5,63 +5,61 @@ namespace dewalls {
 
 typedef UnitizedDouble<Length> ULength;
 typedef UnitizedDouble<Angle>  UAngle;
-typedef const Unit<Length> * LengthUnit;
-typedef const Unit<Angle>  * AngleUnit;
 typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
 typedef void (WallsParser::*OwnProduction)();
 
-QHash<QString, LengthUnit> WallsParser::createLengthUnits()
+QHash<QString, Length::Unit> WallsParser::createLengthUnits()
 {
-    QHash<QString, LengthUnit> result;
-    result["meters"] = result["meter"] = result["m"] = Length::meters();
-    result["feet"] = result["foot"] = result["ft"] = result["f"] = Length::feet();
+    QHash<QString, Length::Unit> result;
+    result["meters"] = result["meter"] = result["m"] = Length::Meters;
+    result["feet"] = result["foot"] = result["ft"] = result["f"] = Length::Feet;
     return result;
 }
 
-QHash<QString, AngleUnit> WallsParser::createAzmUnits()
+QHash<QString, Angle::Unit> WallsParser::createAzmUnits()
 {
-    QHash<QString, AngleUnit> result;
-    result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
-    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::milsNATO();
-    result["grads"] = result["grad"] = result["g"] = Angle::gradians();
+    QHash<QString, Angle::Unit> result;
+    result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
+    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::MilsNATO;
+    result["grads"] = result["grad"] = result["g"] = Angle::Gradians;
     return result;
 }
 
-QHash<QString, AngleUnit> WallsParser::createIncUnits()
+QHash<QString, Angle::Unit> WallsParser::createIncUnits()
 {
-    QHash<QString, AngleUnit> result;
-    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::degrees();
-    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::milsNATO();
-    result["grads"] = result["grad"] = result["g"] = Angle::gradians();
-    result["percent"] = result["p"] = Angle::percentGrade();
+    QHash<QString, Angle::Unit> result;
+    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
+    result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::MilsNATO;
+    result["grads"] = result["grad"] = result["g"] = Angle::Gradians;
+    result["percent"] = result["p"] = Angle::PercentGrade;
     return result;
 }
 
-QHash<QChar, LengthUnit> WallsParser::createLengthUnitSuffixes()
+QHash<QChar, Length::Unit> WallsParser::createLengthUnitSuffixes()
 {
-    QHash<QChar, LengthUnit> result;
-    result['m'] = result['M'] = Length::meters();
-    result['f'] = result['F'] = Length::feet();
-    result['i'] = result['I'] = Length::inches();
+    QHash<QChar, Length::Unit> result;
+    result['m'] = result['M'] = Length::Meters;
+    result['f'] = result['F'] = Length::Feet;
+    result['i'] = result['I'] = Length::Inches;
     return result;
 }
 
-QHash<QChar, AngleUnit> WallsParser::createAzmUnitSuffixes()
+QHash<QChar, Angle::Unit> WallsParser::createAzmUnitSuffixes()
 {
-    QHash<QChar, AngleUnit> result;
-    result['d'] = result['D'] = Angle::degrees();
-    result['g'] = result['G'] = Angle::gradians();
-    result['m'] = result['M'] = Angle::milsNATO();
+    QHash<QChar, Angle::Unit> result;
+    result['d'] = result['D'] = Angle::Degrees;
+    result['g'] = result['G'] = Angle::Gradians;
+    result['m'] = result['M'] = Angle::MilsNATO;
     return result;
 }
 
-QHash<QChar, AngleUnit> WallsParser::createIncUnitSuffixes()
+QHash<QChar, Angle::Unit> WallsParser::createIncUnitSuffixes()
 {
-    QHash<QChar, AngleUnit> result;
-    result['d'] = result['D'] = Angle::degrees();
-    result['g'] = result['G'] = Angle::gradians();
-    result['m'] = result['M'] = Angle::milsNATO();
-    result['p'] = result['P'] = Angle::percentGrade();
+    QHash<QChar, Angle::Unit> result;
+    result['d'] = result['D'] = Angle::Degrees;
+    result['g'] = result['G'] = Angle::Gradians;
+    result['m'] = result['M'] = Angle::MilsNATO;
+    result['p'] = result['P'] = Angle::PercentGrade;
     return result;
 }
 
@@ -250,12 +248,12 @@ double WallsParser::approx(double val)
 }
 
 
-const QHash<QString, LengthUnit> WallsParser::lengthUnits = WallsParser::createLengthUnits();
-const QHash<QString, AngleUnit> WallsParser::azmUnits = WallsParser::createAzmUnits();
-const QHash<QString, AngleUnit> WallsParser::incUnits = WallsParser::createIncUnits();
-const QHash<QChar, LengthUnit> WallsParser::lengthUnitSuffixes = WallsParser::createLengthUnitSuffixes();
-const QHash<QChar, AngleUnit> WallsParser::azmUnitSuffixes = WallsParser::createAzmUnitSuffixes();
-const QHash<QChar, AngleUnit> WallsParser::incUnitSuffixes = WallsParser::createIncUnitSuffixes();
+const QHash<QString, Length::Unit> WallsParser::lengthUnits = WallsParser::createLengthUnits();
+const QHash<QString, Angle::Unit> WallsParser::azmUnits = WallsParser::createAzmUnits();
+const QHash<QString, Angle::Unit> WallsParser::incUnits = WallsParser::createIncUnits();
+const QHash<QChar, Length::Unit> WallsParser::lengthUnitSuffixes = WallsParser::createLengthUnitSuffixes();
+const QHash<QChar, Angle::Unit> WallsParser::azmUnitSuffixes = WallsParser::createAzmUnitSuffixes();
+const QHash<QChar, Angle::Unit> WallsParser::incUnitSuffixes = WallsParser::createIncUnitSuffixes();
 const QHash<QChar, CardinalDirection> WallsParser::cardinalDirections = WallsParser::createCardinalDirections();
 const QHash<QChar, CardinalDirection> WallsParser::northSouth = WallsParser::createNorthSouth();
 const QHash<QChar, CardinalDirection> WallsParser::eastWest = WallsParser::createEastWest();
@@ -291,7 +289,7 @@ const QRegExp WallsParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
 const QHash<QString, OwnProduction> WallsParser::unitsOptionMap = WallsParser::createUnitsOptionMap();
 const QHash<QString, OwnProduction> WallsParser::directivesMap = WallsParser::createDirectivesMap();
 
-const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::degrees());
+const UAngle WallsParser::oneEighty = UAngle(180.0, Angle::Degrees);
 
 WallsParser::WallsParser()
     : WallsParser(Segment())
@@ -327,22 +325,22 @@ ULength WallsParser::unsignedLengthInches()
 {
     expect('i', Qt::CaseInsensitive);
     double inches = unsignedDoubleLiteral();
-    return ULength(inches, Length::in());
+    return ULength(inches, Length::Inches);
 }
 
-ULength WallsParser::unsignedLengthNonInches(LengthUnit defaultUnit)
+ULength WallsParser::unsignedLengthNonInches(Length::Unit defaultUnit)
 {
     double value = unsignedDoubleLiteral();
-    LengthUnit unit = oneOfMap(lengthUnitSuffixes, defaultUnit);
-    if (unit == Length::inches())
+    Length::Unit unit = oneOfMap(lengthUnitSuffixes, defaultUnit);
+    if (unit == Length::Inches)
     {
         double inches = unsignedDoubleLiteral();
-        return ULength(value * 12 + inches, Length::inches());
+        return ULength(value * 12 + inches, Length::Inches);
     }
     return ULength(value, unit);
 }
 
-ULength WallsParser::unsignedLength(LengthUnit defaultUnit)
+ULength WallsParser::unsignedLength(Length::Unit defaultUnit)
 {
     ULength result;
     oneOfR(result,
@@ -351,14 +349,14 @@ ULength WallsParser::unsignedLength(LengthUnit defaultUnit)
     return result;
 }
 
-ULength WallsParser::length(LengthUnit defaultUnit)
+ULength WallsParser::length(Length::Unit defaultUnit)
 {
     bool negate = maybe( [&]() { return expect('-'); } );
     ULength length = unsignedLength(defaultUnit);
     return negate ? -length : length;
 }
 
-UAngle WallsParser::unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUnit defaultUnit)
+UAngle WallsParser::unsignedAngle(QHash<QChar, Angle::Unit> unitSuffixes, Angle::Unit defaultUnit)
 {
     auto expectColon = [&]() { expect(':'); };
     auto _unsignedDoubleLiteral = [&]{ return unsignedDoubleLiteral(); };
@@ -380,7 +378,7 @@ UAngle WallsParser::unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUni
         }
         return UAngle((hasValue   ? value 		     : 0) +
                       (hasMinutes ? minutes / 60.0   : 0) +
-                      (hasSeconds ? seconds / 3600.0 : 0), Angle::degrees());
+                      (hasSeconds ? seconds / 3600.0 : 0), Angle::Degrees);
     }
     else if (!hasValue)
     {
@@ -409,7 +407,7 @@ UAngle WallsParser::unsignedDmsAngle()
     }
     return UAngle((hasDegrees ? degrees 	     : 0) +
                   (hasMinutes ? minutes / 60.0   : 0) +
-                  (hasSeconds ? seconds / 3600.0 : 0), Angle::degrees());
+                  (hasSeconds ? seconds / 3600.0 : 0), Angle::Degrees);
 }
 
 UAngle WallsParser::latitude()
@@ -418,7 +416,7 @@ UAngle WallsParser::latitude()
     CardinalDirection side = oneOfMap(northSouth);
     UAngle latitude = unsignedDmsAngle();
 
-    if (approx(latitude.get(Angle::degrees())) > 90.0)
+    if (approx(latitude.get(Angle::Degrees)) > 90.0)
     {
         throw SegmentParseException(_line.mid(start, _i), "latitude out of range");
     }
@@ -436,7 +434,7 @@ UAngle WallsParser::longitude()
     CardinalDirection side = oneOfMap(eastWest);
     UAngle longitude = unsignedDmsAngle();
 
-    if (approx(longitude.get(Angle::degrees())) > 180.0)
+    if (approx(longitude.get(Angle::Degrees)) > 180.0)
     {
         throw SegmentParseException(_line.mid(start, _i), "longitude out of range");
     }
@@ -448,13 +446,13 @@ UAngle WallsParser::longitude()
     return longitude;
 }
 
-UAngle WallsParser::nonQuadrantAzimuth(AngleUnit defaultUnit)
+UAngle WallsParser::nonQuadrantAzimuth(Angle::Unit defaultUnit)
 {
     int start = _i;
 
     UAngle result = unsignedAngle(azmUnitSuffixes, defaultUnit);
 
-    if (approx(result.get(Angle::degrees())) >= 360.0)
+    if (approx(result.get(Angle::Degrees)) >= 360.0)
     {
         throw SegmentParseException(_line.mid(start, _i), "azimuth out of range");
     }
@@ -468,9 +466,9 @@ UAngle WallsParser::quadrantAzimuth()
 
     int start = _i;
     UAngle angle;
-    if (maybe(angle, [&]() { return nonQuadrantAzimuth(Angle::degrees()); }))
+    if (maybe(angle, [&]() { return nonQuadrantAzimuth(Angle::Degrees); }))
     {
-        if (approx(angle.get(Angle::degrees())) >= 90.0)
+        if (approx(angle.get(Angle::Degrees)) >= 90.0)
         {
             throw SegmentParseException(_line.mid(start, _i), "azimuth out of range");
         }
@@ -485,7 +483,7 @@ UAngle WallsParser::quadrantAzimuth()
     return from.angle();
 }
 
-UAngle WallsParser::azimuth(AngleUnit defaultUnit)
+UAngle WallsParser::azimuth(Angle::Unit defaultUnit)
 {
     UAngle result;
     oneOfR(result, [&]() { return quadrantAzimuth(); },
@@ -493,7 +491,7 @@ UAngle WallsParser::azimuth(AngleUnit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::azimuthOffset(AngleUnit defaultUnit)
+UAngle WallsParser::azimuthOffset(Angle::Unit defaultUnit)
 {
     double signum;
     if (!maybe(signum, [this]() { return oneOfMap(signSignums); } ))
@@ -503,12 +501,12 @@ UAngle WallsParser::azimuthOffset(AngleUnit defaultUnit)
     return nonQuadrantAzimuth(defaultUnit) * signum;
 }
 
-UAngle WallsParser::unsignedInclination(AngleUnit defaultUnit)
+UAngle WallsParser::unsignedInclination(Angle::Unit defaultUnit)
 {
     int start = _i;
     UAngle result = unsignedAngle(incUnitSuffixes, defaultUnit);
 
-    if (approx(result.get(Angle::degrees())) > 90.0)
+    if (approx(result.get(Angle::Degrees)) > 90.0)
     {
         throw SegmentParseException(_line.mid(start, _i), "inclination out of range");
     }
@@ -516,7 +514,7 @@ UAngle WallsParser::unsignedInclination(AngleUnit defaultUnit)
     return result;
 }
 
-UAngle WallsParser::inclination(AngleUnit defaultUnit)
+UAngle WallsParser::inclination(Angle::Unit defaultUnit)
 {
     int start = _i;
     double signum;
@@ -534,7 +532,7 @@ UAngle WallsParser::inclination(AngleUnit defaultUnit)
     return angle;
 }
 
-VarianceOverridePtr WallsParser::varianceOverride(LengthUnit defaultUnit)
+VarianceOverridePtr WallsParser::varianceOverride(Length::Unit defaultUnit)
 {
     VarianceOverridePtr result;
     oneOfR(result,
@@ -558,12 +556,12 @@ VarianceOverridePtr WallsParser::floatedTraverseVarianceOverride()
     return VarianceOverride::FLOATED_TRAVERSE;
 }
 
-VarianceOverridePtr WallsParser::lengthVarianceOverride(LengthUnit defaultUnit)
+VarianceOverridePtr WallsParser::lengthVarianceOverride(Length::Unit defaultUnit)
 {
     return VarianceOverridePtr(new LengthOverride(unsignedLength(defaultUnit)));
 }
 
-VarianceOverridePtr WallsParser::rmsErrorVarianceOverride(LengthUnit defaultUnit)
+VarianceOverridePtr WallsParser::rmsErrorVarianceOverride(Length::Unit defaultUnit)
 {
     expect('r', Qt::CaseInsensitive);
     return VarianceOverridePtr(new RMSError(unsignedLength(defaultUnit)));
@@ -1032,14 +1030,14 @@ void WallsParser::reset_()
 
 void WallsParser::meters()
 {
-    _units.setDUnit(Length::meters());
-    _units.setSUnit(Length::meters());
+    _units.setDUnit(Length::Meters);
+    _units.setSUnit(Length::Meters);
 }
 
 void WallsParser::feet()
 {
-    _units.setDUnit(Length::feet());
-    _units.setSUnit(Length::feet());
+    _units.setDUnit(Length::Feet);
+    _units.setSUnit(Length::Feet);
 }
 
 void WallsParser::ct()
@@ -1074,7 +1072,7 @@ void WallsParser::ab()
 void WallsParser::a_ab()
 {
     expect('=');
-    AngleUnit unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
+    Angle::Unit unit = oneOfMapLowercase(nonwhitespaceRx, azmUnits);
     _units.setAUnit(unit);
     _units.setAbUnit(unit);
 }
@@ -1094,7 +1092,7 @@ void WallsParser::vb()
 void WallsParser::v_vb()
 {
     expect('=');
-    AngleUnit unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
+    Angle::Unit unit = oneOfMapLowercase(nonwhitespaceRx, incUnits);
     _units.setVUnit(unit);
     _units.setVbUnit(unit);
 }
@@ -1188,7 +1186,7 @@ void WallsParser::typeab()
     _units.setTypeabCorrected(oneOfMapLowercase(wordRx, correctedValues));
     if (maybeChar(','))
     {
-        _units.setTypeabTolerance(UAngle(unsignedDoubleLiteral(), Angle::degrees()));
+        _units.setTypeabTolerance(UAngle(unsignedDoubleLiteral(), Angle::Degrees));
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
@@ -1201,7 +1199,7 @@ void WallsParser::typeab()
     }
     else
     {
-        _units.setTypeabTolerance(UAngle(2.0, Angle::degrees()));
+        _units.setTypeabTolerance(UAngle(2.0, Angle::Degrees));
     }
 }
 
@@ -1211,7 +1209,7 @@ void WallsParser::typevb()
     _units.setTypevbCorrected(oneOfMapLowercase(wordRx, correctedValues));
     if (maybeChar(','))
     {
-        _units.setTypevbTolerance(UAngle(unsignedDoubleLiteral(), Angle::degrees()));
+        _units.setTypevbTolerance(UAngle(unsignedDoubleLiteral(), Angle::Degrees));
         if (maybeChar(','))
         {
             expect('x', Qt::CaseInsensitive);
@@ -1224,7 +1222,7 @@ void WallsParser::typevb()
     }
     else
     {
-        _units.setTypevbTolerance(UAngle(2.0, Angle::degrees()));
+        _units.setTypevbTolerance(UAngle(2.0, Angle::Degrees));
     }
 }
 
@@ -1484,7 +1482,7 @@ UAngle WallsParser::azmDifference(UAngle fs, UAngle bs) {
         }
     }
     UAngle diff = uabs(fs - bs);
-    return diff > oneEighty ? UAngle(360.0, Angle::degrees()) - diff : diff;
+    return diff > oneEighty ? UAngle(360.0, Angle::Degrees) - diff : diff;
 }
 
 void WallsParser::azimuth()

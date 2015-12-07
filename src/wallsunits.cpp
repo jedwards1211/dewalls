@@ -3,8 +3,6 @@
 
 namespace dewalls {
 
-typedef const Unit<Length> * LengthUnit;
-typedef const Unit<Angle>  * AngleUnit;
 typedef UnitizedDouble<Length> ULength;
 typedef UnitizedDouble<Angle> UAngle;
 
@@ -13,27 +11,27 @@ WallsUnitsData::WallsUnitsData()
       vectorType(VectorType::CT),
       ctOrder(QList<CtElement>({CtElement::D, CtElement::A, CtElement::V})),
       rectOrder(QList<RectElement>({RectElement::E, RectElement::N, RectElement::U})),
-      dUnit(Length::meters()),
-      sUnit(Length::meters()),
-      aUnit(Angle::degrees()),
-      abUnit(Angle::degrees()),
-      vUnit(Angle::degrees()),
-      vbUnit(Angle::degrees()),
-      decl(UAngle(0.0, Angle::degrees())),
-      grid(UAngle(0.0, Angle::degrees())),
-      rect(UAngle(0.0, Angle::degrees())),
-      incd(ULength(0.0, Length::meters())),
-      inca(UAngle(0.0, Angle::degrees())),
-      incab(UAngle(0.0, Angle::degrees())),
-      incv(UAngle(0.0, Angle::degrees())),
-      incvb(UAngle(0.0, Angle::degrees())),
-      incs(ULength(0.0, Length::meters())),
-      inch(ULength(0.0, Length::meters())),
+      dUnit(Length::Meters),
+      sUnit(Length::Meters),
+      aUnit(Angle::Degrees),
+      abUnit(Angle::Degrees),
+      vUnit(Angle::Degrees),
+      vbUnit(Angle::Degrees),
+      decl(UAngle(0.0, Angle::Degrees)),
+      grid(UAngle(0.0, Angle::Degrees)),
+      rect(UAngle(0.0, Angle::Degrees)),
+      incd(ULength(0.0, Length::Meters)),
+      inca(UAngle(0.0, Angle::Degrees)),
+      incab(UAngle(0.0, Angle::Degrees)),
+      incv(UAngle(0.0, Angle::Degrees)),
+      incvb(UAngle(0.0, Angle::Degrees)),
+      incs(ULength(0.0, Length::Meters)),
+      inch(ULength(0.0, Length::Meters)),
       typeabCorrected(false),
-      typeabTolerance(UAngle(2, Angle::degrees())),
+      typeabTolerance(UAngle(2, Angle::Degrees)),
       typeabNoAverage(false),
       typevbCorrected(false),
-      typevbTolerance(UAngle(2, Angle::degrees())),
+      typevbTolerance(UAngle(2, Angle::Degrees)),
       typevbNoAverage(false),
       case_(CaseType::Mixed),
       lrud(LrudType::From),
@@ -92,13 +90,13 @@ void WallsUnits::rectToCt(ULength north, ULength east, ULength up, ULength& dist
 {
     ULength ne2 = usq(north) + usq(east);
     ULength ne = usqrt(ne2); // horizontal offset
-    if (!up.isValid()) up = ULength(0, Length::m());
+    if (!up.isValid()) up = ULength(0, Length::Meters);
 
     distance = usqrt(ne2 + usq(up)).in(dUnit()) - incd();
     azm = uatan2(east, north).in(aUnit()) - inca();
-    if (azm < UAngle(0, Angle::degrees()))
+    if (azm < UAngle(0, Angle::Degrees))
     {
-        azm += UAngle(360.0, Angle::degrees());
+        azm += UAngle(360.0, Angle::Degrees);
     }
     inc = uatan2(up, ne).in(vUnit()) - incv();
 }
@@ -155,7 +153,7 @@ UAngle WallsUnits::avgInc(UAngle fsInc, UAngle bsInc) const
 
 bool WallsUnits::isVertical(UAngle angle)
 {
-    return fabs(fabs(angle.get(Angle::degrees())) - 90.0) < 1e-6;
+    return fabs(fabs(angle.get(Angle::Degrees)) - 90.0) < 1e-6;
 }
 
 bool WallsUnits::isVertical(UAngle fsInc, UAngle bsInc)

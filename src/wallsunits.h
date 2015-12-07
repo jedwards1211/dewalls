@@ -19,8 +19,6 @@ namespace dewalls {
 class WallsUnitsData : public QSharedData
 {
 public:
-    typedef const Unit<Length> * LengthUnit;
-    typedef const Unit<Angle>  * AngleUnit;
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle> UAngle;
 
@@ -29,12 +27,12 @@ public:
     VectorType vectorType;
     QList<CtElement> ctOrder;
     QList<RectElement> rectOrder;
-    LengthUnit dUnit;
-    LengthUnit sUnit;
-    AngleUnit aUnit;
-    AngleUnit abUnit;
-    AngleUnit vUnit;
-    AngleUnit vbUnit;
+    Length::Unit dUnit;
+    Length::Unit sUnit;
+    Angle::Unit aUnit;
+    Angle::Unit abUnit;
+    Angle::Unit vUnit;
+    Angle::Unit vbUnit;
     UAngle decl;
     UAngle grid;
     UAngle rect;
@@ -64,8 +62,6 @@ public:
 class WallsUnits
 {
 public:
-    typedef const Unit<Length> * LengthUnit;
-    typedef const Unit<Angle>  * AngleUnit;
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle> UAngle;
 
@@ -74,12 +70,12 @@ public:
     inline VectorType vectorType() const { return d->vectorType; }
     inline QList<CtElement> ctOrder() const { return d->ctOrder; }
     inline QList<RectElement> rectOrder() const { return d->rectOrder; }
-    inline LengthUnit dUnit() const { return d->dUnit; }
-    inline LengthUnit sUnit() const { return d->sUnit; }
-    inline AngleUnit aUnit() const { return d->aUnit; }
-    inline AngleUnit abUnit() const { return d->abUnit; }
-    inline AngleUnit vUnit() const { return d->vUnit; }
-    inline AngleUnit vbUnit() const { return d->vbUnit; }
+    inline Length::Unit dUnit() const { return d->dUnit; }
+    inline Length::Unit sUnit() const { return d->sUnit; }
+    inline Angle::Unit aUnit() const { return d->aUnit; }
+    inline Angle::Unit abUnit() const { return d->abUnit; }
+    inline Angle::Unit vUnit() const { return d->vUnit; }
+    inline Angle::Unit vbUnit() const { return d->vbUnit; }
     inline UAngle decl() const { return d->decl; }
     inline UAngle grid() const { return d->grid; }
     inline UAngle rect() const { return d->rect; }
@@ -108,12 +104,12 @@ public:
     inline void setVectorType(VectorType vectorType) { d->vectorType = vectorType; }
     inline void setCtOrder(QList<CtElement> ctOrder) { d->ctOrder = ctOrder; }
     inline void setRectOrder(QList<RectElement> rectOrder) { d->rectOrder = rectOrder; }
-    inline void setDUnit(LengthUnit dUnit) { d->dUnit = dUnit; }
-    inline void setSUnit(LengthUnit sUnit) { d->sUnit = sUnit; }
-    inline void setAUnit(AngleUnit aUnit) { d->aUnit = aUnit; }
-    inline void setAbUnit(AngleUnit abUnit) { d->abUnit = abUnit; }
-    inline void setVUnit(AngleUnit vUnit) { d->vUnit = vUnit; }
-    inline void setVbUnit(AngleUnit vbUnit) { d->vbUnit = vbUnit; }
+    inline void setDUnit(Length::Unit dUnit) { d->dUnit = dUnit; }
+    inline void setSUnit(Length::Unit sUnit) { d->sUnit = sUnit; }
+    inline void setAUnit(Angle::Unit aUnit) { d->aUnit = aUnit; }
+    inline void setAbUnit(Angle::Unit abUnit) { d->abUnit = abUnit; }
+    inline void setVUnit(Angle::Unit vUnit) { d->vUnit = vUnit; }
+    inline void setVbUnit(Angle::Unit vbUnit) { d->vbUnit = vbUnit; }
     inline void setDecl(UAngle decl) { d->decl = decl; }
     inline void setGrid(UAngle grid) { d->grid = grid; }
     inline void setRect(UAngle rect) { d->rect = rect; }

@@ -40,7 +40,7 @@ void quadrantTest()
 {
     using namespace CardinalDirection;
 
-    cout << quadrant(East, North, UnitizedDouble<Angle>(110.0, Angle::deg())) << endl;
+    cout << quadrant(East, North, UnitizedDouble<Angle>(110.0, Angle::Degrees)) << endl;
 }
 
 void parseLine(WallsParser& parser, QString line)
@@ -140,11 +140,11 @@ int main(int argc, char *argv[]) {
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle> UAngle;
 
-    auto ft = Length::ft();
-    auto m = Length::m();
+    auto ft = Length::Feet;
+    auto m = Length::Meters;
 
-    auto deg = Angle::deg();
-    auto percent = Angle::percent();
+    auto deg = Angle::Degrees;
+    auto percent = Angle::PercentGrade;
 
     cout << UAngle(45, deg).get(percent) << endl;
 
@@ -222,11 +222,11 @@ int main(int argc, char *argv[]) {
     parser = WallsParser(Segment("123.456 -123.456m -123i14.5", "fakefile.txt", 2, 0));
 
     try {
-        cout << parser.length(Length::ft()) << endl;
+        cout << parser.length(Length::Feet) << endl;
         parser.expect(' ');
-        cout << parser.length(Length::ft()) << endl;
+        cout << parser.length(Length::Feet) << endl;
         parser.expect(' ');
-        cout << parser.length(Length::ft()) << endl;
+        cout << parser.length(Length::Feet) << endl;
     }
     catch (const SegmentParseException& ex)
     {
@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
     parseLine( parser , "a - 350 20 +5 *1,2,3,4*" );
     parseLine( parser , "- a 350 20 +5 *1,2,3,4*" );
 
-    ULength la(2, Length::m());
+    ULength la(2, Length::Meters);
     ULength lb;
 
     cout << (la + lb) << endl;
@@ -329,15 +329,15 @@ int main(int argc, char *argv[]) {
     WallsUnits units;
     units.typeab_corrected = true;
     units.typevb_corrected = true;
-    units.inch = ULength(1, Length::in());
-    units.incv = UAngle(30, Angle::deg());
-    units.incd = ULength(1, Length::ft());
+    units.inch = ULength(1, Length::Inches);
+    units.incv = UAngle(30, Angle::Degrees);
+    units.incd = ULength(1, Length::Feet);
 
-    ULength dist(20, Length::ft());
-    UAngle fsInc(35, Angle::deg());
-    UAngle bsInc(33, Angle::deg());
+    ULength dist(20, Length::Feet);
+    UAngle fsInc(35, Angle::Degrees);
+    UAngle bsInc(33, Angle::Degrees);
 
-    units.applyHeightCorrections(dist, fsInc, bsInc, ULength(-5, Length::in()), ULength());
+    units.applyHeightCorrections(dist, fsInc, bsInc, ULength(-5, Length::Inches), ULength());
 
     cout << "dist:  " << dist << endl;
     cout << "fsInc: " << fsInc << endl;

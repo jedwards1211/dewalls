@@ -16,8 +16,27 @@ constexpr long double MetersToFeet = 1.0L / FeetToMeters;
 constexpr long double MetersToYards = 1.0L / YardsToMeters;
 constexpr long double MetersToInches = 1.0L / InchesToMeters;
 
+QString Length::symbolFor(Unit unit) {
+    switch (unit) {
+    case Meters:
+        return "m";
+    case Centimeters:
+        return "cm";
+    case Kilometers:
+        return "km";
+    case Feet:
+        return "ft";
+    case Yards:
+        return "yd";
+    case Inches:
+        return "in";
+    default:
+        return "<invalid>";
+    }
+}
+
 long double Length::toBase(long double quantity, Unit fromUnit) {
-    switch(fromUnit) {
+    switch (fromUnit) {
     case Meters:
         return quantity;
     case Centimeters:
@@ -36,7 +55,7 @@ long double Length::toBase(long double quantity, Unit fromUnit) {
 }
 
 long double Length::fromBase(long double quantity, Unit toUnit) {
-    switch(toUnit) {
+    switch (toUnit) {
     case Meters:
         return quantity;
     case Centimeters:

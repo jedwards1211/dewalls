@@ -28,8 +28,6 @@ class WallsParser : public QObject, public LineParser
 public:
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle>  UAngle;
-    typedef const Unit<Length> * LengthUnit;
-    typedef const Unit<Angle>  * AngleUnit;
     typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
     typedef void (WallsParser::*OwnProduction)();
 
@@ -43,29 +41,29 @@ public:
     QString segment() const;
 
     ULength unsignedLengthInches();
-    ULength unsignedLengthNonInches(LengthUnit defaultUnit);
-    ULength unsignedLength(LengthUnit defaultUnit);
-    ULength length(LengthUnit defaultUnit);
+    ULength unsignedLengthNonInches(Length::Unit defaultUnit);
+    ULength unsignedLength(Length::Unit defaultUnit);
+    ULength length(Length::Unit defaultUnit);
 
-    UAngle unsignedAngle(QHash<QChar, AngleUnit> unitSuffixes, AngleUnit defaultUnit);
+    UAngle unsignedAngle(QHash<QChar, Angle::Unit> unitSuffixes, Angle::Unit defaultUnit);
     UAngle unsignedDmsAngle();
 
     UAngle latitude();
     UAngle longitude();
 
-    UAngle nonQuadrantAzimuth(AngleUnit defaultUnit);
+    UAngle nonQuadrantAzimuth(Angle::Unit defaultUnit);
     UAngle quadrantAzimuth();
-    UAngle azimuth(AngleUnit defaultUnit);
-    UAngle azimuthOffset(AngleUnit defaultUnit);
+    UAngle azimuth(Angle::Unit defaultUnit);
+    UAngle azimuthOffset(Angle::Unit defaultUnit);
 
-    UAngle unsignedInclination(AngleUnit defaultUnit);
-    UAngle inclination(AngleUnit defaultUnit);
+    UAngle unsignedInclination(Angle::Unit defaultUnit);
+    UAngle inclination(Angle::Unit defaultUnit);
 
-    VarianceOverridePtr varianceOverride(LengthUnit defaultUnit);
+    VarianceOverridePtr varianceOverride(Length::Unit defaultUnit);
     VarianceOverridePtr floatedVectorVarianceOverride();
     VarianceOverridePtr floatedTraverseVarianceOverride();
-    VarianceOverridePtr lengthVarianceOverride(LengthUnit defaultUnit);
-    VarianceOverridePtr rmsErrorVarianceOverride(LengthUnit defaultUnit);
+    VarianceOverridePtr lengthVarianceOverride(Length::Unit defaultUnit);
+    VarianceOverridePtr rmsErrorVarianceOverride(Length::Unit defaultUnit);
 
     template<typename F>
     QChar escapedChar(F charPredicate, std::initializer_list<QString> expectedItems);
@@ -116,12 +114,12 @@ signals:
 private:
     static double approx(double val);
 
-    static QHash<QString, LengthUnit> createLengthUnits();
-    static QHash<QString, AngleUnit> createAzmUnits();
-    static QHash<QString, AngleUnit> createIncUnits();
-    static QHash<QChar, LengthUnit> createLengthUnitSuffixes();
-    static QHash<QChar, AngleUnit> createAzmUnitSuffixes();
-    static QHash<QChar, AngleUnit> createIncUnitSuffixes();
+    static QHash<QString, Length::Unit> createLengthUnits();
+    static QHash<QString, Angle::Unit> createAzmUnits();
+    static QHash<QString, Angle::Unit> createIncUnits();
+    static QHash<QChar, Length::Unit> createLengthUnitSuffixes();
+    static QHash<QChar, Angle::Unit> createAzmUnitSuffixes();
+    static QHash<QChar, Angle::Unit> createIncUnitSuffixes();
     static QHash<QChar, CardinalDirection> createCardinalDirections();
     static QHash<QChar, CardinalDirection> createNorthSouth();
     static QHash<QChar, CardinalDirection> createEastWest();
@@ -137,12 +135,12 @@ private:
     static QHash<QString, OwnProduction> createUnitsOptionMap();
     static QHash<QString, OwnProduction> createDirectivesMap();
 
-    static const QHash<QString, LengthUnit> lengthUnits;
-    static const QHash<QString, AngleUnit> azmUnits;
-    static const QHash<QString, AngleUnit> incUnits;
-    static const QHash<QChar, LengthUnit> lengthUnitSuffixes;
-    static const QHash<QChar, AngleUnit> azmUnitSuffixes;
-    static const QHash<QChar, AngleUnit> incUnitSuffixes;
+    static const QHash<QString, Length::Unit> lengthUnits;
+    static const QHash<QString, Angle::Unit> azmUnits;
+    static const QHash<QString, Angle::Unit> incUnits;
+    static const QHash<QChar, Length::Unit> lengthUnitSuffixes;
+    static const QHash<QChar, Angle::Unit> azmUnitSuffixes;
+    static const QHash<QChar, Angle::Unit> incUnitSuffixes;
     static const QHash<QChar, CardinalDirection> cardinalDirections;
     static const QHash<QChar, CardinalDirection> northSouth;
     static const QHash<QChar, CardinalDirection> eastWest;

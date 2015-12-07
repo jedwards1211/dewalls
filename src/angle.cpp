@@ -3,15 +3,32 @@
 
 namespace dewalls {
 
-constexpr long double PI = acosl(-1.0L);
-constexpr long double DegreesToRadians = PI / 180.0L;
-constexpr long double GradiansToRadians = PI / 200.0L;
-constexpr long double MilsNATOToRadians = PI / 3200.0L;
-constexpr long double RadiansToDegrees = 180.0L / PI;
-constexpr long double RadiansToGradians = 200.0L / PI;
-constexpr long double RadiansToMilsNATO = 3200.0L / PI;
+const long double PI = acosl(-1.0L);
+const long double DegreesToRadians = PI / 180.0L;
+const long double GradiansToRadians = PI / 200.0L;
+const long double MilsNATOToRadians = PI / 3200.0L;
+const long double RadiansToDegrees = 180.0L / PI;
+const long double RadiansToGradians = 200.0L / PI;
+const long double RadiansToMilsNATO = 3200.0L / PI;
 
 QString Angle::Name("angle");
+
+QString Angle::symbolFor(Unit unit) {
+    switch (unit) {
+    case Radians:
+        return "rad";
+    case Degrees:
+        return "deg";
+    case Gradians:
+        return "grad";
+    case MilsNATO:
+        return "mil";
+    case PercentGrade:
+        return "%";
+    default:
+        return "<invalid>";
+    }
+}
 
 long double Angle::toBase(long double quantity, Unit fromUnit) {
     switch (fromUnit) {

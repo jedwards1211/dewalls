@@ -11,10 +11,10 @@ const CardinalDirection CardinalDirection::West(3);
 
 const QString CardinalDirection::names[4] = {"North", "East", "South", "West"};
 const UAngle CardinalDirection::angles[4] = {
-    UAngle(0, Angle::deg()),
-    UAngle(90, Angle::deg()),
-    UAngle(180, Angle::deg()),
-    UAngle(270, Angle::deg())
+    UAngle(0, Angle::Degrees),
+    UAngle(90, Angle::Degrees),
+    UAngle(180, Angle::Degrees),
+    UAngle(270, Angle::Degrees)
 };
 
 UAngle CardinalDirection::nonnorm_quadrant(CardinalDirection to, UAngle rotation) const
@@ -32,9 +32,9 @@ UAngle CardinalDirection::nonnorm_quadrant(CardinalDirection to, UAngle rotation
 
 UAngle CardinalDirection::quadrant(CardinalDirection to, UAngle rotation) const
 {
-    UAngle result = nonnorm_quadrant(to, rotation) % UAngle(360.0, Angle::deg());
+    UAngle result = nonnorm_quadrant(to, rotation) % UAngle(360.0, Angle::Degrees);
     if (result < North.angle()) {
-        result += UAngle(360.0, Angle::deg());
+        result += UAngle(360.0, Angle::Degrees);
     }
     return result;
 }

@@ -23,6 +23,7 @@ public:
     static long double toBase(long double quantity, Unit fromUnit);
     static long double fromBase(long double quantity, Unit toUnit);
     static long double convert(long double quantity, Unit fromUnit, Unit toUnit);
+    static QString symbolFor(Unit unit);
 };
 
 } // namespace dewalls
