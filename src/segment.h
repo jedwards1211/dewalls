@@ -50,6 +50,8 @@ private:
  * syntax error in any subsegment of a file or line it's operating on, it can underline the
  * error in context using cout << segment.mid(errorStart, errorLen).underlineInContext().toStdString().
  *
+ * Not to be confused with Walls #segment directives.
+ *
  * Many methods simply delegate to the wrapped QString.  Others have an analogous signature but
  * return Segment or QList<Segment> instead of QString or QStringList.
  *
