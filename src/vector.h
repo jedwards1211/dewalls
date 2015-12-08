@@ -9,6 +9,8 @@
 #include <QSharedDataPointer>
 #include <QSharedPointer>
 #include <QString>
+#include <QDate>
+#include "wallsunits.h"
 
 namespace dewalls {
 
@@ -42,7 +44,9 @@ public:
           lrudAngle(),
           cFlag(false),
           segment(),
-          comment() { }
+          comment(),
+          date(),
+          units() { }
 
     QString from;
     QString to;
@@ -64,8 +68,10 @@ public:
     ULength down;
     UAngle lrudAngle;
     bool cFlag;
-    QString segment;
+    QStringList segment;
     QString comment;
+    QDate date;
+    WallsUnits units;
 };
 
 class Vector
@@ -99,8 +105,10 @@ public:
     inline ULength down() const { return d->down; }
     inline UAngle lrudAngle() const { return d->lrudAngle; }
     inline bool cFlag() const { return d->cFlag; }
-    inline QString segment() const { return d->segment; }
+    inline QStringList segment() const { return d->segment; }
     inline QString comment() const { return d->comment; }
+    inline QDate date() const { return d->date; }
+    inline WallsUnits units() const { return d->units; }
 
     inline void setFrom(QString from) { d->from = from; }
     inline void setTo(QString to) { d->to = to; }
@@ -122,8 +130,10 @@ public:
     inline void setDown(ULength down) { d->down = down; }
     inline void setLrudAngle(UAngle lrudAngle) { d->lrudAngle = lrudAngle; }
     inline void setCFlag(bool cFlag) { d->cFlag = cFlag; }
-    inline void setSegment(QString segment) { d->segment = segment; }
+    inline void setSegment(QStringList segment) { d->segment = segment; }
     inline void setComment(QString comment) { d->comment = comment; }
+    inline void setDate(QDate date) { d->date = date; }
+    inline void setUnits(WallsUnits units) { d->units = units; }
 
 private:
     QSharedDataPointer<VectorData> d;

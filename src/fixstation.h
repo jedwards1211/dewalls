@@ -9,6 +9,8 @@
 #include <QSharedDataPointer>
 #include <QSharedPointer>
 #include <QString>
+#include <QDate>
+#include "wallsunits.h"
 
 namespace dewalls {
 
@@ -31,7 +33,9 @@ public:
           vertVariance(),
           note(),
           segment(),
-          comment() { }
+          comment(),
+          date(),
+          units() { }
 
     QString name;
     ULength north;
@@ -42,8 +46,10 @@ public:
     VarianceOverridePtr horizVariance;
     VarianceOverridePtr vertVariance;
     QString note;
-    QString segment;
+    QStringList segment;
     QString comment;
+    QDate date;
+    WallsUnits units;
 };
 
 class FixStation
@@ -66,8 +72,10 @@ public:
     inline VarianceOverridePtr horizVariance() { return d->horizVariance; }
     inline VarianceOverridePtr vertVariance() { return d->vertVariance; }
     inline QString note() { return d->note; }
-    inline QString segment() { return d->segment; }
+    inline QStringList segment() { return d->segment; }
     inline QString comment() { return d->comment; }
+    inline QDate date() const { return d->date; }
+    inline WallsUnits units() const { return d->units; }
 
     inline void setName(QString name) { d->name = name; }
     inline void setNorth(ULength north) { d->north = north; }
@@ -78,8 +86,10 @@ public:
     inline void setHorizVariance(VarianceOverridePtr horizVariance) { d->horizVariance = horizVariance; }
     inline void setVertVariance(VarianceOverridePtr vertVariance) { d->vertVariance = vertVariance; }
     inline void setNote(QString note) { d->note = note; }
-    inline void setSegment(QString segment) { d->segment = segment; }
+    inline void setSegment(QStringList segment) { d->segment = segment; }
     inline void setComment(QString comment) { d->comment = comment; }
+    inline void setDate(QDate date) { d->date = date; }
+    inline void setUnits(WallsUnits units) { d->units = units; }
 
 private:
     QSharedDataPointer<FixStationData> d;

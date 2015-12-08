@@ -37,7 +37,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.date().isNull() );
     REQUIRE( parser.units().case_() == CaseType::Mixed );
     REQUIRE( parser.units().flag().isNull() );
-    REQUIRE( parser.segment().isNull() );
+    REQUIRE( parser.segment().isEmpty() );
     REQUIRE( parser.units().uvh() == 1.0 );
     REQUIRE( parser.units().uvv() == 1.0 );
 
@@ -554,7 +554,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         REQUIRE( station.horizVariance() == VarianceOverride::FLOATED );
         REQUIRE( station.vertVariance() == VarianceOverride::FLOATED_TRAVERSE );
         REQUIRE( station.note() == "Entrance" );
-        REQUIRE( station.segment() == "blah" );
+        REQUIRE( station.segment().size() == 1 );
+        REQUIRE( station.segment()[0] == "blah" );
         REQUIRE( station.comment() == "dms with ft elevations");
 
         parser.parseLine("#FIX A4 620775.38 3461050.67 98.45");

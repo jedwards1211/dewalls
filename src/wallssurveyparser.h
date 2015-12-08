@@ -73,8 +73,23 @@ public:
     ///
     /// \return the current segment associated with the data (from #segment directives)
     ///
-    QString segment() const;
+    QStringList segment() const;
+    ///
+    /// \return the segment that a #segment path starting with \ or / will switch back to
+    ///
+    QStringList rootSegment() const;
     QHash<QString, QString> macros() const;
+
+    ///
+    /// \brief sets the walls #segment.  Used for passing in name-defined segments from
+    /// project files.
+    ///
+    void setSegment(QStringList segment);
+    ///
+    /// \brief sets the root #segment, which should be set to a name-defined segment
+    /// from a project file.
+    ///
+    void setRootSegment(QStringList rootSegment);
 
     ULength unsignedLengthInches();
     ULength unsignedLengthNonInches(Length::Unit defaultUnit);
@@ -127,8 +142,6 @@ public:
     void dateLine();
     void unitsLine();
     void vectorLine();
-
-    static QString combineSegments(QString base, Segment offset);
 
 signals:
     void parsedVector(Vector parsedVector);
@@ -204,6 +217,8 @@ private:
     static const QRegExp usDateRx2;
     static const QRegExp usDateRx3;
 
+    static const QRegExp segmentPartRx;
+
     static const QHash<QString, OwnProduction> unitsOptionMap;
     static const QHash<QString, OwnProduction> directivesMap;
 
@@ -218,7 +233,11 @@ private:
 
     Segment untilComment(std::initializer_list<QString> expectedItems);
 
-    Segment segmentDirective();
+    void segmentSeparator();
+    QString initialSegmentPart();
+    QString nonInitialSegmentPart();
+    QStringList segmentPath();
+    QStringList segmentDirective();
     void prefixDirective();
     void noteDirective();
 
@@ -338,9 +357,11 @@ private:
     WallsUnits _units;
     QStack<WallsUnits> _stack;
     QHash<QString, QString> _macros;
-    QString _segment;
+    QStringList _segment;
+    QStringList _rootSegment;
     QDate _date;
 
+    bool _parsedSegmentDirective;
     Segment _fromStationSegment;
     Segment _toStationSegment;
     Segment _azmSegment;
@@ -365,9 +386,24 @@ inline QDate WallsSurveyParser::date() const
     return _date;
 }
 
-inline QString WallsSurveyParser::segment() const
+inline QStringList WallsSurveyParser::rootSegment() const
+{
+    return _rootSegment;
+}
+
+inline void WallsSurveyParser::setRootSegment(QStringList rootSegment)
+{
+    _rootSegment = rootSegment;
+}
+
+inline QStringList WallsSurveyParser::segment() const
 {
     return _segment;
+}
+
+inline void WallsSurveyParser::setSegment(QStringList segment)
+{
+    _segment = segment;
 }
 
 template<typename F>

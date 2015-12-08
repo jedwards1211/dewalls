@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <QDir>
 #include <QSharedPointer>
 #include <QFile>
@@ -108,6 +109,10 @@ public:
      * @return the inherited and own #units options for this entry (or this book's subentries)
      */
     QList<Segment> allOptions() const;
+    /**
+     * @return the starting segment for this entry
+     */
+    QStringList segment() const;
 
     static const int BookTypeBit;
     static const int NameDefinesSegmentBit;

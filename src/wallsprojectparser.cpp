@@ -244,6 +244,17 @@ QList<Segment> WpjEntry::allOptions() const {
     return options;
 }
 
+QStringList WpjEntry::segment() const {
+    QStringList result;
+    if (!Parent.isNull()) {
+        result = Parent->segment();
+    }
+    if (nameDefinesSegment() && !Name.isEmpty()) {
+        result << Name.value();
+    }
+    return result;
+}
+
 void WallsProjectParser::parseLine(QString line) {
     parseLine(Segment(line));
 }

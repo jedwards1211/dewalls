@@ -286,6 +286,8 @@ const QRegExp WallsSurveyParser::usDateRx1("\\d{2}-\\d{2}-\\d{2,4}");
 const QRegExp WallsSurveyParser::usDateRx2("\\d{2}/\\d{2}/\\d{2,4}");
 const QRegExp WallsSurveyParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
 
+const QRegExp WallsSurveyParser::segmentPartRx("[^./\\;][^/\\;]+");
+
 const QHash<QString, OwnProduction> WallsSurveyParser::unitsOptionMap = WallsSurveyParser::createUnitsOptionMap();
 const QHash<QString, OwnProduction> WallsSurveyParser::directivesMap = WallsSurveyParser::createDirectivesMap();
 
@@ -616,6 +618,7 @@ void WallsSurveyParser::parseLine(Segment line)
 
 void WallsSurveyParser::parseLine()
 {
+    _parsedSegmentDirective = false;
     maybeWhitespace();
 
     if (isAtEnd())
@@ -736,52 +739,76 @@ Segment WallsSurveyParser::untilComment(std::initializer_list<QString> expectedI
 void WallsSurveyParser::segmentLine()
 {
     maybeWhitespace();
-    _segment = combineSegments(_segment, segmentDirective());
+    _segment = segmentDirective();
     maybeWhitespace();
     inlineCommentOrEndOfLine();
 }
 
-Segment WallsSurveyParser::segmentDirective()
+void WallsSurveyParser::segmentSeparator()
+{
+    oneOf([&]() { expect("/"); },
+    [&]() { expect("\\"); });
+}
+
+QString WallsSurveyParser::initialSegmentPart()
+{
+    QString result;
+    oneOfR(result, [&]() { expect("."); return "."; },
+    [&]() { expect(".."); return ".."; });
+    return result;
+}
+
+QString WallsSurveyParser::nonInitialSegmentPart()
+{
+    return expect(segmentPartRx, {"<PATH ELEMENT>"}).value();
+}
+
+QStringList WallsSurveyParser::segmentPath()
+{
+    QStringList path;
+
+    oneOf([&]() {
+        segmentSeparator();
+        path = _rootSegment;
+    },
+    [&]() {
+        path = _segment;
+        while (maybe([&] {
+            if (initialSegmentPart() == ".." && !path.isEmpty()) {
+                path.removeLast();
+            }
+        }));
+    });
+
+    int lastAddedIndex = -1;
+    while (maybe([&] {
+        path << nonInitialSegmentPart();
+        lastAddedIndex = path.size() - 1;
+    }));
+
+    if (lastAddedIndex >= 0) {
+        path[lastAddedIndex] = path[lastAddedIndex].trimmed();
+    }
+
+    return path;
+}
+
+QStringList WallsSurveyParser::segmentDirective()
 {
     oneOf([&]() { expect("#segment", Qt::CaseInsensitive); },
     [&]() { expect("#seg", Qt::CaseInsensitive); },
     [&]() { expect("#s", Qt::CaseInsensitive); } );
 
+    _parsedSegmentDirective = true;
+
+    QStringList result = _segment;
+
     if (maybeWhitespace())
     {
-        Segment result;
-        maybe(result, [&]() { return untilComment({"<SEGMENT>"}); });
-        return result.trimmed();
-    }
-    return _line.mid(_i, 0);
-}
-
-QString WallsSurveyParser::combineSegments(QString base, Segment offset)
-{
-    if (offset.value().startsWith('/'))
-    {
-        return offset.value();
+        maybe(result, [&]() { return segmentPath(); });
     }
 
-    QStringList baseParts = base.split("/", QString::SkipEmptyParts);
-    QList<Segment> offsetParts = offset.split("/", QString::SkipEmptyParts);
-
-    foreach (Segment part, offsetParts)
-    {
-        if (part.value() == "..")
-        {
-            if (!baseParts.isEmpty())
-            {
-                baseParts.removeLast();
-            }
-        }
-        else if (part.value() != ".")
-        {
-            baseParts << part.value();
-        }
-    }
-
-    return '/' + baseParts.join('/');
+    return result;
 }
 
 void WallsSurveyParser::prefixLine()
@@ -1317,10 +1344,16 @@ void WallsSurveyParser::vectorLine()
 {
     maybeWhitespace();
     fromStation();
+    _parsedSegmentDirective = false;
     whitespace();
     afterFromStation();
     maybeWhitespace();
     endOfLine();
+    if (_parsedSegmentDirective) {
+        _vector.setSegment(_segment);
+    }
+    _vector.setDate(_date);
+    _vector.setUnits(_units);
     emit parsedVector(_vector);
 }
 
@@ -1458,7 +1491,7 @@ void WallsSurveyParser::ctMeasurement(CtMeasurement elem)
 void WallsSurveyParser::checkCorrectedSign(int segStart, ULength measurement, ULength correction) {
     if (measurement.isNonzero() && correction.isNonzero() &&
             measurement.signum() != (measurement + correction).signum()) {
-        throw SegmentParseException(_segment.mid(segStart, _i - segStart), "correction changes sign of measurement");
+        throw SegmentParseException(_line.mid(segStart, _i - segStart), "correction changes sign of measurement");
     }
 }
 
@@ -1840,7 +1873,7 @@ void WallsSurveyParser::inlineFixDirective()
 template<class T>
 void WallsSurveyParser::inlineSegmentDirective(T& target)
 {
-    target.setSegment(segmentDirective().value());
+    target.setSegment(segmentDirective());
 }
 
 void WallsSurveyParser::fixLine()
@@ -1850,9 +1883,16 @@ void WallsSurveyParser::fixLine()
     whitespace();
     fixedStation();
     whitespace();
+    _parsedSegmentDirective = false;
     afterFixedStation();
     maybeWhitespace();
     endOfLine();
+    if (!_parsedSegmentDirective)
+    {
+        _fixStation.setSegment(_segment);
+    }
+    _fixStation.setDate(_date);
+    _fixStation.setUnits(_units);
     emit parsedFixStation(_fixStation);
 }
 
