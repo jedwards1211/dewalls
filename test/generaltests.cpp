@@ -276,6 +276,32 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( vector.north() == ULength(1, Length::Meters) );
                 REQUIRE( vector.east() == ULength(2, Length::Meters) );
             }
+
+            SECTION( "LRUD-only lines can be parsed" ) {
+                parser.parseLine("A *1 2 3 4*");
+            }
+
+            SECTION( "LRUD/to station name ambiguity" ) {
+                parser.parseLine("A <1 2 3 4");
+                CHECK( vector.to() == "<1" );
+                CHECK( vector.east() == ULength(2, Length::Meters) );
+                CHECK( vector.north() == ULength(3, Length::Meters) );
+                CHECK( vector.rectUp() == ULength(4, Length::Meters) );
+                CHECK( vector.left() == ULength() );
+                CHECK( vector.right() == ULength() );
+                CHECK( vector.up() == ULength() );
+                CHECK( vector.down() == ULength() );
+
+                parser.parseLine("A *1 2 3 4 *5,6,7,8*");
+                CHECK( vector.to() == "*1" );
+                CHECK( vector.east() == ULength(2, Length::Meters) );
+                CHECK( vector.north() == ULength(3, Length::Meters) );
+                CHECK( vector.rectUp() == ULength(4, Length::Meters) );
+                CHECK( vector.left() == ULength(5, Length::Meters) );
+                CHECK( vector.right() == ULength(6, Length::Meters) );
+                CHECK( vector.up() == ULength(7, Length::Meters) );
+                CHECK( vector.down() == ULength(8, Length::Meters) );
+            }
         }
 
         SECTION( "splay shots" ) {
@@ -478,6 +504,16 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK( vector.up() == ULength() );
             CHECK( vector.down() == ULength() );
 
+            parser.parseLine("A <1 2 3 4 (?, ?)");
+            CHECK( vector.to() == "<1" );
+            CHECK( vector.distance() == ULength(2, Length::Meters) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::Degrees) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::Degrees) );
+            CHECK( vector.left() == ULength() );
+            CHECK( vector.right() == ULength() );
+            CHECK( vector.up() == ULength() );
+            CHECK( vector.down() == ULength() );
+
             parser.parseLine("A *1 2 3 4 *5,6,7,8*");
             CHECK( vector.to() == "*1" );
             CHECK( vector.distance() == ULength(2, Length::Meters) );
@@ -488,6 +524,30 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK( vector.up() == ULength(7, Length::Meters) );
             CHECK( vector.down() == ULength(8, Length::Meters) );
 
+            parser.parseLine("A *1 2 3 4 4.5 *5,6,7,8*");
+            CHECK( vector.to() == "*1" );
+            CHECK( vector.distance() == ULength(2, Length::Meters) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::Degrees) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::Degrees) );
+            CHECK( vector.instHeight() == ULength(4.5, Length::Meters) );
+            CHECK( vector.left() == ULength(5, Length::Meters) );
+            CHECK( vector.right() == ULength(6, Length::Meters) );
+            CHECK( vector.up() == ULength(7, Length::Meters) );
+            CHECK( vector.down() == ULength(8, Length::Meters) );
+
+            parser.parseLine("A *1 2 3 4 4.5 4.6 *5,6,7,8,9*");
+            CHECK( vector.to() == "*1" );
+            CHECK( vector.distance() == ULength(2, Length::Meters) );
+            CHECK( vector.frontAzimuth() == UAngle(3, Angle::Degrees) );
+            CHECK( vector.frontInclination() == UAngle(4, Angle::Degrees) );
+            CHECK( vector.instHeight() == ULength(4.5, Length::Meters) );
+            CHECK( vector.targetHeight() == ULength(4.6, Length::Meters) );
+            CHECK( vector.left() == ULength(5, Length::Meters) );
+            CHECK( vector.right() == ULength(6, Length::Meters) );
+            CHECK( vector.up() == ULength(7, Length::Meters) );
+            CHECK( vector.down() == ULength(8, Length::Meters) );
+            CHECK( vector.lrudAngle() == UAngle(9, Angle::Degrees) );
+
             parser.parseLine("A *1 2 3 4 *");
             CHECK( vector.to() == QString() );
             CHECK( vector.distance() == ULength() );
@@ -497,6 +557,17 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK( vector.right() == ULength(2, Length::Meters) );
             CHECK( vector.up() == ULength(3, Length::Meters) );
             CHECK( vector.down() == ULength(4, Length::Meters) );
+
+            parser.parseLine("A *1 2 3 4 5*");
+            CHECK( vector.to() == QString() );
+            CHECK( vector.distance() == ULength() );
+            CHECK( vector.frontAzimuth() == UAngle() );
+            CHECK( vector.frontInclination() == UAngle() );
+            CHECK( vector.left() == ULength(1, Length::Meters) );
+            CHECK( vector.right() == ULength(2, Length::Meters) );
+            CHECK( vector.up() == ULength(3, Length::Meters) );
+            CHECK( vector.down() == ULength(4, Length::Meters) );
+            CHECK( vector.lrudAngle() == UAngle(5, Angle::Degrees) );
 
             parser.parseLine("A <1 2 3 4 <5,6,7,8>");
             CHECK( vector.to() == "<1" );
@@ -517,6 +588,9 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK( vector.right() == ULength(2, Length::Meters) );
             CHECK( vector.up() == ULength(3, Length::Meters) );
             CHECK( vector.down() == ULength(4, Length::Meters) );
+
+            CHECK_THROWS( parser.parseLine("A *1 2 3 4 *1 2 3 4") );
+            CHECK_THROWS( parser.parseLine("A *-- -- -- --") );
         }
 
         SECTION( "valid spacing" ) {
