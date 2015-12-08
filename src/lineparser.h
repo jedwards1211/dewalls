@@ -97,7 +97,10 @@ public:
     template<typename F>
     bool maybe(F production);
 
-    template<typename R, typename F>
+    template<typename F>
+    bool maybeWithLookahead(F production);
+
+     template<typename R, typename F>
     bool maybe(R& result, F production);
 
     bool maybeChar(QChar c);
@@ -324,6 +327,23 @@ bool LineParser::maybe(F production)
             throwAllExpected(ex);
         }
         addExpected(ex);
+        return false;
+    }
+}
+
+template<typename F>
+bool LineParser::maybeWithLookahead(F production)
+{
+    int start = _i;
+    try
+    {
+        production();
+        return true;
+    }
+    catch (const SegmentParseExpectedException& ex)
+    {
+        addExpected(ex);
+        _i = start;
         return false;
     }
 }

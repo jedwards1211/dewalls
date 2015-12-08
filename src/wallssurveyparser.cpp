@@ -1440,7 +1440,7 @@ void WallsSurveyParser::afterToStation()
         tapingMethodMeasurement();
     }
 
-    maybeWhitespace();
+//    maybeWhitespace();
     afterVectorMeasurements();
 }
 
@@ -1604,8 +1604,9 @@ void WallsSurveyParser::tapingMethodMeasurement()
 {
     foreach(TapingMethodMeasurement elem, _units.tape())
     {
-        if (!maybeWhitespace() ||
-                !maybe([&]() { tapingMethodMeasurement(elem); }))
+        if (!maybeWithLookahead([&]() {
+                   whitespace();
+                   tapingMethodMeasurement(elem); }))
         {
             break;
         }
@@ -1712,10 +1713,14 @@ void WallsSurveyParser::down()
 
 void WallsSurveyParser::afterVectorMeasurements()
 {
-    if (maybe([&]() { return varianceOverrides(_vector); }))
-    {
-        maybeWhitespace();
-    }
+    maybeWithLookahead([&]() {
+        whitespace();
+        varianceOverrides(_vector);
+    });
+//    if (maybe([&]() { return varianceOverrides(_vector); }))
+//    {
+//        maybeWhitespace();
+//    }
     afterVectorVarianceOverrides();
 }
 
@@ -1746,10 +1751,14 @@ void WallsSurveyParser::varianceOverrides(T& target)
 
 void WallsSurveyParser::afterVectorVarianceOverrides()
 {
-    if (maybe([&]() { lruds(); }))
-    {
-        maybeWhitespace();
-    }
+    maybeWithLookahead([&]() {
+        whitespace();
+        lruds();
+    });
+//    if (maybe([&]() { lruds(); }))
+//    {
+//        maybeWhitespace();
+//    }
     afterLruds();
 }
 

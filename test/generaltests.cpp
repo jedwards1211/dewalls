@@ -593,9 +593,19 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK_THROWS( parser.parseLine("A *-- -- -- --") );
         }
 
-        SECTION( "valid spacing" ) {
-            parser.parseLine("   A B 1 2 3(?,?)*4,5,6,7*#s blah;test");
-        }
+    }
+
+    SECTION( "invalid spacing" ) {
+        CHECK_THROWS( parser.parseLine("   A B 1 2 3(?,?)") );
+        CHECK_THROWS( parser.parseLine("   A B 1 2 3 (?,?)*4,5,6,7*") );
+        CHECK_THROWS( parser.parseLine("   A B 1 2 3*4,5,6,7*") );
+    }
+
+    SECTION( "valid spacing" ) {
+        parser.parseLine("   A B 1 2 3#s blah;test");
+        parser.parseLine("   A B 1 2 3 *4,5,6,7*#s blah;test");
+        parser.parseLine("   A B 1 2 3 (?,?)#s blah;test");
+        parser.parseLine("   A B 1 2 3 (?,?) *4,5,6,7*#s blah;test");
     }
 
     SECTION( "prefixes" ) {
