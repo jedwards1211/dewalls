@@ -252,11 +252,6 @@ public:
     QString lrudOrderString() const;
 
     ///
-    /// \brief converts rect north/east/up measurements to compass and tape measurements, storing them
-    /// in distance/azm/inc
-    ///
-    void rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const;
-    ///
     /// \brief corrects dist/fsInc/bsInc according to walls inst/target height and inch
     /// corrections, for programs that don't store this data
     ///

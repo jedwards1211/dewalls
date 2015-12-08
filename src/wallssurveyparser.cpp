@@ -787,7 +787,9 @@ QStringList WallsSurveyParser::segmentPath()
     }));
 
     if (lastAddedIndex >= 0) {
-        path[lastAddedIndex] = path[lastAddedIndex].trimmed();
+        QString lastPart = path[lastAddedIndex];
+        lastPart.truncate(QRegExp("\\s*$").indexIn(lastPart));
+        path[lastAddedIndex] = lastPart;
     }
 
     return path;

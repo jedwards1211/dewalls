@@ -86,21 +86,6 @@ QString WallsUnits::processStationName(QString name) const
     return name.replace(QRegExp("^:+"), "");
 }
 
-void WallsUnits::rectToCt(ULength north, ULength east, ULength up, ULength& distance, UAngle& azm, UAngle& inc) const
-{
-    ULength ne2 = usq(north) + usq(east);
-    ULength ne = usqrt(ne2); // horizontal offset
-    if (!up.isValid()) up = ULength(0, Length::Meters);
-
-    distance = usqrt(ne2 + usq(up)).in(dUnit()) - incd();
-    azm = uatan2(east, north).in(aUnit()) - inca();
-    if (azm < UAngle(0, Angle::Degrees))
-    {
-        azm += UAngle(360.0, Angle::Degrees);
-    }
-    inc = uatan2(up, ne).in(vUnit()) - incv();
-}
-
 ULength WallsUnits::correctLength(ULength length, ULength correction)
 {
     return length.isNonzero() && correction.isNonzero() ? length + correction : length;

@@ -135,6 +135,8 @@ public:
     inline void setDate(QDate date) { d->date = date; }
     inline void setUnits(WallsUnits units) { d->units = units; }
 
+    void deriveCtFromRect();
+
 private:
     QSharedDataPointer<VectorData> d;
 };
