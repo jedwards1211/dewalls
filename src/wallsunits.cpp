@@ -91,33 +91,6 @@ ULength WallsUnits::correctLength(ULength length, ULength correction)
     return length.isNonzero() && correction.isNonzero() ? length + correction : length;
 }
 
-void WallsUnits::applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const
-{
-    if (inch().isNonzero() || ih.isNonzero() || th.isNonzero())
-    {
-        UAngle inc = avgInc(fsInc + incv(), bsInc + incvb());
-        if (inc.isValid() && !isVertical(fsInc, bsInc))
-        {
-            // horizontal offset before height correction
-            ULength ne = ucos(inc) * correctLength(dist, incd());
-            // vertical offset before height correction
-            ULength u = usin(inc) * correctLength(dist, incd());
-
-            u += inch();
-            if (ih.isValid()) u += correctLength(ih, incs());
-            if (th.isValid()) u -= correctLength(th, incs());
-
-            // adjust fsInc/bsInc so that their new avg
-            // is the corrected inclination
-            UAngle dinc = uatan2(u, ne) - inc;
-            fsInc += dinc;
-            bsInc += (typevbCorrected() ? dinc : -dinc);
-
-            dist = usqrt(usq(ne) + usq(u)) - incd();
-        }
-    }
-}
-
 UAngle WallsUnits::avgInc(UAngle fsInc, UAngle bsInc) const
 {
     if (!typevbCorrected())

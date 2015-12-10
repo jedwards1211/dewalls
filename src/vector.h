@@ -135,7 +135,18 @@ public:
     inline void setDate(QDate date) { d->date = date; }
     inline void setUnits(WallsUnits units) { d->units = units; }
 
+    ///
+    /// \brief derives compass-and-tape measurements from the rect measurements.
+    ///
     void deriveCtFromRect();
+    ///
+    /// \brief calculates the vector offset including instrument and target heights and Walls INCH
+    /// correction, rederives the distance and inclinations from that offset, and clears the instrument
+    /// and target heights.  This is for programs that don't store instrument and target heights or
+    /// something like INCH internally.
+    ///
+    void applyHeightCorrections();
+    bool isVertical();
 
 private:
     QSharedDataPointer<VectorData> d;

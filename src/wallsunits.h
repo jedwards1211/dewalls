@@ -252,11 +252,6 @@ public:
     QString lrudOrderString() const;
 
     ///
-    /// \brief corrects dist/fsInc/bsInc according to walls inst/target height and inch
-    /// corrections, for programs that don't store this data
-    ///
-    void applyHeightCorrections(ULength& dist, UAngle& fsInc, UAngle& bsInc, ULength ih, ULength th) const;
-    ///
     /// \brief corrects a length measurement if it's nonzero by adding the given correction
     ///
     static ULength correctLength(ULength dist, ULength correction);

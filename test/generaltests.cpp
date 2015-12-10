@@ -753,14 +753,18 @@ TEST_CASE( "WallsUnits tests", "[dewalls]" ) {
         ULength ih(-8, Length::Meters);
         ULength th(-1, Length::Meters);
 
-        units.applyHeightCorrections(dist, fsInc, bsInc, ih, th);
+        Vector vector;
+        vector.setDistance(dist);
+        vector.setFrontInclination(fsInc);
+        vector.setBackInclination(bsInc);
+        vector.setInstHeight(ih);
+        vector.setTargetHeight(th);
+        vector.setUnits(units);
 
-        CHECK( uabs(dist - ULength(4, Length::Meters)) < ULength(1e-6, Length::Meters) );
-        CHECK( uabs(fsInc - UAngle(-3, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
-        CHECK( uabs(bsInc - UAngle(4, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
+        vector.applyHeightCorrections();
 
-        dist = ULength(5, Length::Meters);
-        fsInc = UAngle(90, Angle::Degrees);
-        bsInc = UAngle();
+        CHECK( uabs(vector.distance() - ULength(4, Length::Meters)) < ULength(1e-6, Length::Meters) );
+        CHECK( uabs(vector.frontInclination() - UAngle(-3, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
+        CHECK( uabs(vector.backInclination() - UAngle(4, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
     }
 }
