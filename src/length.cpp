@@ -5,13 +5,13 @@ namespace dewalls {
 
 QString Length::Name("length");
 
-constexpr long double FeetToMeters = 0.3048L;
-constexpr long double YardsToMeters = 3.0L * FeetToMeters;
-constexpr long double InchesToMeters = FeetToMeters / 12.0L;
+const long double FeetToMeters = 0.3048L;
+const long double YardsToMeters = 3.0L * FeetToMeters;
+const long double InchesToMeters = FeetToMeters / 12.0L;
 
-constexpr long double MetersToFeet = 1.0L / FeetToMeters;
-constexpr long double MetersToYards = 1.0L / YardsToMeters;
-constexpr long double MetersToInches = 1.0L / InchesToMeters;
+const long double MetersToFeet = 1.0L / FeetToMeters;
+const long double MetersToYards = 1.0L / YardsToMeters;
+const long double MetersToInches = 1.0L / InchesToMeters;
 
 QString Length::symbolFor(Unit unit) {
     switch (unit) {
