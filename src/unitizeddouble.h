@@ -5,11 +5,13 @@
 #include <cmath>
 #include <QString>
 #include "dewallsexport.h"
+#include "length.h"
+#include "angle.h"
 
 namespace dewalls {
 
 template<class T>
-class DEWALLS_LIB_EXPORT UnitizedDouble
+class UnitizedDouble
 {
 public:
     typedef typename T::Unit Unit;
@@ -56,6 +58,9 @@ private:
     Unit _unit;
     double _quantity;
 };
+
+template class DEWALLS_LIB_EXPORT UnitizedDouble<Length>;
+template class DEWALLS_LIB_EXPORT UnitizedDouble<Angle>;
 
 template<class T>
 inline UnitizedDouble<T>::UnitizedDouble()

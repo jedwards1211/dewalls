@@ -15,7 +15,7 @@
 
 namespace dewalls {
 
-class DEWALLS_LIB_EXPORT FixStationData : public QSharedData
+class FixStationData : public QSharedData
 {
 public:
     typedef UnitizedDouble<Length> ULength;
@@ -53,7 +53,7 @@ public:
     WallsUnits units;
 };
 
-class FixStation
+class DEWALLS_LIB_EXPORT FixStation
 {
 public:
     typedef UnitizedDouble<Length> ULength;

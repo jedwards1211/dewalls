@@ -15,7 +15,7 @@
 
 namespace dewalls {
 
-class DEWALLS_LIB_EXPORT VectorData : public QSharedData
+class VectorData : public QSharedData
 {
 public:
     typedef UnitizedDouble<Length> ULength;
@@ -75,7 +75,7 @@ public:
     WallsUnits units;
 };
 
-class Vector
+class DEWALLS_LIB_EXPORT Vector
 {
 public:
     typedef UnitizedDouble<Length> ULength;

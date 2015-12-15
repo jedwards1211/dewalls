@@ -16,7 +16,7 @@
 
 namespace dewalls {
 
-class DEWALLS_LIB_EXPORT WallsUnitsData : public QSharedData
+class WallsUnitsData : public QSharedData
 {
 public:
     typedef UnitizedDouble<Length> ULength;
@@ -63,7 +63,7 @@ public:
 /// \brief Variables that are controlled through the #units directive (except for those
 /// that aren't affected by #units save/restore/reset, like macros).
 ///
-class WallsUnits
+class DEWALLS_LIB_EXPORT WallsUnits
 {
 public:
     typedef UnitizedDouble<Length> ULength;
