@@ -2,10 +2,12 @@
 #define DEWALLS_LENGTH_H
 
 #include <QString>
+#include <QSharedPointer>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class Length
+class DEWALLS_LIB_EXPORT Length
 {
 public:
     enum Unit {

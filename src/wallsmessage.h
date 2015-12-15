@@ -3,6 +3,7 @@
 
 #include <QString>
 #include "segmentparseexception.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
@@ -10,7 +11,7 @@ namespace dewalls {
 /// \brief a message emitted by WallsSurveyParser or WallsProjectParser, usually an error or a
 /// warning
 ///
-class WallsMessage {
+class DEWALLS_LIB_EXPORT WallsMessage {
 public:
     WallsMessage(QString severity, QString message, QString source = QString(),
                  int startLine = -1, int startColumn = -1, int endLine = -1, int endColumn = -1);

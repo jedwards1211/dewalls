@@ -13,12 +13,13 @@
 #include "segmentparseexpectedexception.h"
 #include <initializer_list>
 #include <functional>
+#include "dewallsexport.h"
 
 #include <iostream>
 
 namespace dewalls {
 
-class LineParser
+class DEWALLS_LIB_EXPORT LineParser
 {
 public:
     LineParser();
