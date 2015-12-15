@@ -877,19 +877,15 @@ void WallsSurveyParser::flagDirective()
 
     maybeWhitespace();
 
-    while(true)
+    do
     {
         Segment station;
-        if (!maybe([&]() { return expect(stationRx, {"<STATION NAME>"}); }))
+        if (!maybe(station, [&]() { return expect(stationRx, {"<STATION NAME>"}); }))
         {
             break;
         }
         stations << station.value();
-
-        maybeWhitespace();
-        maybeChar(',');
-        maybeWhitespace();
-    }
+    } while(maybe([&]() { oneOf([&]() { whitespace(); }, [&]() { expect(','); }); }));
 
     QString _flag;
     bool hasFlag = maybe(_flag, [&]() { return slashPrefixedFlag(); });
@@ -1862,6 +1858,7 @@ void WallsSurveyParser::lrudCFlag()
 
 void WallsSurveyParser::afterLruds()
 {
+    maybeWhitespace();
     if (maybe([&]() { inlineDirective(); }))
     {
         maybeWhitespace();
