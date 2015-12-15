@@ -5,10 +5,11 @@
 #include <QList>
 #include "segmentparseexception.h"
 #include <initializer_list>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class SegmentParseExpectedException : public SegmentParseException
+class DEWALLS_LIB_EXPORT SegmentParseExpectedException : public SegmentParseException
 {
 public:
     SegmentParseExpectedException(Segment segment, QString expectedItem);

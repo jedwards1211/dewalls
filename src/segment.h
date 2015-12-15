@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QRegExp>
 #include <QList>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
@@ -57,7 +58,7 @@ private:
  *
  * Segment uses implicit sharing like many Qt classes.
  */
-class Segment
+class DEWALLS_LIB_EXPORT Segment
 {
 public:
     Segment();

@@ -4,11 +4,12 @@
 #include <iostream>
 #include <cmath>
 #include <QString>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
 template<class T>
-class UnitizedDouble
+class DEWALLS_LIB_EXPORT UnitizedDouble
 {
 public:
     typedef typename T::Unit Unit;

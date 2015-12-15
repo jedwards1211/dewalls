@@ -12,10 +12,11 @@
 #include "angle.h"
 #include "wallstypes.h"
 #include "math.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class WallsUnitsData : public QSharedData
+class DEWALLS_LIB_EXPORT WallsUnitsData : public QSharedData
 {
 public:
     typedef UnitizedDouble<Length> ULength;

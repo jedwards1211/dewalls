@@ -5,13 +5,14 @@
 #include <QSharedPointer>
 #include "unitizeddouble.h"
 #include "length.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
 class FloatedVarianceOverride;
 class FloatedTraverseVarianceOverride;
 
-class VarianceOverride
+class DEWALLS_LIB_EXPORT VarianceOverride
 {
 public:
     enum class Type
@@ -35,7 +36,7 @@ protected:
     }
 };
 
-class FloatedVarianceOverride : public VarianceOverride
+class DEWALLS_LIB_EXPORT FloatedVarianceOverride : public VarianceOverride
 {
 public:
     inline FloatedVarianceOverride()
@@ -54,7 +55,7 @@ public:
     }
 };
 
-class FloatedTraverseVarianceOverride : public VarianceOverride
+class DEWALLS_LIB_EXPORT FloatedTraverseVarianceOverride : public VarianceOverride
 {
 public:
     inline FloatedTraverseVarianceOverride()
@@ -73,7 +74,7 @@ public:
     }
 };
 
-class LengthOverride : public VarianceOverride
+class DEWALLS_LIB_EXPORT LengthOverride : public VarianceOverride
 {
 public:
     inline LengthOverride(UnitizedDouble<Length> lengthOverride)
@@ -104,7 +105,7 @@ private:
     UnitizedDouble<Length> _lengthOverride;
 };
 
-class RMSError : public VarianceOverride
+class DEWALLS_LIB_EXPORT RMSError : public VarianceOverride
 {
 public:
     inline RMSError(UnitizedDouble<Length> error)

@@ -18,6 +18,7 @@
 #include "vector.h"
 #include "fixstation.h"
 #include "wallsmessage.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
@@ -27,7 +28,7 @@ namespace dewalls {
 /// signals for the various types of data it parses.  The parsed data must be interpreted
 /// in the context of the current units(), date(), and segment().
 ///
-class WallsSurveyParser : public QObject, public LineParser
+class DEWALLS_LIB_EXPORT WallsSurveyParser : public QObject, public LineParser
 {
     Q_OBJECT
 
