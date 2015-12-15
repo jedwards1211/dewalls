@@ -66,6 +66,10 @@ Project {
             cpp.dynamicLibraries: [
                 "c++"
             ]
+            // TEMP
+            cpp.rpaths: [
+                "/Users/andy/Qt/5.5/clang_64/lib"
+            ]
         }
 
         files: [
