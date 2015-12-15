@@ -11,10 +11,11 @@
 #include <QString>
 #include <QDate>
 #include "wallsunits.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class VectorData : public QSharedData
+class DEWALLS_LIB_EXPORT VectorData : public QSharedData
 {
 public:
     typedef UnitizedDouble<Length> ULength;

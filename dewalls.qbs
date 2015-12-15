@@ -3,7 +3,7 @@ import qbs 1.0
 Project {
     name: "dewalls"
 
-    StaticLibrary {
+    DynamicLibrary {
         name: "dewalls"
         Depends { name: "cpp" }
         Depends { name: "Qt"; submodules: ["core"] }
@@ -15,28 +15,52 @@ Project {
             cpp.includePaths: ["src"]
         }
 
+        Group {
+            fileTagsFilter: ["dynamiclibrary"]
+            qbs.installDir: (qbs.targetOS.contains("darwin") ? product.name + ".framework/Versions/A" : "")
+            qbs.install: true
+        }
+
+        Group {
+            fileTagsFilter: ["bundle"]
+            qbs.install: true
+        }
+
+        cpp.installNamePrefix: qbs.installRoot
+
         Properties {
-            condition: qbs.targetOS.contains("osx") || qbs.targetOS.contains("linux")
+            condition: qbs.targetOS.contains("windows")
+            cpp.defines: ["DEWALLS_LIB"]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("osx")
             cpp.cxxFlags: [
                 "-stdlib=libc++",
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("osx")
-
-
 
             cpp.dynamicLibraries: [
                 "c++"
+            ]
+
+            cpp.linkerFlags: [
+                "-stdlib=libc++"
+            ]
+        }
+
+        Properties {
+            condition: qbs.targetOS.contains("linux")
+            cpp.cxxFlags: [
+                "-std=c++11", //For c++11 support
+                "-Werror" //Treat warnings as errors
             ]
         }
 
         files: [
             "src/*.cpp",
-            "src/*.h",
+            "src/*.h"
         ]
     }
 
@@ -52,21 +76,34 @@ Project {
         cpp.includePaths: ["src"]
 
         Properties {
-            condition: qbs.targetOS.contains("osx") || qbs.targetOS.contains("linux")
+            condition: qbs.targetOS.contains("osx")
             cpp.cxxFlags: [
                 "-stdlib=libc++",
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]
+
+            cpp.dynamicLibraries: [
+                "c++"
+            ]
+
+            cpp.linkerFlags: [
+                "-stdlib=libc++"
+            ]
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
+            condition: qbs.targetOS.contains("linux")
+            cpp.cxxFlags: [
+                "-std=c++11", //For c++11 support
+                "-Werror" //Treat warnings as errors
+            ]
 
             cpp.dynamicLibraries: [
                 "c++"
             ]
         }
+
 
         files: [
             "test/*.cpp",

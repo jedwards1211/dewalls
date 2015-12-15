@@ -9,6 +9,7 @@
 #include <QSharedPointer>
 #include <QFile>
 #include "unitizeddouble.h"
+#include "dewallsexport.h"
 #include "angle.h"
 #include "length.h"
 
@@ -19,7 +20,7 @@ namespace dewalls {
 
 class Segment;
 
-struct GeoReference {
+struct DEWALLS_LIB_EXPORT GeoReference {
     typedef UnitizedDouble<Length> ULength;
     typedef UnitizedDouble<Angle> UAngle;
 
@@ -46,7 +47,7 @@ typedef QSharedPointer<WpjBook> WpjBookPtr;
 ///
 /// \brief an item in a Walls project tree (a book, survey, or other file)
 ///
-class WpjEntry {
+class DEWALLS_LIB_EXPORT WpjEntry {
 public:
     enum ReviewUnits {
         Meters = 0,
@@ -140,7 +141,7 @@ public:
 ///
 /// \brief a book in a Walls project tree (data between .BOOK and .ENDBOOK lines)
 ///
-class WpjBook : public WpjEntry {
+class DEWALLS_LIB_EXPORT WpjBook : public WpjEntry {
 public:
     WpjBook(WpjBookPtr parent, QString title);
     virtual ~WpjBook() {}
@@ -155,7 +156,7 @@ public:
 /// to parseFile() and get back a project tree, or call parseLine() yourself
 /// on the lines of the file and get the project tree from result().
 ///
-class WallsProjectParser : public QObject, public LineParser
+class DEWALLS_LIB_EXPORT WallsProjectParser : public QObject, public LineParser
 {
     Q_OBJECT
 public:

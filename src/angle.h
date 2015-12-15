@@ -2,10 +2,12 @@
 #define DEWALLS_ANGLE_H
 
 #include <QString>
+#include <QSharedPointer>
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class Angle
+class DEWALLS_LIB_EXPORT Angle
 {
 public:
     enum Unit {

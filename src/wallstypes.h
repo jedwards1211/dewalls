@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QHash>
+#include "dewallsexport.h"
 
 namespace dewalls
 {
@@ -63,7 +64,7 @@ inline uint qHash(const LrudMeasurement& key, uint seed = 0)
 ///
 /// \brief the types of LRUD station associations/orientations
 ///
-enum class LrudType
+enum class DEWALLS_LIB_EXPORT LrudType
 {
     /// at from station, perpendicular to vector
     From = 0,
@@ -105,7 +106,7 @@ enum class TapingMethodMeasurement
 ///
 /// \brief how a vector is measured (compass and tape or cartesian component vectors)
 ///
-enum class VectorType
+enum class DEWALLS_LIB_EXPORT VectorType
 {
     /// compass and tape
     CT = 0,

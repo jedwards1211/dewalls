@@ -4,10 +4,11 @@
 #include <QException>
 
 #include "segment.h"
+#include "dewallsexport.h"
 
 namespace dewalls {
 
-class SegmentParseException : public QException
+class DEWALLS_LIB_EXPORT SegmentParseException : public QException
 {
 public:
     SegmentParseException(Segment segment);
