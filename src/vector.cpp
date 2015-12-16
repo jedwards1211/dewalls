@@ -30,28 +30,34 @@ void Vector::applyHeightCorrections()
     if (!isVertical() && (units().inch().isNonzero() || instHeight().isNonzero() || targetHeight().isNonzero()))
     {
         UAngle inc = units().avgInc(frontInclination() + units().incv(), backInclination() + units().incvb());
-        if (inc.isValid())
+        if (!inc.isValid()) inc = UAngle(0, Angle::Degrees);
+        double sini = usin(inc);
+        double cosi = ucos(inc);
+
+        ULength tapeDist = distance() + units().incd();
+        ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : instHeight();
+        ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : targetHeight();
+        ULength delta = tapeFromHeight - tapeToHeight;
+
+        ULength distAlongInc = usqrt(usq(tapeDist) - usq(delta) + usq(delta * sini * sini)) - delta * sini;
+
+        ULength totalDelta = instHeight() - targetHeight() + units().inch();
+
+        ULength stationToStationDist = usqrt(usq(distAlongInc) + 2 * sini * umul(totalDelta, distAlongInc) + usq(totalDelta));
+        UAngle  stationToStationInc  = inc + uatan(totalDelta * cosi / (distAlongInc + totalDelta * sini));
+
+        setDistance(stationToStationDist - units().incd());
+
+        UAngle dInc = stationToStationInc - inc;
+
+        if (!frontInclination().isValid() && !backInclination().isValid())
         {
-            // horizontal offset before height correction
-            ULength ne = ucos(inc) * WallsUnits::correctLength(distance(), units().incd());
-            // vertical offset before height correction
-            ULength u = usin(inc) * WallsUnits::correctLength(distance(), units().incd());
-
-            u += units().inch();
-            if (instHeight().isValid()) u += WallsUnits::correctLength(instHeight(), units().incs());
-            if (targetHeight().isValid()) u -= WallsUnits::correctLength(targetHeight(), units().incs());
-
-            // adjust fsInc/bsInc so that their new avg
-            // is the corrected inclination
-            UAngle dinc = uatan2(u, ne) - inc;
-
-            d.detach();
-            d->frontInclination += dinc;
-            d->backInclination += (units().typevbCorrected() ? dinc : -dinc);
-
-            d->distance = usqrt(usq(ne) + usq(u)) - units().incd();
-            d->instHeight.clear();
-            d->targetHeight.clear();
+            setFrontInclination(stationToStationInc);
+        }
+        else
+        {
+            setFrontInclination(frontInclination() - dInc);
+            setBackInclination (backInclination () - dInc);
         }
     }
 }

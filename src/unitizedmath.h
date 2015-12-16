@@ -48,6 +48,12 @@ inline UnitizedDouble<T> usq(UnitizedDouble<T> x) {
 }
 
 template<class T>
+inline UnitizedDouble<T> umul(UnitizedDouble<T> a, UnitizedDouble<T> b) {
+    if (!a.isValid() || !b.isValid()) return UnitizedDouble<T>();
+    return UnitizedDouble<T>(a.get(a.unit()) * b.get(a.unit()), a.unit());
+}
+
+template<class T>
 inline UnitizedDouble<T> usqrt(UnitizedDouble<T> x) {
     return UnitizedDouble<T>(sqrt(x.get(x.unit())), x.unit());
 }

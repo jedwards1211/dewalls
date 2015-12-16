@@ -99,8 +99,9 @@ inline uint qHash(const RectMeasurement& key, uint seed = 0)
 ///
 enum class TapingMethodMeasurement
 {
-    InstrumentHeight = 0,
-    TargetHeight = 1
+    Station = 0,
+    InstrumentHeight = 1,
+    TargetHeight = 2
 };
 
 ///

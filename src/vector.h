@@ -83,8 +83,7 @@ public:
     typedef QSharedPointer<VarianceOverride> VarianceOverridePtr;
 
     inline Vector() { d = new VectorData; }
-    inline Vector(const Vector& other)
-        : d(other.d) { }
+    inline Vector(const Vector& other) : d(other.d) { }
 
     inline QString from() const { return d->from; }
     inline QString to() const { return d->to; }
@@ -154,5 +153,7 @@ private:
 };
 
 } // namespace dewalls
+
+//Q_DECLARE_METATYPE(dewalls::Vector)
 
 #endif // DEWALLS_VECTOR_H

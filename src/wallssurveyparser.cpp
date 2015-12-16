@@ -162,9 +162,9 @@ QHash<QString, QList<TapingMethodMeasurement>> WallsSurveyParser::createTapingMe
     typedef QList<TapingMethodMeasurement> Method;
     QHash<QString, QList<TapingMethodMeasurement>> result;
     result["it"] = Method({TapingMethodMeasurement::InstrumentHeight, TapingMethodMeasurement::TargetHeight});
-    result["is"] = Method({TapingMethodMeasurement::InstrumentHeight});
-    result["st"] = Method({TapingMethodMeasurement::TargetHeight});
-    result["ss"] = Method();
+    result["is"] = Method({TapingMethodMeasurement::InstrumentHeight, TapingMethodMeasurement::Station});
+    result["st"] = Method({TapingMethodMeasurement::Station, TapingMethodMeasurement::TargetHeight});
+    result["ss"] = Method({TapingMethodMeasurement::Station, TapingMethodMeasurement::Station});
     return result;
 }
 

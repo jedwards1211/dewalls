@@ -6,9 +6,9 @@
 #include <string>
 #include <QString>
 
-//namespace Catch {
-//template<> std::string toString<QString>(QString const& s);
-//}
+namespace Catch {
+template<> std::string toString<QString>(QString const& s);
+}
 
 #endif // TOSTRINGS_H
 
