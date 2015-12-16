@@ -278,7 +278,7 @@ const QRegExp WallsSurveyParser::macroNameRx("[^()=,,# \t]*");
 const QRegExp WallsSurveyParser::stationRx("[^;,,#/ \t]{0,8}");
 const QRegExp WallsSurveyParser::prefixRx("[^:;,,#/ \t]+");
 
-const QRegExp WallsSurveyParser::optionalRx("--+");
+const QRegExp WallsSurveyParser::optionalRx("-+");
 const QRegExp WallsSurveyParser::optionalStationRx("-+");
 
 const QRegExp WallsSurveyParser::isoDateRx("\\d{4}-\\d{2}-\\d{2}");
@@ -1762,86 +1762,68 @@ void WallsSurveyParser::lruds()
 {
     oneOfWithLookahead([&]() {
         expect('<');
-        lrudContent();
+        try
+        {
+            lrudContent();
+        }
+        catch (const SegmentParseExpectedException& ex)
+        {
+            if (!ex.segment().value().startsWith(">")) {
+                throw;
+            }
+            // TODO warn
+        }
         expect('>');
     }, [&]() {
         expect('*');
-        lrudContent();
+        try
+        {
+            lrudContent();
+        }
+        catch (const SegmentParseExpectedException& ex)
+        {
+            if (!ex.segment().value().startsWith("*")) {
+                throw;
+            }
+            // TODO warn
+        }
         expect('*');
     });
 }
 
 void WallsSurveyParser::lrudContent()
 {
-    oneOfWithLookahead([&]() {
-        commaDelimLrudContent();
-    }, [&]() {
-        whitespaceDelimLrudContent();
-    });
-}
-
-void WallsSurveyParser::commaDelimLrudContent()
-{
     maybeWhitespace();
     int m = 0;
     foreach(LrudMeasurement elem, _units.lrudOrder())
     {
         if (m++ > 0)
         {
-            maybeWhitespace();
-            expect(',');
-            maybeWhitespace();
+            oneOfWithLookahead([&]() { maybeWhitespace(); expect(','); maybeWhitespace(); },
+            [&]() { whitespace(); });
         }
-        lrudMeasurement(elem);
+        maybe([&]() { lrudMeasurement(elem); });
     }
     maybeWhitespace();
-    afterRequiredCommaDelimLrudMeasurements();
+    afterRequiredLrudMeasurements();
 }
 
-void WallsSurveyParser::whitespaceDelimLrudContent()
-{
-    maybeWhitespace();
-    int m = 0;
-    foreach(LrudMeasurement elem, _units.lrudOrder())
-    {
-        if (m++ > 0)
-        {
-            whitespace();
-        }
-        lrudMeasurement(elem);
-    }
-    maybeWhitespace();
-    afterRequiredWhitespaceDelimLrudMeasurements();
-}
-
-void WallsSurveyParser::afterRequiredCommaDelimLrudMeasurements()
+void WallsSurveyParser::afterRequiredLrudMeasurements()
 {
     if (maybeChar(','))
     {
         maybeWhitespace();
+    }
+    maybe([&]() {
         oneOf([&]() {
             lrudFacingAngle();
             maybeWhitespace();
             if (maybeChar(','))
             {
                 maybeWhitespace();
-                lrudCFlag();
             }
+            lrudCFlag();
         }, [&]() { lrudCFlag(); });
-    }
-}
-
-void WallsSurveyParser::afterRequiredWhitespaceDelimLrudMeasurements()
-{
-    maybe([&]() {
-        oneOf([&]() {
-            lrudFacingAngle();
-            if (maybeWhitespace())
-            {
-                maybe([&]() { lrudCFlag(); });
-            }
-        },
-        [&]() { lrudCFlag(); });
     });
 }
 

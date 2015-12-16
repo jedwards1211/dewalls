@@ -2,6 +2,7 @@
 #include "../src/wallssurveyparser.h"
 #include "approx.h"
 #include "unitizedmath.h"
+#include "segmentparseexception.h"
 
 #include <iostream>
 
@@ -130,8 +131,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             }
 
             SECTION( "azimuth can't be omitted for non-vertical shots" ) {
-                CHECK_THROWS( parser.parseLine("A B 2.5 -- 45") );
-                CHECK_THROWS( parser.parseLine("A B 2.5 --/-- 45") );
+                CHECK_THROWS( parser.parseLine("A B 2.5 - 45") );
+                CHECK_THROWS( parser.parseLine("A B 2.5 -/-- 45") );
             }
 
             SECTION( "aUnit" ) {
@@ -424,7 +425,7 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             REQUIRE( vector.down() == ULength(7, Length::Meters) );
 
             SECTION( "can omit lruds" ) {
-                parser.parseLine("A B 1 2 3 <4,--,6,-->");
+                parser.parseLine("A B 1 2 3 <4,-,6,-->");
                 REQUIRE( vector.left() == ULength(4, Length::Meters) );
                 REQUIRE( !vector.right().isValid() );
                 REQUIRE( vector.up() == ULength(6, Length::Meters) );
@@ -464,13 +465,17 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "malformed lruds" ) {
                 CHECK_THROWS( parser.parseLine("A B 1 2 3 *4,5,6,7>") );
                 CHECK_THROWS( parser.parseLine("A B 1 2 3 <4,5,6,7*") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 *4,5 6,7*") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 <4,5 6,7>") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 <4,5,6,>") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 <4,5,6>") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 <>") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 < >") );
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 <,>") );
+            }
+
+            SECTION( "malformed lruds that Walls accepts in contradition of its documentation" ) {
+                parser.parseLine("A B 1 2 3 *4,5 6,7*");
+                parser.parseLine("A B 1 2 3 <4,5 6,7>");
+                parser.parseLine("A B 1 2 3 <4,5,6,>");
+                parser.parseLine("A B 1 2 3 <4,5,6>");
+                parser.parseLine("A B 1 2 3 <1>");
+                parser.parseLine("A B 1 2 3 <>");
+                parser.parseLine("A B 1 2 3 < >");
+                parser.parseLine("A B 1 2 3 <,>");
             }
 
             SECTION( "can change lrud order" ) {
@@ -568,6 +573,18 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             CHECK( vector.up() == ULength(3, Length::Meters) );
             CHECK( vector.down() == ULength(4, Length::Meters) );
             CHECK( vector.lrudAngle() == UAngle(5, Angle::Degrees) );
+
+            parser.parseLine("A *1 2 3 4 5 C*");
+            CHECK( vector.to() == QString() );
+            CHECK( vector.distance() == ULength() );
+            CHECK( vector.frontAzimuth() == UAngle() );
+            CHECK( vector.frontInclination() == UAngle() );
+            CHECK( vector.left() == ULength(1, Length::Meters) );
+            CHECK( vector.right() == ULength(2, Length::Meters) );
+            CHECK( vector.up() == ULength(3, Length::Meters) );
+            CHECK( vector.down() == ULength(4, Length::Meters) );
+            CHECK( vector.lrudAngle() == UAngle(5, Angle::Degrees) );
+            CHECK( vector.cFlag() );
 
             parser.parseLine("A <1 2 3 4 <5,6,7,8>");
             CHECK( vector.to() == "<1" );

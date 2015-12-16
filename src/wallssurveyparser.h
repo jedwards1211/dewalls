@@ -324,10 +324,7 @@ private:
     void afterVectorVarianceOverrides();
     void lruds();
     void lrudContent();
-    void commaDelimLrudContent();
-    void whitespaceDelimLrudContent();
-    void afterRequiredCommaDelimLrudMeasurements();
-    void afterRequiredWhitespaceDelimLrudMeasurements();
+    void afterRequiredLrudMeasurements();
     void lrudFacingAngle();
     void lrudCFlag();
     void afterLruds();
@@ -425,12 +422,27 @@ QString WallsSurveyParser::escapedText(F charPredicate, std::initializer_list<QS
 template<typename R, typename F>
 bool WallsSurveyParser::optional(R& result, F production)
 {
-    if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
+    try
     {
-        return false;
+        result = production();
     }
-    result = production();
+    catch (const SegmentParseExpectedException& ex)
+    {
+        if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
+        {
+            return false;
+        }
+        throw;
+    }
+
     return true;
+
+//    if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
+//    {
+//        return false;
+//    }
+//    result = production();
+//    return true;
 }
 
 template<typename T>
