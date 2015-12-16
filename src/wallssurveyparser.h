@@ -298,6 +298,8 @@ private:
 
     void checkCorrectedSign(int segStart, ULength measurement, ULength correction);
 
+    Segment station();
+
     void fromStation();
     void afterFromStation();
     void toStation();
@@ -310,8 +312,6 @@ private:
     void distance();
     void azimuth();
     void inclination();
-    void tapingMethodMeasurement();
-    void tapingMethodMeasurement(TapingMethodMeasurement elem);
     void instrumentHeight();
     void targetHeight();
     void lrudMeasurement(LrudMeasurement elem);

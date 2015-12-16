@@ -275,8 +275,8 @@ const QRegExp WallsSurveyParser::notSemicolonRx("[^;]+");
 const QRegExp WallsSurveyParser::unitsOptionRx("[a-zA-Z_0-9/]*");
 const QRegExp WallsSurveyParser::directiveRx("#([][]|[a-zA-Z0-9]+)");
 const QRegExp WallsSurveyParser::macroNameRx("[^()=,,# \t]*");
-const QRegExp WallsSurveyParser::stationRx("[^;,,#/ \t]{0,8}");
-const QRegExp WallsSurveyParser::prefixRx("[^:;,,#/ \t]+");
+const QRegExp WallsSurveyParser::stationRx("([^:;,,#/ \t]*:){0,3}[^:;,,#/ \t]{1,8}");
+const QRegExp WallsSurveyParser::prefixRx("[^:;,,#/ \t]*");
 
 const QRegExp WallsSurveyParser::optionalRx("-+");
 const QRegExp WallsSurveyParser::optionalStationRx("-+");
@@ -825,18 +825,10 @@ void WallsSurveyParser::prefixDirective()
 {
     int prefixIndex = oneOfMapLowercase(nonwhitespaceRx, prefixDirectives);
 
-    QString prefix;
-
     if (maybeWhitespace())
     {
-        Segment segment;
-        if (maybe(segment, [&]() { return expect(prefixRx, {"<PREFIX>"}); }))
-        {
-            prefix = segment.value();
-        }
+        _units.setPrefix(prefixIndex, expect(prefixRx, {"<PREFIX>"}).value());
     }
-
-    _units.setPrefix(prefixIndex, prefix);
 }
 
 void WallsSurveyParser::noteLine()
@@ -853,11 +845,11 @@ void WallsSurveyParser::noteDirective()
     [&]() { expect("#n", Qt::CaseInsensitive); });
 
     whitespace();
-    QString station = expect(stationRx, {"<STATION NAME>"}).value();
+    QString _station = station().value();
     whitespace();
     QString _note = escapedText([](QChar c) { return c != ';'; }, {"<NOTE>"});
 
-    emit parsedNote(station, _note);
+    emit parsedNote(_station, _note);
 }
 
 void WallsSurveyParser::flagLine()
@@ -879,12 +871,12 @@ void WallsSurveyParser::flagDirective()
 
     do
     {
-        Segment station;
-        if (!maybe(station, [&]() { return expect(stationRx, {"<STATION NAME>"}); }))
+        QString _station;
+        if (!maybe(_station, [&]() { return station().value(); }))
         {
             break;
         }
-        stations << station.value();
+        stations << _station;
     } while(maybe([&]() { oneOf([&]() { whitespace(); }, [&]() { expect(','); }); }));
 
     QString _flag;
@@ -1355,9 +1347,14 @@ void WallsSurveyParser::vectorLine()
     emit parsedVector(_vector);
 }
 
+Segment WallsSurveyParser::station()
+{
+    return expect(stationRx, {"<STATION>"});
+}
+
 void WallsSurveyParser::fromStation()
 {
-    _fromStationSegment = expect(stationRx, {"<STATION NAME>"}).value();
+    _fromStationSegment = station();
     QString from = _fromStationSegment.value();
     if (optionalStationRx.exactMatch(from)) {
         from.clear();
@@ -1384,7 +1381,7 @@ void WallsSurveyParser::afterFromStation()
 
 void WallsSurveyParser::toStation()
 {
-    _toStationSegment = expect(stationRx, {"<STATION NAME>"});
+    _toStationSegment = station();
     QString to = _toStationSegment.value();
     if (optionalStationRx.exactMatch(to))
     {
@@ -1433,10 +1430,10 @@ void WallsSurveyParser::afterToStation()
             throw SegmentParseException(_azmSegment, "azimuth can only be omitted for vertical shots");
         }
 
-        tapingMethodMeasurement();
+        maybeWithLookahead([&]() { whitespace(); instrumentHeight(); });
+        maybeWithLookahead([&]() { whitespace(); targetHeight(); });
     }
 
-//    maybeWhitespace();
     afterVectorMeasurements();
 }
 
@@ -1594,32 +1591,6 @@ void WallsSurveyParser::inclination()
 
     _vector.setFrontInclination(incFs);
     _vector.setBackInclination(incBs);
-}
-
-void WallsSurveyParser::tapingMethodMeasurement()
-{
-    foreach(TapingMethodMeasurement elem, _units.tape())
-    {
-        if (!maybeWithLookahead([&]() {
-                   whitespace();
-                   tapingMethodMeasurement(elem); }))
-        {
-            break;
-        }
-    }
-}
-
-void WallsSurveyParser::tapingMethodMeasurement(TapingMethodMeasurement elem)
-{
-    switch(elem)
-    {
-    case TapingMethodMeasurement::InstrumentHeight:
-        instrumentHeight();
-        break;
-    case TapingMethodMeasurement::TargetHeight:
-        targetHeight();
-        break;
-    }
 }
 
 void WallsSurveyParser::instrumentHeight()
@@ -1888,7 +1859,7 @@ void WallsSurveyParser::fixLine()
 
 void WallsSurveyParser::fixedStation()
 {
-    QString fixed = expect(stationRx, {"<STATION NAME>"}).value();
+    QString fixed = station().value();
     _fixStation = FixStation();
     _fixStation.setName(fixed);
 }

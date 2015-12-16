@@ -59,6 +59,37 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         REQUIRE( vector.frontInclination() == UAngle(2.3, Angle::Degrees) );
         REQUIRE( !vector.backInclination().isValid() );
 
+        SECTION( "station prefixes" ) {
+            parser.parseLine(":A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == ":A1" );
+
+            parser.parseLine("::A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == "::A1" );
+
+            parser.parseLine(":::A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == ":::A1" );
+
+            parser.parseLine("q:::A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == "q:::A1" );
+
+            parser.parseLine(":q::A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == ":q::A1" );
+
+            parser.parseLine("::q:A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == "::q:A1" );
+
+            parser.parseLine(":q:q:A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == ":q:q:A1" );
+
+            parser.parseLine("q::q:A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == "q::q:A1" );
+
+            parser.parseLine("q:q:q:A1 A2 2.5 350 2.3");
+            REQUIRE( vector.from() == "q:q:q:A1" );
+
+            REQUIRE_THROWS( parser.parseLine("::::A1 A2 2.5 350 2.3") );
+        }
+
         SECTION( "backsights" ) {
             parser.parseLine("A1 A2 2.5 350/349 2.3/2.4");
 
@@ -346,23 +377,10 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( vector.targetHeight() == ULength(5, Length::Meters) );
             }
 
-            SECTION( "target only" ) {
-                parser.parseLine("#units tape=st");
-                parser.parseLine("A B 1 2 3 4");
-                REQUIRE( !vector.instHeight().isValid() );
-                REQUIRE( vector.targetHeight() == ULength(4, Length::Meters) );
-                REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4 5") );
-            }
-
             SECTION( "with inclination omitted" ) {
                 parser.parseLine("A B 1 2 -- 4 5");
                 REQUIRE( vector.instHeight() == ULength(4, Length::Meters) );
                 REQUIRE( vector.targetHeight() == ULength(5, Length::Meters) );
-            }
-
-            SECTION( "disabled" ) {
-                parser.parseLine("#units tape=ss");
-                REQUIRE_THROWS( parser.parseLine("A B 1 2 3 4") );
             }
 
             SECTION( "aren't allowed for rect data lines" ) {
