@@ -127,6 +127,9 @@ public:
     template<typename R, typename F>
     bool optional(R& result, F production);
 
+    template<typename R, typename F>
+    bool optionalWithLookahead(R& result, F production);
+
     template<typename T>
     QList<T> elementChars(QHash<QChar, T> elements, QSet<T> requiredElements);
 
@@ -319,6 +322,7 @@ private:
     void right();
     void up();
     void down();
+    template<class T> void warnIfNegative(UnitizedDouble<T> measurement, int start, QString name);
     void afterVectorMeasurements();
     template<class T> void varianceOverrides(T& target);
     void afterVectorVarianceOverrides();
@@ -436,13 +440,27 @@ bool WallsSurveyParser::optional(R& result, F production)
     }
 
     return true;
+}
 
-//    if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
-//    {
-//        return false;
-//    }
-//    result = production();
-//    return true;
+template<typename R, typename F>
+bool WallsSurveyParser::optionalWithLookahead(R& result, F production)
+{
+    int start = _i;
+    try
+    {
+        result = production();
+    }
+    catch (const SegmentParseExpectedException& ex)
+    {
+        _i = start;
+        if (maybe([&]() { return expect(optionalRx, {"-", "--"}); }))
+        {
+            return false;
+        }
+        throw;
+    }
+
+    return true;
 }
 
 template<typename T>

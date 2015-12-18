@@ -3,32 +3,38 @@
 namespace dewalls {
 
 WallsMessage::WallsMessage(QString severity, QString message, QString source,
-             int startLine, int startColumn, int endLine, int endColumn)
+             int startLine, int startColumn, int endLine, int endColumn, QString context)
     : Severity(severity), Message(message), Source(source),
       StartLine(startLine), StartColumn(startColumn),
-      EndLine(endLine), EndColumn(endColumn)
+      EndLine(endLine), EndColumn(endColumn),
+      Context(context)
 {
 }
 
 WallsMessage::WallsMessage(QString severity, QString message, Segment segment)
     : Severity(severity), Message(message), Source(segment.source()),
       StartLine(segment.startLine()), StartColumn(segment.startCol()),
-      EndLine(segment.endLine()), EndColumn(segment.endCol())
+      EndLine(segment.endLine()), EndColumn(segment.endCol()),
+      Context(segment.underlineInContext())
 {
 }
 
 WallsMessage::WallsMessage(const SegmentParseException& ex)
     : Severity("error"),
-      Message(ex.detailMessage() + "\n" + ex.segment().underlineInContext()),
+      Message(ex.detailMessage()),
       Source(ex.segment().source()),
       StartLine(ex.segment().startLine()), StartColumn(ex.segment().startCol()),
-      EndLine(ex.segment().endLine()), EndColumn(ex.segment().endCol())
+      EndLine(ex.segment().endLine()), EndColumn(ex.segment().endCol()),
+      Context(ex.segment().underlineInContext())
 {
 }
 
 QString WallsMessage::toString()
 {
     QString result = QString("%1: %2").arg(Severity, Message);
+    if (!Context.isNull()) {
+        result += "\n" + Context;
+    }
     if (!Source.isNull()) {
         result += "\n(" + Source;
         if (StartLine >= 0) {

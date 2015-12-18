@@ -419,65 +419,71 @@ TEST_CASE( "general tests", "[dewalls]" ) {
 
         SECTION( "lruds" ) {
             parser.parseLine("A B 1 2 3 *4,5,6,7*");
-            REQUIRE( vector.left() == ULength(4, Length::Meters) );
-            REQUIRE( vector.right() == ULength(5, Length::Meters) );
-            REQUIRE( vector.up() == ULength(6, Length::Meters) );
-            REQUIRE( vector.down() == ULength(7, Length::Meters) );
+            CHECK( vector.left() == ULength(4, Length::Meters) );
+            CHECK( vector.right() == ULength(5, Length::Meters) );
+            CHECK( vector.up() == ULength(6, Length::Meters) );
+            CHECK( vector.down() == ULength(7, Length::Meters) );
 
             parser.parseLine("A B 1 2 3 *4 5 6 7*");
-            REQUIRE( vector.left() == ULength(4, Length::Meters) );
-            REQUIRE( vector.right() == ULength(5, Length::Meters) );
-            REQUIRE( vector.up() == ULength(6, Length::Meters) );
-            REQUIRE( vector.down() == ULength(7, Length::Meters) );
+            CHECK( vector.left() == ULength(4, Length::Meters) );
+            CHECK( vector.right() == ULength(5, Length::Meters) );
+            CHECK( vector.up() == ULength(6, Length::Meters) );
+            CHECK( vector.down() == ULength(7, Length::Meters) );
 
             parser.parseLine("A B 1 2 3 <4 5 6 7>");
-            REQUIRE( vector.left() == ULength(4, Length::Meters) );
-            REQUIRE( vector.right() == ULength(5, Length::Meters) );
-            REQUIRE( vector.up() == ULength(6, Length::Meters) );
-            REQUIRE( vector.down() == ULength(7, Length::Meters) );
+            CHECK( vector.left() == ULength(4, Length::Meters) );
+            CHECK( vector.right() == ULength(5, Length::Meters) );
+            CHECK( vector.up() == ULength(6, Length::Meters) );
+            CHECK( vector.down() == ULength(7, Length::Meters) );
 
             parser.parseLine("A B 1 2 3 <4,5,6,7>");
-            REQUIRE( vector.left() == ULength(4, Length::Meters) );
-            REQUIRE( vector.right() == ULength(5, Length::Meters) );
-            REQUIRE( vector.up() == ULength(6, Length::Meters) );
-            REQUIRE( vector.down() == ULength(7, Length::Meters) );
+            CHECK( vector.left() == ULength(4, Length::Meters) );
+            CHECK( vector.right() == ULength(5, Length::Meters) );
+            CHECK( vector.up() == ULength(6, Length::Meters) );
+            CHECK( vector.down() == ULength(7, Length::Meters) );
 
             SECTION( "can omit lruds" ) {
                 parser.parseLine("A B 1 2 3 <4,-,6,-->");
-                REQUIRE( vector.left() == ULength(4, Length::Meters) );
-                REQUIRE( !vector.right().isValid() );
-                REQUIRE( vector.up() == ULength(6, Length::Meters) );
-                REQUIRE( !vector.down().isValid() );
+                CHECK( vector.left() == ULength(4, Length::Meters) );
+                CHECK( !vector.right().isValid() );
+                CHECK( vector.up() == ULength(6, Length::Meters) );
+                CHECK( !vector.down().isValid() );
             }
 
-            SECTION( "negative numbers not allowed" ) {
-                CHECK_THROWS( parser.parseLine("A B 1 2 3 *-4,5,6,7*") );
+            SECTION( "negative numbers allowed" ) {
+                messages.clear();
+                parser.parseLine("A B 1 2 3 *-4,5,-6f,7*");
+                CHECK( vector.left() == ULength(-4, Length::Meters) );
+                CHECK( vector.right() == ULength(5, Length::Meters) );
+                CHECK( vector.up() == ULength(-6, Length::Feet) );
+                CHECK( vector.down() == ULength(7, Length::Meters) );
+                CHECK( messages.size() == 2 );
             }
 
             SECTION( "can unitize individual lruds" ) {
                 parser.parseLine("A B 1 2 3 *4f,5m,6i3,i7*");
-                REQUIRE( vector.left() == ULength(4, Length::Feet) );
-                REQUIRE( vector.right() == ULength(5, Length::Meters) );
-                REQUIRE( vector.up() == ULength(6 * 12 + 3, Length::Inches) );
-                REQUIRE( vector.down() == ULength(7, Length::Inches) );
+                CHECK( vector.left() == ULength(4, Length::Feet) );
+                CHECK( vector.right() == ULength(5, Length::Meters) );
+                CHECK( vector.up() == ULength(6 * 12 + 3, Length::Inches) );
+                CHECK( vector.down() == ULength(7, Length::Inches) );
             }
 
             SECTION( "sUnit affects lruds" ) {
                 parser.parseLine("#units s=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
-                REQUIRE( vector.left() == ULength(4, Length::Feet) );
-                REQUIRE( vector.right() == ULength(5, Length::Feet) );
-                REQUIRE( vector.up() == ULength(6, Length::Feet) );
-                REQUIRE( vector.down() == ULength(7, Length::Feet) );
+                CHECK( vector.left() == ULength(4, Length::Feet) );
+                CHECK( vector.right() == ULength(5, Length::Feet) );
+                CHECK( vector.up() == ULength(6, Length::Feet) );
+                CHECK( vector.down() == ULength(7, Length::Feet) );
             }
 
             SECTION( "dUnit doesn't affect lruds" ) {
                 parser.parseLine("#units d=feet");
                 parser.parseLine("A B 1 2 3 *4,5,6,7*");
-                REQUIRE( vector.left() == ULength(4, Length::Meters) );
-                REQUIRE( vector.right() == ULength(5, Length::Meters) );
-                REQUIRE( vector.up() == ULength(6, Length::Meters) );
-                REQUIRE( vector.down() == ULength(7, Length::Meters) );
+                CHECK( vector.left() == ULength(4, Length::Meters) );
+                CHECK( vector.right() == ULength(5, Length::Meters) );
+                CHECK( vector.up() == ULength(6, Length::Meters) );
+                CHECK( vector.down() == ULength(7, Length::Meters) );
             }
 
             SECTION( "malformed lruds" ) {
@@ -488,12 +494,30 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "malformed lruds that Walls accepts in contradition of its documentation" ) {
                 parser.parseLine("A B 1 2 3 *4,5 6,7*");
                 parser.parseLine("A B 1 2 3 <4,5 6,7>");
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <4,5,6,>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <4,5,6>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <1>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 < >");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <,>");
+                CHECK( !messages.isEmpty() );
             }
 
             SECTION( "can change lrud order" ) {
