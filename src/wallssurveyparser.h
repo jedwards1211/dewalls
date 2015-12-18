@@ -322,6 +322,7 @@ private:
     void right();
     void up();
     void down();
+    template<class T> void warnIfNegative(UnitizedDouble<T> measurement, int start, QString name);
     void afterVectorMeasurements();
     template<class T> void varianceOverrides(T& target);
     void afterVectorVarianceOverrides();

@@ -1634,12 +1634,22 @@ void WallsSurveyParser::lrudMeasurement(LrudMeasurement elem)
     }
 }
 
+template<class T>
+void WallsSurveyParser::warnIfNegative(UnitizedDouble<T> measurement, int start, QString name)
+{
+    if (measurement.isValid() && measurement.get(measurement.unit()) < 0)
+    {
+        emit message(WallsMessage("warning", QString("negative %1 measurement").arg(name), _line.mid(_i, start - _i)));
+    }
+}
+
 void WallsSurveyParser::left()
 {
     int start = _i;
     ULength left;
     if (optionalWithLookahead(left, [&]() { return length(_units.sUnit()); }))
     {
+        warnIfNegative(left, start, "LRUD");
         checkCorrectedSign(start, left, _units.incs());
         _vector.setLeft(left);
     }
@@ -1651,6 +1661,7 @@ void WallsSurveyParser::right()
     ULength right;
     if (optionalWithLookahead(right, [&]() { return length(_units.sUnit()); }))
     {
+        warnIfNegative(right, start, "LRUD");
         checkCorrectedSign(start, right, _units.incs());
         _vector.setRight(right);
     }
@@ -1662,6 +1673,7 @@ void WallsSurveyParser::up()
     ULength up;
     if (optionalWithLookahead(up, [&]() { return length(_units.sUnit()); }))
     {
+        warnIfNegative(up, start, "LRUD");
         checkCorrectedSign(start, up, _units.incs());
         _vector.setUp(up);
     }
@@ -1673,6 +1685,7 @@ void WallsSurveyParser::down()
     ULength down;
     if (optionalWithLookahead(down, [&]() { return length(_units.sUnit()); }))
     {
+        warnIfNegative(down, start, "LRUD");
         checkCorrectedSign(start, down, _units.incs());
         _vector.setDown(down);
     }
@@ -1684,10 +1697,6 @@ void WallsSurveyParser::afterVectorMeasurements()
         whitespace();
         varianceOverrides(_vector);
     });
-//    if (maybe([&]() { return varianceOverrides(_vector); }))
-//    {
-//        maybeWhitespace();
-//    }
     afterVectorVarianceOverrides();
 }
 
@@ -1722,10 +1731,6 @@ void WallsSurveyParser::afterVectorVarianceOverrides()
         whitespace();
         lruds();
     });
-//    if (maybe([&]() { lruds(); }))
-//    {
-//        maybeWhitespace();
-//    }
     afterLruds();
 }
 
@@ -1742,7 +1747,7 @@ void WallsSurveyParser::lruds()
             if (!ex.segment().value().startsWith(">")) {
                 throw;
             }
-            // TODO warn
+            emit message(WallsMessage("warning", "missing LRUD measurment; use -- to indicate omitted measurements", ex.segment()));
         }
         expect('>');
     }, [&]() {
@@ -1756,7 +1761,7 @@ void WallsSurveyParser::lruds()
             if (!ex.segment().value().startsWith("*")) {
                 throw;
             }
-            // TODO warn
+            emit message(WallsMessage("warning", "missing LRUD measurement; use -- to indicate omitted measurements", ex.segment()));
         }
         expect('*');
     });
@@ -1773,7 +1778,10 @@ void WallsSurveyParser::lrudContent()
             oneOfWithLookahead([&]() { maybeWhitespace(); expect(','); maybeWhitespace(); },
             [&]() { whitespace(); });
         }
-        maybe([&]() { lrudMeasurement(elem); });
+        if (!maybe([&]() { lrudMeasurement(elem); }))
+        {
+            emit message(WallsMessage("warning", "missing LRUD measurement; use -- to indicate omitted measurements", _line.mid(_i)));
+        }
     }
     maybeWhitespace();
     afterRequiredLrudMeasurements();

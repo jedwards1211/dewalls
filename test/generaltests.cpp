@@ -451,11 +451,13 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             }
 
             SECTION( "negative numbers allowed" ) {
+                messages.clear();
                 parser.parseLine("A B 1 2 3 *-4,5,-6f,7*");
                 CHECK( vector.left() == ULength(-4, Length::Meters) );
                 CHECK( vector.right() == ULength(5, Length::Meters) );
                 CHECK( vector.up() == ULength(-6, Length::Feet) );
                 CHECK( vector.down() == ULength(7, Length::Meters) );
+                CHECK( messages.size() == 2 );
             }
 
             SECTION( "can unitize individual lruds" ) {
@@ -492,12 +494,30 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "malformed lruds that Walls accepts in contradition of its documentation" ) {
                 parser.parseLine("A B 1 2 3 *4,5 6,7*");
                 parser.parseLine("A B 1 2 3 <4,5 6,7>");
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <4,5,6,>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <4,5,6>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <1>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <>");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 < >");
+                CHECK( !messages.isEmpty() );
+
+                messages.clear();
                 parser.parseLine("A B 1 2 3 <,>");
+                CHECK( !messages.isEmpty() );
             }
 
             SECTION( "can change lrud order" ) {
