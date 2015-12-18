@@ -1638,7 +1638,7 @@ void WallsSurveyParser::left()
 {
     int start = _i;
     ULength left;
-    if (optional(left, [&]() { return unsignedLength(_units.sUnit()); }))
+    if (optionalWithLookahead(left, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, left, _units.incs());
         _vector.setLeft(left);
@@ -1649,7 +1649,7 @@ void WallsSurveyParser::right()
 {
     int start = _i;
     ULength right;
-    if (optional(right, [&]() { return unsignedLength(_units.sUnit()); }))
+    if (optionalWithLookahead(right, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, right, _units.incs());
         _vector.setRight(right);
@@ -1660,7 +1660,7 @@ void WallsSurveyParser::up()
 {
     int start = _i;
     ULength up;
-    if (optional(up, [&]() { return unsignedLength(_units.sUnit()); }))
+    if (optionalWithLookahead(up, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, up, _units.incs());
         _vector.setUp(up);
@@ -1671,7 +1671,7 @@ void WallsSurveyParser::down()
 {
     int start = _i;
     ULength down;
-    if (optional(down, [&]() { return unsignedLength(_units.sUnit()); }))
+    if (optionalWithLookahead(down, [&]() { return length(_units.sUnit()); }))
     {
         checkCorrectedSign(start, down, _units.incs());
         _vector.setDown(down);
