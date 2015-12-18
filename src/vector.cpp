@@ -1,5 +1,6 @@
 #include "vector.h"
 #include "unitizedmath.h"
+#include <iostream>
 
 namespace dewalls {
 
@@ -35,13 +36,17 @@ void Vector::applyHeightCorrections()
         double cosi = ucos(inc);
 
         ULength tapeDist = distance() + units().incd();
-        ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : instHeight();
-        ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : targetHeight();
+        ULength _instHeight = instHeight();
+        if (!_instHeight.isValid()) _instHeight = ULength(0, tapeDist.unit());
+        ULength _targetHeight = targetHeight();
+        if (!_targetHeight.isValid()) _targetHeight = ULength(0, tapeDist.unit());
+        ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _instHeight;
+        ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _targetHeight;
         ULength delta = tapeFromHeight - tapeToHeight;
 
         ULength distAlongInc = usqrt(usq(tapeDist) - usq(delta) + usq(delta * sini * sini)) - delta * sini;
 
-        ULength totalDelta = instHeight() - targetHeight() + units().inch();
+        ULength totalDelta = _instHeight - _targetHeight + units().inch();
 
         ULength stationToStationDist = usqrt(usq(distAlongInc) + 2 * sini * umul(totalDelta, distAlongInc) + usq(totalDelta));
         UAngle  stationToStationInc  = inc + uatan(totalDelta * cosi / (distAlongInc + totalDelta * sini));
