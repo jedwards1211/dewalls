@@ -1360,6 +1360,7 @@ void WallsSurveyParser::fromStation()
         from.clear();
     }
     _vector = Vector();
+    _vector.setSourceSegment(_line);
     _vector.setFrom(from);
 }
 
@@ -1373,6 +1374,7 @@ void WallsSurveyParser::afterFromStation()
         // clear all measurements
         QString from = _vector.from();
         _vector = Vector();
+        _vector.setSourceSegment(_line);
         _vector.setFrom(from);
         lruds();
         afterLruds();

@@ -1,5 +1,7 @@
 #include "vector.h"
 #include "unitizedmath.h"
+#include "segmentparseexception.h"
+
 #include <iostream>
 
 namespace dewalls {
@@ -42,13 +44,25 @@ void Vector::applyHeightCorrections()
         if (!_targetHeight.isValid()) _targetHeight = ULength(0, tapeDist.unit());
         ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _instHeight;
         ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _targetHeight;
-        ULength delta = tapeFromHeight - tapeToHeight;
+        ULength delta = (tapeToHeight - tapeFromHeight) - (_targetHeight - _instHeight);
 
-        ULength distAlongInc = usqrt(usq(tapeDist) - usq(delta) + usq(delta * sini * sini)) - delta * sini;
+        ULength unAdjusted = usqrt(usq(tapeDist) - usq(delta * cosi));
+        if ((-unAdjusted - delta * sini).isPositive())
+        {
+            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, inch and taping method");
+        }
+
+        ULength distAlongInc = unAdjusted - delta * sini;
 
         ULength totalDelta = _instHeight - _targetHeight + units().inch();
 
         ULength stationToStationDist = usqrt(usq(distAlongInc) + 2 * sini * umul(totalDelta, distAlongInc) + usq(totalDelta));
+        unAdjusted = usqrt(usq(stationToStationDist) - usq(totalDelta * cosi));
+        if ((-unAdjusted - totalDelta * sini).isPositive())
+        {
+            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, inch and taping method");
+        }
+
         UAngle  stationToStationInc  = inc + uatan(totalDelta * cosi / (distAlongInc + totalDelta * sini));
 
         setDistance(stationToStationDist - units().incd());
@@ -57,12 +71,12 @@ void Vector::applyHeightCorrections()
 
         if (!frontInclination().isValid() && !backInclination().isValid())
         {
-            setFrontInclination(stationToStationInc);
+            setFrontInclination(stationToStationInc - units().incv());
         }
         else
         {
-            setFrontInclination(frontInclination() - dInc);
-            setBackInclination (backInclination () - dInc);
+            setFrontInclination(frontInclination() + dInc - units().incv());
+            setBackInclination (backInclination () + dInc - units().incvb());
         }
     }
 }

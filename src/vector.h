@@ -2,6 +2,7 @@
 #define DEWALLS_VECTOR_H
 
 #include "unitizeddouble.h"
+#include "segment.h"
 #include "length.h"
 #include "angle.h"
 #include "varianceoverride.h"
@@ -24,6 +25,7 @@ public:
 
     inline VectorData()
         : QSharedData(),
+          sourceSegment(),
           from(),
           to(),
           distance(),
@@ -49,6 +51,7 @@ public:
           date(),
           units() { }
 
+    Segment sourceSegment;
     QString from;
     QString to;
     ULength distance;
@@ -85,6 +88,7 @@ public:
     inline Vector() { d = new VectorData; }
     inline Vector(const Vector& other) : d(other.d) { }
 
+    inline Segment sourceSegment() const { return d->sourceSegment; }
     inline QString from() const { return d->from; }
     inline QString to() const { return d->to; }
     inline ULength distance() const { return d->distance; }
@@ -110,6 +114,7 @@ public:
     inline QDate date() const { return d->date; }
     inline WallsUnits units() const { return d->units; }
 
+    inline void setSourceSegment(Segment sourceSegment) { d->sourceSegment = sourceSegment; }
     inline void setFrom(QString from) { d->from = from; }
     inline void setTo(QString to) { d->to = to; }
     inline void setDistance(ULength distance) { d->distance = distance; }

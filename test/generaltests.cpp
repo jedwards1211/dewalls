@@ -799,31 +799,4 @@ TEST_CASE( "WallsUnits tests", "[dewalls]" ) {
         CHECK( units.avgInc(UAngle(1, Angle::Degrees), UAngle(-3, Angle::Degrees)) == UAngle(2, Angle::Degrees) );
         CHECK( units.avgInc(UAngle(), UAngle(3, Angle::Degrees)) == UAngle(-3, Angle::Degrees) );
     }
-
-    SECTION( "applyHeightCorrections" ) {
-        units.setTypevbCorrected(true);
-        ULength dist(sqrt(2) * 5 - 1, Length::Meters);
-        units.setIncd(ULength(1, Length::Meters));
-        UAngle fsInc(42, Angle::Degrees);
-        units.setIncv(UAngle(1, Angle::Degrees));
-        UAngle bsInc(49, Angle::Degrees);
-        units.setIncvb(UAngle(-2, Angle::Degrees));
-        units.setInch(ULength(2, Length::Meters));
-        ULength ih(-8, Length::Meters);
-        ULength th(-1, Length::Meters);
-
-        Vector vector;
-        vector.setDistance(dist);
-        vector.setFrontInclination(fsInc);
-        vector.setBackInclination(bsInc);
-        vector.setInstHeight(ih);
-        vector.setTargetHeight(th);
-        vector.setUnits(units);
-
-        vector.applyHeightCorrections();
-
-        CHECK( uabs(vector.distance() - ULength(4, Length::Meters)) < ULength(1e-6, Length::Meters) );
-        CHECK( uabs(vector.frontInclination() - UAngle(-3, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
-        CHECK( uabs(vector.backInclination() - UAngle(4, Angle::Degrees)) < UAngle(1e-6, Angle::Degrees) );
-    }
 }

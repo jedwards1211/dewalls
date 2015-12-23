@@ -29,6 +29,8 @@ public:
 
     inline bool isZero() const { return _unit && _quantity == 0.0; }
     inline bool isNonzero() const { return _unit && _quantity != 0.0; }
+    inline bool isNegative() const { return _unit && _quantity < 0.0; }
+    inline bool isPositive() const { return _unit && _quantity > 0.0; }
     double signum() const;
 
     friend void swap(UnitizedDouble<T>& first, UnitizedDouble<T>& second)
