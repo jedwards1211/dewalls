@@ -41,8 +41,6 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     ULength expectedDist = usqrt(usq(toY + inch - fromY) + usq(horizDist));
     UAngle  expectedInc  = uatan((toY + inch - fromY) / horizDist);
 
-    UAngle angle = uatan((targetY - instY) / horizDist) - uatan((tapeToY - tapeFromY) / horizDist);
-
     double instSignum = (targetY - instY).signum();
     if (instSignum != 0.0 && ((tapeToY - tapeFromY).signum() == -instSignum ||
                               (toY - fromY).signum() == -instSignum)) {
