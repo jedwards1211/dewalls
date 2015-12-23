@@ -26,7 +26,7 @@ bool Vector::isVertical()
     return units().isVertical(frontInclination(), frontAzimuth());
 }
 
-void Vector::applyHeightCorrections()
+bool Vector::applyHeightCorrections()
 {
     if (!isVertical() && (units().inch().isNonzero() || instHeight().isNonzero() || targetHeight().isNonzero()))
     {
@@ -75,7 +75,10 @@ void Vector::applyHeightCorrections()
             setFrontInclination(frontInclination() + dInc);
             setBackInclination (backInclination () + dInc);
         }
+
+        return true;
     }
+    return false;
 }
 
 

@@ -149,8 +149,9 @@ public:
     /// correction, rederives the distance and inclinations from that offset, and clears the instrument
     /// and target heights.  This is for programs that don't store instrument and target heights or
     /// something like INCH internally.
+    /// \return true iff height corrections were applied
     ///
-    void applyHeightCorrections();
+    bool applyHeightCorrections();
     bool isVertical();
 
 private:
