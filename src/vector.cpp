@@ -36,9 +36,9 @@ void Vector::applyHeightCorrections()
         double cosi = ucos(inc);
 
         ULength tapeDist = distance() + units().incd();
-        ULength _instHeight = instHeight();
+        ULength _instHeight = instHeight() + units().incs();
         if (!_instHeight.isValid()) _instHeight = ULength(0, tapeDist.unit());
-        ULength _targetHeight = targetHeight();
+        ULength _targetHeight = targetHeight() + units().incs();
         if (!_targetHeight.isValid()) _targetHeight = ULength(0, tapeDist.unit());
         ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _instHeight;
         ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _targetHeight;

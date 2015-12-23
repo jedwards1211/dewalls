@@ -14,6 +14,9 @@ typedef UnitizedDouble<Angle> UAngle;
 void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, ULength horizDist, ULength inch, QList<TapingMethodMeasurement> tape) {
     WallsUnits units;
     units.setInch(inch);
+    units.setIncd(ULength(1, Length::Inches));
+    units.setIncs(ULength(1, Length::Inches));
+    units.setIncv(UAngle(2, Angle::Degrees));
     units.setTape(tape);
 
     std::cout << "===============================" << std::endl;
@@ -28,11 +31,11 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     ULength tapeToY   = tape[1] == TapingMethodMeasurement::TargetHeight     ? targetY : toY;
 
     Vector vector;
-    vector.setDistance(usqrt(usq(horizDist) + usq(tapeToY - tapeFromY)));
-    vector.setFrontAzimuth(UAngle(0, Angle::Degrees));
-    vector.setFrontInclination(uatan((targetY - instY) / horizDist));
-    vector.setInstHeight(instY - fromY);
-    vector.setTargetHeight(targetY - toY);
+    vector.setDistance(usqrt(usq(horizDist) + usq(tapeToY - tapeFromY)) - units.incd());
+    vector.setFrontAzimuth(UAngle(0, Angle::Degrees) - units.inca());
+    vector.setFrontInclination(uatan((targetY - instY) / horizDist) - units.incv());
+    vector.setInstHeight(instY - fromY - units.incs());
+    vector.setTargetHeight(targetY - toY - units.incs());
     vector.setUnits(units);
 
     ULength expectedDist = usqrt(usq(toY + inch - fromY) + usq(horizDist));
@@ -47,8 +50,8 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     }
     else {
         vector.applyHeightCorrections();
-        CHECK( vector.distance().get(Length::Meters) == Approx( expectedDist.get(Length::Meters) ) );
-        CHECK( vector.frontInclination().get(Angle::Degrees) == Approx( expectedInc.get(Angle::Degrees) ) );
+        CHECK( (vector.distance() + units.incd()).get(Length::Meters) == Approx( expectedDist.get(Length::Meters) ) );
+        CHECK( (vector.frontInclination() + units.incv()).get(Angle::Degrees) == Approx( expectedInc.get(Angle::Degrees) ) );
     }
 }
 
