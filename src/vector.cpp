@@ -67,16 +67,15 @@ void Vector::applyHeightCorrections()
 
         setDistance(stationToStationDist - units().incd());
 
-        UAngle dInc = stationToStationInc - inc;
-
         if (!frontInclination().isValid() && !backInclination().isValid())
         {
             setFrontInclination(stationToStationInc - units().incv());
         }
         else
         {
-            setFrontInclination(frontInclination() + dInc - units().incv());
-            setBackInclination (backInclination () + dInc - units().incvb());
+            UAngle dInc = stationToStationInc - inc;
+            setFrontInclination(frontInclination() + dInc);
+            setBackInclination (backInclination () + dInc);
         }
     }
 }
