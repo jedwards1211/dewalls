@@ -49,7 +49,7 @@ void Vector::applyHeightCorrections()
         ULength unAdjusted = usqrt(usq(tapeDist) - usq(delta * cosi));
         if ((-unAdjusted - delta * sini).isPositive())
         {
-            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, inch and taping method");
+            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, INCH and taping method");
         }
 
         ULength distAlongInc = unAdjusted - delta * sini;
@@ -60,7 +60,7 @@ void Vector::applyHeightCorrections()
         unAdjusted = usqrt(usq(stationToStationDist) - usq(totalDelta * cosi));
         if ((-unAdjusted - totalDelta * sini).isPositive())
         {
-            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, inch and taping method");
+            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, INCH and taping method");
         }
 
         UAngle  stationToStationInc  = inc + uatan(totalDelta * cosi / (distAlongInc + totalDelta * sini));
