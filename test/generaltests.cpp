@@ -35,6 +35,9 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.units().incv().isZero() );
     REQUIRE( parser.units().incvb().isZero() );
     REQUIRE( parser.units().inch().isZero() );
+    REQUIRE( parser.units().tape().size() == 2);
+    REQUIRE( parser.units().tape()[0] == TapingMethodMeasurement::InstrumentHeight );
+    REQUIRE( parser.units().tape()[1] == TapingMethodMeasurement::TargetHeight );
     REQUIRE( parser.date().isNull() );
     REQUIRE( parser.units().case_() == CaseType::Mixed );
     REQUIRE( parser.units().flag().isNull() );
@@ -42,13 +45,17 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.units().uvh() == 1.0 );
     REQUIRE( parser.units().uvv() == 1.0 );
 
+    Vector vector;
+    FixStation station;
+    QList<WallsMessage> messages;
+    QString comment;
+
+    QObject::connect(&parser, &WallsSurveyParser::parsedVector, [&](Vector v) { vector = v; });
+    QObject::connect(&parser, &WallsSurveyParser::parsedFixStation, [&](FixStation s) { station = s; });
+    QObject::connect(&parser, &WallsSurveyParser::message, [&](WallsMessage m) { messages << m; });
+    QObject::connect(&parser, &WallsSurveyParser::parsedComment, [&](QString c) { comment = c; });
+
     SECTION( "vector line parsing tests" ) {
-        Vector vector;
-        QList<WallsMessage> messages;
-
-        QObject::connect(&parser, &WallsSurveyParser::parsedVector, [&](Vector v) { vector = v; });
-        QObject::connect(&parser, &WallsSurveyParser::message, [&](WallsMessage m) { messages << m; });
-
         parser.parseLine("A1 A2 2.5 350 2.3");
 
         REQUIRE( vector.from() == "A1" );
@@ -685,10 +692,6 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     }
 
     SECTION( "fixed stations" ) {
-        FixStation station;
-
-        QObject::connect(&parser, &WallsSurveyParser::parsedFixStation, [&](FixStation s) { station = s; });
-
         parser.parseLine("#FIX A1 W97:43:52.5 N31:16:45 323f (?,*) /Entrance #s blah ;dms with ft elevations");
         REQUIRE( station.name() == "A1" );
         REQUIRE( station.longitude() == UAngle(-97 - (43 + 52.5 / 60.0) / 60.0, Angle::Degrees) );
@@ -781,6 +784,34 @@ TEST_CASE( "general tests", "[dewalls]" ) {
         CHECK( parser.macros()["world"] == "" );
 
         CHECK_THROWS( parser.parseLine("#units $(undefined)") );
+    }
+
+    SECTION( "Comment lines" ) {
+        parser.parseLine(";#units invalid=hello");
+        CHECK( comment == "#units invalid=hello" );
+        vector = Vector();
+        parser.parseLine(";a b 1 2 3");
+        CHECK( comment == "a b 1 2 3" );
+        CHECK( vector.from().isEmpty() );
+        CHECK( vector.to().isEmpty() );
+    }
+
+    SECTION( "Block comments" ) {
+        vector = Vector();
+        parser.parseLine("#[");
+        parser.parseLine("a b 1 2 3");
+        CHECK( comment == "a b 1 2 3" );
+        CHECK( vector.from().isEmpty() );
+        CHECK( vector.to().isEmpty() );
+        parser.parseLine("#units f");
+        CHECK( parser.units().dUnit() == Length::Meters );
+        parser.parseLine("#]");
+        parser.parseLine("a b 1 2 3");
+        CHECK( vector.from() == "a" );
+        CHECK( vector.to() == "b" );
+        CHECK( vector.distance() == ULength(1, Length::Meters) );
+        CHECK( vector.frontAzimuth() == UAngle(2, Angle::Degrees) );
+        CHECK( vector.frontInclination() == UAngle(3, Angle::Degrees) );
     }
 }
 
