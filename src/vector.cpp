@@ -2,8 +2,6 @@
 #include "unitizedmath.h"
 #include "segmentparseexception.h"
 
-#include <iostream>
-
 namespace dewalls {
 
 void Vector::deriveCtFromRect()
