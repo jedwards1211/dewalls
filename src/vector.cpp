@@ -30,39 +30,47 @@ bool Vector::applyHeightCorrections()
 {
     if (!isVertical() && (units().inch().isNonzero() || instHeight().isNonzero() || targetHeight().isNonzero()))
     {
+        // get corrected average inclination (defaut to zero)
         UAngle inc = units().avgInc(frontInclination() + units().incv(), backInclination() + units().incvb());
         if (!inc.isValid()) inc = UAngle(0, Angle::Degrees);
-        double sini = usin(inc);
-        double cosi = ucos(inc);
 
+        // get corrected distance
         ULength tapeDist = distance() + units().incd();
+
+        // get corrected instrument and target heights (default to zero)
         ULength _instHeight = instHeight() + units().incs();
         if (!_instHeight.isValid()) _instHeight = ULength(0, tapeDist.unit());
         ULength _targetHeight = targetHeight() + units().incs();
         if (!_targetHeight.isValid()) _targetHeight = ULength(0, tapeDist.unit());
+
+        // compute height of tape ends above stations
         ULength tapeFromHeight = units().tape()[0] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _instHeight;
         ULength tapeToHeight   = units().tape()[1] == TapingMethodMeasurement::Station ? ULength(0, tapeDist.unit()) : _targetHeight;
-        ULength delta = (tapeToHeight - tapeFromHeight) - (_targetHeight - _instHeight);
 
-        ULength unAdjusted = usqrt(usq(tapeDist) - usq(delta * cosi));
-        if ((-unAdjusted - delta * sini).isPositive())
-        {
-            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, INCH and taping method");
+        // compute height of instrument and target above tape ends
+        ULength instHeightAboveTape = _instHeight - tapeFromHeight;
+        ULength targetHeightAboveTape = _targetHeight - tapeToHeight;
+
+        // height change between tape vector and instrument to target vector
+        ULength delta = instHeightAboveTape - targetHeightAboveTape;
+
+        if (uabs(delta) > tapeDist) {
+            throw SegmentParseException(sourceSegment(), "vector is ambiguous because abs(instrument height above tape - target height above tape) > distance.  In this case, there are two possible vectors that fulfill the constraints imposed by the measurements.  Split this shot into two shots (one vertical) to make it unambiguous.");
         }
 
-        ULength distAlongInc = unAdjusted - delta * sini;
+        // compute instrument to target distance
+        // it's difficult to justify this equation in pure text, it requires a geometric proof
+        ULength instToTargetDist = usqrt(usq(tapeDist) - usq(delta * ucos(inc))) - delta * usin(inc);
 
+        // height change between inst to target vector and final corrected vector
         ULength totalDelta = _instHeight - _targetHeight + units().inch();
 
-        ULength stationToStationDist = usqrt(usq(distAlongInc) + 2 * sini * umul(totalDelta, distAlongInc) + usq(totalDelta));
-        unAdjusted = usqrt(usq(stationToStationDist) - usq(totalDelta * cosi));
-        if ((-unAdjusted - totalDelta * sini).isPositive())
-        {
-            throw SegmentParseException(sourceSegment(), "vector is ambiguous; there are two possible vectors that satisfy the constraints imposed by the instrument/target heights, INCH and taping method");
-        }
+        // compute station to station distance and inclination
+        ULength stationToStationDist = usqrt(usq(instToTargetDist * usin(inc) + totalDelta) + usq(instToTargetDist * ucos(inc)));
+        UAngle stationToStationInc = uatan2(instToTargetDist * usin(inc) + totalDelta, instToTargetDist * ucos(inc));
 
-        UAngle  stationToStationInc  = inc + uatan(totalDelta * cosi / (distAlongInc + totalDelta * sini));
-
+        // make sure to subtract corrections so that when they are applied later,
+        // they will produce the same vector calculated here
         setDistance(stationToStationDist - units().incd());
 
         if (!frontInclination().isValid() && !backInclination().isValid())
@@ -72,9 +80,16 @@ bool Vector::applyHeightCorrections()
         else
         {
             UAngle dInc = stationToStationInc - inc;
+            // since we are moving the original vectors by the difference, we don't need to subtract the
+            // correction factors -- they're already present
             setFrontInclination(frontInclination() + dInc);
             setBackInclination (backInclination () + dInc);
         }
+
+        // clear out the instrument and target heights, since the vector is now fully determined by the
+        // distance and inclination
+        setInstHeight(ULength());
+        setTargetHeight(ULength());
 
         return true;
     }

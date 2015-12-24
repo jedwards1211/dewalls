@@ -41,9 +41,9 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     ULength expectedDist = usqrt(usq(toY + inch - fromY) + usq(horizDist));
     UAngle  expectedInc  = uatan((toY + inch - fromY) / horizDist);
 
-    double instSignum = (targetY - instY).signum();
-    if (instSignum != 0.0 && ((tapeToY - tapeFromY).signum() == -instSignum ||
-                              (toY - fromY).signum() == -instSignum)) {
+    ULength instHeightAboveTape = instY - tapeFromY;
+    ULength targetHeightAboveTape = targetY - tapeToY;
+    if (uabs(instHeightAboveTape - targetHeightAboveTape) > vector.distance()) {
         CHECK_THROWS( vector.applyHeightCorrections() );
     }
     else {
