@@ -1541,7 +1541,7 @@ void WallsSurveyParser::azimuth()
     if (azmFs.isValid() && azmBs.isValid())
     {
         UAngle diff = azmDifference(azmFs, azmBs);
-        if (diff > _units.typeabTolerance())
+        if (diff > _units.typeabTolerance() * (1 + 1e-6))
         {
             emit message(WallsMessage("warning",
                                       QString("azimuth fs/bs difference (%1) exceeds tolerance (%2)")
@@ -1581,7 +1581,7 @@ void WallsSurveyParser::inclination()
     }
     else if (incFs.isValid() && incBs.isValid()) {
         UAngle diff = incDifference(incFs, incBs);
-        if (diff > _units.typevbTolerance())
+        if (diff > _units.typevbTolerance() * (1 + 1e-6))
         {
             emit message(WallsMessage("warning",
                                       QString("inclination fs/bs difference (%1) exceeds tolerance (%2)")

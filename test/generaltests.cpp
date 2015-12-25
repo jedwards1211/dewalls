@@ -24,7 +24,9 @@ TEST_CASE( "general tests", "[dewalls]" ) {
     REQUIRE( parser.units().lrud() == LrudType::From );
     REQUIRE( parser.units().prefix().isEmpty() );
     REQUIRE( parser.units().typeabCorrected() == false );
+    REQUIRE( parser.units().typevbTolerance() == UAngle(2.0, Angle::Degrees) );
     REQUIRE( parser.units().typevbCorrected() == false );
+    REQUIRE( parser.units().typevbTolerance() == UAngle(2.0, Angle::Degrees) );
     REQUIRE( parser.units().rect().isZero() );
     REQUIRE( parser.units().decl().isZero() );
     REQUIRE( parser.units().grid().isZero() );
@@ -183,52 +185,52 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "abUnit" ) {
                 parser.parseLine("#units ab=grads");
                 parser.parseLine("A B 1 2/3 4");
-                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::Degrees) );
-                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::Gradians) );
+                CHECK( vector.frontAzimuth() == UAngle(2, Angle::Degrees) );
+                CHECK( vector.backAzimuth() == UAngle(3, Angle::Gradians) );
             }
 
             SECTION( "a/ab unit" ) {
                 parser.parseLine("#units a/ab=grads");
                 parser.parseLine("A B 1 2/3 4");
-                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::Gradians) );
-                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::Gradians) );
+                CHECK( vector.frontAzimuth() == UAngle(2, Angle::Gradians) );
+                CHECK( vector.backAzimuth() == UAngle(3, Angle::Gradians) );
             }
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
                 messages.clear();
                 parser.parseLine("A B 1 1/179 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 1/183 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 1/184 4");
                 REQUIRE( messages.size() == 1 );
-                REQUIRE( messages[0].message().contains("exceeds") );
+                CHECK( messages[0].message().contains("exceeds") );
 
                 messages.clear();
                 parser.parseLine("#units typeab=c");
                 parser.parseLine("A B 1 1/3 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 1/359 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 359/1 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("#units typeab=c,5");
                 parser.parseLine("A B 1 1/6 4");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 1/7 4");
-                REQUIRE( messages.size() == 1 );
+                CHECK( messages.size() == 1 );
             }
         }
 
@@ -236,8 +238,8 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "vUnit" ) {
                 parser.parseLine("#units v=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( vector.frontInclination() == UAngle(3, Angle::Gradians) );
-                REQUIRE( vector.backInclination() == UAngle(4, Angle::Degrees) );
+                CHECK( vector.frontInclination() == UAngle(3, Angle::Gradians) );
+                CHECK( vector.backInclination() == UAngle(4, Angle::Degrees) );
             }
 
             SECTION( "backsight inclination can be omitted without dashes" ) {
@@ -247,25 +249,25 @@ TEST_CASE( "general tests", "[dewalls]" ) {
             SECTION( "vbUnit" ) {
                 parser.parseLine("#units vb=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( vector.frontInclination() == UAngle(3, Angle::Degrees) );
-                REQUIRE( vector.backInclination() == UAngle(4, Angle::Gradians) );
+                CHECK( vector.frontInclination() == UAngle(3, Angle::Degrees) );
+                CHECK( vector.backInclination() == UAngle(4, Angle::Gradians) );
             }
 
             SECTION( "v/vb unit" ) {
                 parser.parseLine("#units v/vb=grads");
                 parser.parseLine("A B 1 2 3/4");
-                REQUIRE( vector.frontInclination() == UAngle(3, Angle::Gradians) );
-                REQUIRE( vector.backInclination() == UAngle(4, Angle::Gradians) );
+                CHECK( vector.frontInclination() == UAngle(3, Angle::Gradians) );
+                CHECK( vector.backInclination() == UAngle(4, Angle::Gradians) );
             }
 
             SECTION( "parser warns if fs/bs difference exceeds tolerance" ) {
                 messages.clear();
                 parser.parseLine("A B 1 2 4/-6");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 2 4/-2");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 2 4/-7");
@@ -275,20 +277,20 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 messages.clear();
                 parser.parseLine("#units typevb=c");
                 parser.parseLine("A B 1 2 1/3");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 2 1/-1");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("#units typevb=c,5");
                 parser.parseLine("A B 1 2 1/6");
-                REQUIRE( messages.size() == 0 );
+                CHECK( messages.size() == 0 );
 
                 messages.clear();
                 parser.parseLine("A B 1 2 1/7");
-                REQUIRE( messages.size() == 1 );
+                CHECK( messages.size() == 1 );
             }
         }
 
