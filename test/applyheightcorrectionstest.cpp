@@ -33,17 +33,24 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     Vector vector;
     vector.setDistance(usqrt(usq(horizDist) + usq(tapeToY - tapeFromY)) - units.incd());
     vector.setFrontAzimuth(UAngle(0, Angle::Degrees) - units.inca());
-    vector.setFrontInclination(uatan((targetY - instY) / horizDist) - units.incv());
+    if (horizDist.isNonzero()) {
+        vector.setFrontInclination(uatan((targetY - instY) / horizDist) - units.incv());
+    }
     vector.setInstHeight(instY - fromY - units.incs());
     vector.setTargetHeight(targetY - toY - units.incs());
     vector.setUnits(units);
 
     ULength expectedDist = usqrt(usq(toY + inch - fromY) + usq(horizDist));
-    UAngle  expectedInc  = uatan((toY + inch - fromY) / horizDist);
+    UAngle  expectedInc  = uatan2((toY + inch - fromY), horizDist);
 
     ULength instHeightAboveTape = instY - tapeFromY;
     ULength targetHeightAboveTape = targetY - tapeToY;
-    if (uabs(instHeightAboveTape - targetHeightAboveTape) > vector.distance()) {
+
+    bool isDiveShot = tape[0] == TapingMethodMeasurement::Station &&
+            tape[1] == TapingMethodMeasurement::Station &&
+            (!vector.frontInclination().isValid() || vector.frontInclination().isZero());
+
+    if (!isDiveShot && uabs(instHeightAboveTape - targetHeightAboveTape) > vector.distance()) {
         CHECK_THROWS( vector.applyHeightCorrections() );
     }
     else {
@@ -59,13 +66,18 @@ QList<TapingMethodMeasurement> ST({TapingMethodMeasurement::Station, TapingMetho
 QList<TapingMethodMeasurement> SS({TapingMethodMeasurement::Station, TapingMethodMeasurement::Station});
 
 void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, ULength horizDist, ULength inch) {
-    testInstance(instY, targetY, fromY, toY, horizDist, inch, IT);
-    testInstance(instY, targetY, fromY, toY, horizDist, inch, IS);
-    testInstance(instY, targetY, fromY, toY, horizDist, inch, ST);
+    if (horizDist.isNonzero()) {
+        testInstance(instY, targetY, fromY, toY, horizDist, inch, IT);
+        testInstance(instY, targetY, fromY, toY, horizDist, inch, IS);
+        testInstance(instY, targetY, fromY, toY, horizDist, inch, ST);
+    }
     testInstance(instY, targetY, fromY, toY, horizDist, inch, SS);
 }
 
 TEST_CASE( "applyHeightCorrections", "[dewalls]" ) {
+    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-8, Length::Meters), ULength(0, Length::Meters), ULength(2, Length::Meters));
+    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-18, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters));
+    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-18, Length::Meters), ULength(-3, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters));
     testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
     testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(9, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
     testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
