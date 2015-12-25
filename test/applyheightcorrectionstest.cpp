@@ -14,6 +14,7 @@ typedef UnitizedDouble<Angle> UAngle;
 void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, ULength horizDist, ULength inch, QList<TapingMethodMeasurement> tape) {
     WallsUnits units;
     units.setInch(inch);
+
     units.setIncd(ULength(1, Length::Inches));
     units.setIncs(ULength(1, Length::Inches));
     units.setIncv(UAngle(2, Angle::Degrees));
@@ -33,7 +34,7 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     Vector vector;
     vector.setDistance(usqrt(usq(horizDist) + usq(tapeToY - tapeFromY)) - units.incd());
     vector.setFrontAzimuth(UAngle(0, Angle::Degrees) - units.inca());
-    if (horizDist.isNonzero()) {
+    if (horizDist.isNonzero() && targetY != instY) {
         vector.setFrontInclination(uatan((targetY - instY) / horizDist) - units.incv());
     }
     vector.setInstHeight(instY - fromY - units.incs());
@@ -75,14 +76,31 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
 }
 
 TEST_CASE( "applyHeightCorrections", "[dewalls]" ) {
-    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-8, Length::Meters), ULength(0, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-18, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-18, Length::Meters), ULength(-3, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(9, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(4, Length::Meters), ULength(68, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(68, Length::Meters), ULength(68, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
-    testInstance(ULength(3, Length::Meters), ULength(58, Length::Meters), ULength(2, Length::Meters), ULength(-62, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+    SECTION( "vertical dive shots without inch" ) {
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-8, Length::Meters), ULength(-3, Length::Meters), ULength(0, Length::Meters), ULength(0, Length::Meters));
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-8, Length::Meters), ULength(0, Length::Meters), ULength(0, Length::Meters));
+    }
+    SECTION( "vertical dive shots with inch" ) {
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-8, Length::Meters), ULength(-3, Length::Meters), ULength(0, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-8, Length::Meters), ULength(0, Length::Meters), ULength(2, Length::Meters));
+    }
+    SECTION( "near-vertical dive shots without inch") {
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-18, Length::Meters), ULength(0.5, Length::Meters), ULength(0, Length::Meters), SS);
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-18, Length::Meters), ULength(-3, Length::Meters), ULength(0.5, Length::Meters), ULength(0, Length::Meters), SS);
+    }
+    SECTION( "near-vertical dive shots with inch") {
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-3, Length::Meters), ULength(-18, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters), SS);
+        testInstance(ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(-18, Length::Meters), ULength(-3, Length::Meters), ULength(0.5, Length::Meters), ULength(2, Length::Meters), SS);
+    }
+    SECTION( "various shots" ) {
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(2, Length::Meters), ULength(9, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(4, Length::Meters), ULength(7, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(0, Length::Meters), ULength(0, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+    }
+    SECTION( "ridiculous shots" ) {
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(4, Length::Meters), ULength(68, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(3, Length::Meters), ULength(8, Length::Meters), ULength(68, Length::Meters), ULength(68, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+        testInstance(ULength(3, Length::Meters), ULength(58, Length::Meters), ULength(2, Length::Meters), ULength(-62, Length::Meters), ULength(7, Length::Meters), ULength(2, Length::Meters));
+    }
 }

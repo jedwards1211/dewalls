@@ -48,7 +48,7 @@ bool Vector::applyHeightCorrections()
 
         if (units().tape()[0] == TapingMethodMeasurement::Station &&
                 units().tape()[1] == TapingMethodMeasurement::Station &&
-                !inc.isValid() || inc.isZero()) {
+                (!inc.isValid() || inc.isZero())) {
 
             // this is a dive-style shot
             stationToStationDist = tapeDist;
