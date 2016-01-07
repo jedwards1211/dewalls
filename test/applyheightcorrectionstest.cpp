@@ -4,8 +4,6 @@
 #include "wallstypes.h"
 #include "unitizedmath.h"
 
-#include <iostream>
-
 using namespace dewalls;
 
 typedef UnitizedDouble<Length> ULength;
@@ -20,13 +18,12 @@ void testInstance(ULength instY, ULength targetY, ULength fromY, ULength toY, UL
     units.setIncv(UAngle(2, Angle::Degrees));
     units.setTape(tape);
 
-    std::cout << "===============================" << std::endl;
-    std::cout << "  instY: " << instY << std::endl;
-    std::cout << "  targetY: " << targetY << std::endl;
-    std::cout << "  fromY: " << fromY << std::endl;
-    std::cout << "  toY: " << toY << std::endl;
-    std::cout << "  horizDist: " << horizDist << std::endl;
-    std::cout << "  inch: " << inch << std::endl;
+    INFO( "instY: " << instY );
+    INFO( "targetY: " << targetY );
+    INFO( "fromY: " << fromY );
+    INFO( "toY: " << toY );
+    INFO( "horizDist: " << horizDist );
+    INFO( "inch: " << inch );
 
     ULength tapeFromY = tape[0] == TapingMethodMeasurement::InstrumentHeight ? instY : fromY;
     ULength tapeToY   = tape[1] == TapingMethodMeasurement::TargetHeight     ? targetY : toY;
