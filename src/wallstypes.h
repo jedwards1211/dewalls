@@ -64,7 +64,7 @@ inline uint qHash(const LrudMeasurement& key, uint seed = 0)
 ///
 /// \brief the types of LRUD station associations/orientations
 ///
-enum class DEWALLS_LIB_EXPORT LrudType
+enum class LrudType : char DEWALLS_LIB_EXPORT
 {
     /// at from station, perpendicular to vector
     From = 0,
@@ -107,7 +107,7 @@ enum class TapingMethodMeasurement
 ///
 /// \brief how a vector is measured (compass and tape or cartesian component vectors)
 ///
-enum class DEWALLS_LIB_EXPORT VectorType
+enum class VectorType : char DEWALLS_LIB_EXPORT
 {
     /// compass and tape
     CT = 0,
