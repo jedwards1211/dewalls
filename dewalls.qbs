@@ -5,28 +5,30 @@ Project {
 
     DynamicLibrary {
         name: "dewalls"
+
+        //For mac os x we need to build dylib instead of framework bundle. When running
+        //macdepolyqt for release, with a framework, an extra "lib" is added to the
+        //path which prevents macdeployqt from finding the correct library's location
+        consoleApplication: true
+
         Depends { name: "cpp" }
         Depends { name: "Qt"; submodules: ["core"] }
-
-        cpp.includePaths: ["src"]
+        property string rpath: buildDirectory
 
         Export {
             Depends { name: "cpp" }
             cpp.includePaths: ["src"]
+            cpp.rpaths: [product.rpath]
         }
 
         Group {
             fileTagsFilter: ["dynamiclibrary"]
-            qbs.installDir: (qbs.targetOS.contains("darwin") ? product.name + ".framework/Versions/A" : "")
-            qbs.install: true
+            qbs.install: qbs.targetOS.contains("windows")
         }
 
-        Group {
-            fileTagsFilter: ["bundle"]
-            qbs.install: true
-        }
-
-        cpp.installNamePrefix: qbs.installRoot
+        cpp.installNamePrefix: "@rpath"
+        cpp.includePaths: ["src"]
+        cpp.rpaths: [Qt.core.libPath]
 
         Properties {
             condition: qbs.targetOS.contains("windows")
