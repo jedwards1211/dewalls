@@ -37,18 +37,32 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("osx")
-            cpp.cxxFlags: [
-                "-stdlib=libc++",
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
+            cpp.cxxFlags: {
+                var flags = [
+                            "-stdlib=libc++", //Needed for protoc
+                            "-std=c++11", //For c++11 support
+                            "-Werror", //Treat warnings as errors
+
+                        ];
+
+                if(qbs.buildVariant == "debug") {
+                    flags.push(["-fsanitize=address",
+                                "-fno-omit-frame-pointer"])
+                }
+
+                return flags;
+            }
+
+            cpp.linkerFlags: {
+                var flags = ["-stdlib=libc++"];
+                if(qbs.buildVariant == "debug") {
+                    flags.push("-fsanitize=address")
+                }
+                return flags;
+            }
 
             cpp.dynamicLibraries: [
                 "c++"
-            ]
-
-            cpp.linkerFlags: [
-                "-stdlib=libc++"
             ]
         }
 
