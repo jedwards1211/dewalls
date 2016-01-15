@@ -19,6 +19,12 @@ Project {
             Depends { name: "cpp" }
             cpp.includePaths: ["src"]
             cpp.rpaths: [product.rpath]
+            cpp.cxxFlags: {
+                if(qbs.toolchain.contains("gcc")) {
+                    return ["-Wno-attributes"] //Ignore-around to a g++ bug, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407
+                }
+                return []
+            }
         }
 
         Group {
@@ -68,10 +74,14 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("linux")
-            cpp.cxxFlags: [
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
+            cpp.cxxFlags: {
+                var flags = ["-std=c++11", //For c++11 support
+                             "-Werror"] //Treat warnings as error
+                if(qbs.toolchain.contains("gcc")) {
+                    flags.push("-Wno-attributes") //Ignore-around to a g++ bug, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407
+                }
+                return flags
+            }
         }
 
         files: [
