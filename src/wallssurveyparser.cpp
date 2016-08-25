@@ -281,9 +281,9 @@ const QRegExp WallsSurveyParser::prefixRx("[^:;,,#/ \t]*");
 const QRegExp WallsSurveyParser::optionalRx("-+");
 const QRegExp WallsSurveyParser::optionalStationRx("-+");
 
-const QRegExp WallsSurveyParser::isoDateRx("\\d{4}-\\d{2}-\\d{2}");
-const QRegExp WallsSurveyParser::usDateRx1("\\d{2}-\\d{2}-\\d{2,4}");
-const QRegExp WallsSurveyParser::usDateRx2("\\d{2}/\\d{2}/\\d{2,4}");
+const QRegExp WallsSurveyParser::isoDateRx("\\d{4}-\\d{1,2}-\\d{1,2}");
+const QRegExp WallsSurveyParser::usDateRx1("\\d{1,2}-\\d{1,2}-\\d{2,4}");
+const QRegExp WallsSurveyParser::usDateRx2("\\d{1,2}/\\d{1,2}/\\d{2,4}");
 const QRegExp WallsSurveyParser::usDateRx3("\\d{4}-\\d{1,2}-\\d{1,2}");
 
 const QRegExp WallsSurveyParser::segmentPartRx("[^./\\;][^/\\;]+");
