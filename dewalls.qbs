@@ -32,7 +32,7 @@ Project {
             qbs.install: qbs.targetOS.contains("windows")
         }
 
-        cpp.installNamePrefix: "@rpath"
+        cpp.sonamePrefix: "@rpath"
         cpp.includePaths: ["src"]
         cpp.rpaths: [Qt.core.libPath]
 
@@ -52,8 +52,8 @@ Project {
                         ];
 
                 if(qbs.buildVariant == "debug") {
-                    flags.push(["-fsanitize=address",
-                                "-fno-omit-frame-pointer"])
+                    flags.push("-fsanitize=address");
+                    flags.push("-fno-omit-frame-pointer")
                 }
 
                 return flags;
