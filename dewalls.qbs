@@ -32,7 +32,6 @@ Project {
             qbs.install: qbs.targetOS.contains("windows")
         }
 
-        cpp.sonamePrefix: "@rpath"
         cpp.includePaths: ["src"]
         cpp.rpaths: [Qt.core.libPath]
 
@@ -43,6 +42,7 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("osx")
+            cpp.sonamePrefix: "@rpath"
             cpp.cxxFlags: {
                 var flags = [
                             "-stdlib=libc++", //Needed for protoc
@@ -59,17 +59,13 @@ Project {
                 return flags;
             }
 
-            cpp.linkerFlags: {
-                var flags = ["-stdlib=libc++"];
+            cpp.driverFlags: {
+                var flags = [];
                 if(qbs.buildVariant == "debug") {
                     flags.push("-fsanitize=address")
                 }
                 return flags;
             }
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
         }
 
         Properties {
@@ -108,14 +104,6 @@ Project {
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
-
-            cpp.linkerFlags: [
-                "-stdlib=libc++"
-            ]
         }
 
         Properties {
@@ -124,12 +112,7 @@ Project {
                 "-std=c++11", //For c++11 support
                 "-Werror" //Treat warnings as errors
             ]
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
         }
-
 
         files: [
             "test/*.cpp",
