@@ -29,6 +29,7 @@ Project {
 
         Group {
             fileTagsFilter: ["dynamiclibrary"]
+            condition: qbs.buildVariant == "release"
             qbs.install: qbs.targetOS.contains("windows")
         }
 
@@ -95,7 +96,7 @@ Project {
         Depends { name: "Qt"; submodules: ["core"] }
         Depends { name: "dewalls" }
 
-        cpp.includePaths: ["src"]
+        cpp.includePaths: ["src", "lib"]
 
         Properties {
             condition: qbs.targetOS.contains("osx")
