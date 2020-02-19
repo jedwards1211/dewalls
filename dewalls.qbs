@@ -35,6 +35,8 @@ Project {
 
         cpp.includePaths: ["src"]
         cpp.rpaths: [Qt.core.libPath]
+        cpp.cxxLanguageVersion: "c++11"
+        cpp.treatWarningsAsErrors: false
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -45,12 +47,7 @@ Project {
             condition: qbs.targetOS.contains("osx")
             cpp.sonamePrefix: "@rpath"
             cpp.cxxFlags: {
-                var flags = [
-                            "-stdlib=libc++", //Needed for protoc
-                            "-std=c++11", //For c++11 support
-                            "-Werror", //Treat warnings as errors
-
-                        ];
+                var flags = [];
 
                 if(qbs.buildVariant == "debug") {
                     flags.push("-fsanitize=address");
@@ -72,8 +69,7 @@ Project {
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.cxxFlags: {
-                var flags = ["-std=c++11", //For c++11 support
-                             "-Werror"] //Treat warnings as error
+                var flags = []
                 if(qbs.toolchain.contains("gcc")) {
                     flags.push("-Wno-attributes") //Ignore-around to a g++ bug, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407
                 }
@@ -97,23 +93,8 @@ Project {
         Depends { name: "dewalls" }
 
         cpp.includePaths: ["src", "lib"]
-
-        Properties {
-            condition: qbs.targetOS.contains("osx")
-            cpp.cxxFlags: [
-                "-stdlib=libc++",
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            cpp.cxxFlags: [
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
-        }
+        cpp.cxxLanguageVersion: "c++11"
+        cpp.treatWarningsAsErrors: true
 
         files: [
             "test/*.cpp",
