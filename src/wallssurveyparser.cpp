@@ -681,6 +681,11 @@ void WallsSurveyParser::replaceMacros()
 
     bool replaced = false;
 
+    auto nextLine = [this, &newLine](QChar c) {
+        newLine += c;
+        _i++;
+    };
+
     while (_i < _line.length())
     {
         QChar c = _line.at(_i);
@@ -696,9 +701,10 @@ void WallsSurveyParser::replaceMacros()
                 newLine += replaceMacro();
                 break;
             }
+            nextLine(c);
+            break;
         default:
-            newLine += c;
-            _i++;
+            nextLine(c);
             break;
         }
     }
