@@ -71,7 +71,7 @@ public:
     WpjEntry(WpjBookPtr parent, QString title);
     virtual ~WpjEntry() {}
 
-    const WpjBookPtr Parent;
+    const QWeakPointer<WpjBook> Parent;
     // display name
     const QString Title;
     // the file name (relative to path if given)
