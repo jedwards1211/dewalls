@@ -108,7 +108,7 @@ GeoReferencePtr WpjEntry::reference() const {
         return Reference;
     }
     if (!Parent.isNull()) {
-        return Parent->reference();
+        return Parent.toStrongRef()->reference();
     }
     return GeoReferencePtr();
 }
@@ -125,7 +125,7 @@ bool WpjEntry::deriveDeclFromDate() const {
         return true;
     }
     if (!Parent.isNull()) {
-        return Parent->deriveDeclFromDate();
+        return Parent.toStrongRef()->deriveDeclFromDate();
     }
     return false;
 }
@@ -138,7 +138,7 @@ bool WpjEntry::gridRelative() const {
         return true;
     }
     if (!Parent.isNull()) {
-        return Parent->gridRelative();
+        return Parent.toStrongRef()->gridRelative();
     }
     return false;
 }
@@ -151,7 +151,7 @@ bool WpjEntry::preserveVertShotOrientation() const {
         return true;
     }
     if (!Parent.isNull()) {
-        return Parent->preserveVertShotOrientation();
+        return Parent.toStrongRef()->preserveVertShotOrientation();
     }
     return false;
 }
@@ -164,7 +164,7 @@ bool WpjEntry::preserveVertShotLength() const {
         return true;
     }
     if (!Parent.isNull()) {
-        return Parent->preserveVertShotLength();
+        return Parent.toStrongRef()->preserveVertShotLength();
     }
     return false;
 }
@@ -193,7 +193,7 @@ WpjEntry::View WpjEntry::defaultViewAfterCompilation() const {
         return West;
     default:
         if (!Parent.isNull()) {
-            return Parent->defaultViewAfterCompilation();
+            return Parent.toStrongRef()->defaultViewAfterCompilation();
         }
         return NorthOrEast;
     }
@@ -204,9 +204,9 @@ QDir WpjEntry::dir() const {
         return QDir(Path);
     }
     if (!Path.isNull()) {
-        return QDir(QDir::cleanPath(Parent->dir().path() + '/' + Path));
+        return QDir(QDir::cleanPath(Parent.toStrongRef()->dir().path() + '/' + Path));
     }
-    return Parent->dir();
+    return Parent.toStrongRef()->dir();
 }
 
 QString WpjEntry::absolutePath() const {
@@ -236,7 +236,7 @@ QString WpjEntry::absolutePath() const {
 QList<Segment> WpjEntry::allOptions() const {
     QList<Segment> options;
     if (!Parent.isNull()) {
-        options = Parent->allOptions();
+        options = Parent.toStrongRef()->allOptions();
     }
     if (!Options.isEmpty()) {
         options << Options;
@@ -247,7 +247,7 @@ QList<Segment> WpjEntry::allOptions() const {
 QStringList WpjEntry::segment() const {
     QStringList result;
     if (!Parent.isNull()) {
-        result = Parent->segment();
+        result = Parent.toStrongRef()->segment();
     }
     if (nameDefinesSegment() && !Name.isEmpty()) {
         result << Name.value();

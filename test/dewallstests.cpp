@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_MAIN
-#include "../lib/catch.hpp"
+#include "catch.hpp"
 
 #include "segmentparseexception.h"
 

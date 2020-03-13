@@ -29,12 +29,14 @@ Project {
 
         Group {
             fileTagsFilter: ["dynamiclibrary"]
+            condition: qbs.buildVariant == "release"
             qbs.install: qbs.targetOS.contains("windows")
         }
 
-        cpp.installNamePrefix: "@rpath"
         cpp.includePaths: ["src"]
         cpp.rpaths: [Qt.core.libPath]
+        cpp.cxxLanguageVersion: "c++11"
+        cpp.treatWarningsAsErrors: false
 
         Properties {
             condition: qbs.targetOS.contains("windows")
@@ -43,40 +45,31 @@ Project {
 
         Properties {
             condition: qbs.targetOS.contains("osx")
+            cpp.sonamePrefix: "@rpath"
             cpp.cxxFlags: {
-                var flags = [
-                            "-stdlib=libc++", //Needed for protoc
-                            "-std=c++11", //For c++11 support
-                            "-Werror", //Treat warnings as errors
-
-                        ];
+                var flags = [];
 
                 if(qbs.buildVariant == "debug") {
-                    flags.push(["-fsanitize=address",
-                                "-fno-omit-frame-pointer"])
+                    flags.push("-fsanitize=address");
+                    flags.push("-fno-omit-frame-pointer")
                 }
 
                 return flags;
             }
 
-            cpp.linkerFlags: {
-                var flags = ["-stdlib=libc++"];
+            cpp.driverFlags: {
+                var flags = [];
                 if(qbs.buildVariant == "debug") {
                     flags.push("-fsanitize=address")
                 }
                 return flags;
             }
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
         }
 
         Properties {
             condition: qbs.targetOS.contains("linux")
             cpp.cxxFlags: {
-                var flags = ["-std=c++11", //For c++11 support
-                             "-Werror"] //Treat warnings as error
+                var flags = []
                 if(qbs.toolchain.contains("gcc")) {
                     flags.push("-Wno-attributes") //Ignore-around to a g++ bug, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407
                 }
@@ -99,37 +92,9 @@ Project {
         Depends { name: "Qt"; submodules: ["core"] }
         Depends { name: "dewalls" }
 
-        cpp.includePaths: ["src"]
-
-        Properties {
-            condition: qbs.targetOS.contains("osx")
-            cpp.cxxFlags: [
-                "-stdlib=libc++",
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
-
-            cpp.linkerFlags: [
-                "-stdlib=libc++"
-            ]
-        }
-
-        Properties {
-            condition: qbs.targetOS.contains("linux")
-            cpp.cxxFlags: [
-                "-std=c++11", //For c++11 support
-                "-Werror" //Treat warnings as errors
-            ]
-
-            cpp.dynamicLibraries: [
-                "c++"
-            ]
-        }
-
+        cpp.includePaths: ["src", "lib"]
+        cpp.cxxLanguageVersion: "c++11"
+        cpp.treatWarningsAsErrors: true
 
         files: [
             "test/*.cpp",

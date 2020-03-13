@@ -1,4 +1,4 @@
-#include "../lib/catch.hpp"
+#include "catch.hpp"
 #include "../src/wallssurveyparser.h"
 
 using namespace dewalls;
