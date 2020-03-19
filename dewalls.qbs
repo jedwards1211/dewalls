@@ -9,16 +9,16 @@ Project {
         //For mac os x we need to build dylib instead of framework bundle. When running
         //macdepolyqt for release, with a framework, an extra "lib" is added to the
         //path which prevents macdeployqt from finding the correct library's location
-        consoleApplication: true
+//        consoleApplication: true
 
         Depends { name: "cpp" }
         Depends { name: "Qt"; submodules: ["core"] }
-        property string rpath: buildDirectory
+//        property string rpath: buildDirectory
 
         Export {
             Depends { name: "cpp" }
             cpp.includePaths: ["src"]
-            cpp.rpaths: [product.rpath]
+//            cpp.rpaths: [product.rpath]
             cpp.cxxFlags: {
                 if(qbs.toolchain.contains("gcc")) {
                     return ["-Wno-attributes"] //Ignore-around to a g++ bug, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=43407
@@ -33,8 +33,16 @@ Project {
             qbs.install: qbs.targetOS.contains("windows")
         }
 
+        Group {
+            fileTagsFilter: ["bundle.content"]
+            qbs.install: bundle.isBundle
+            qbs.installSourceBase: product.buildDirectory
+            qbs.installDir: "lib"
+            qbs.installPrefix: ""
+        }
+
         cpp.includePaths: ["src"]
-        cpp.rpaths: [Qt.core.libPath]
+//        cpp.rpaths: [Qt.core.libPath]
         cpp.cxxLanguageVersion: "c++11"
         cpp.treatWarningsAsErrors: false
 
@@ -44,8 +52,8 @@ Project {
         }
 
         Properties {
-            condition: qbs.targetOS.contains("osx")
-            cpp.sonamePrefix: "@rpath"
+            condition: qbs.targetOS.contains("macos")
+            cpp.sonamePrefix: qbs.installRoot + "/lib"
             cpp.cxxFlags: {
                 var flags = [];
 
