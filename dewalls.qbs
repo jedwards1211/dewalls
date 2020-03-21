@@ -6,13 +6,9 @@ Project {
     DynamicLibrary {
         name: "dewalls"
 
-        //For mac os x we need to build dylib instead of framework bundle. When running
-        //macdepolyqt for release, with a framework, an extra "lib" is added to the
-        //path which prevents macdeployqt from finding the correct library's location
-//        consoleApplication: true
-
         Depends { name: "cpp" }
         Depends { name: "Qt"; submodules: ["core"] }
+        Depends { name: "bundle" }
 //        property string rpath: buildDirectory
 
         Export {
