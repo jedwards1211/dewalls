@@ -19,7 +19,7 @@ QHash<QString, Length::Unit> WallsSurveyParser::createLengthUnits()
 QHash<QString, Angle::Unit> WallsSurveyParser::createAzmUnits()
 {
     QHash<QString, Angle::Unit> result;
-    result["degree"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
+    result["degrees"] = result["degree"] = result["deg"] = result["d"] = Angle::Degrees;
     result["mills"] = result["mils"] = result["mil"] = result["m"] = Angle::MilsNATO;
     result["grads"] = result["grad"] = result["g"] = Angle::Gradians;
     return result;
