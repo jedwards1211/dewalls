@@ -98,7 +98,7 @@ Project {
 
         cpp.includePaths: ["src", "lib"]
         cpp.cxxLanguageVersion: "c++11"
-        cpp.treatWarningsAsErrors: true
+//        cpp.treatWarningsAsErrors: true
 
         files: [
             "test/*.cpp",

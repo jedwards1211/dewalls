@@ -182,6 +182,13 @@ TEST_CASE( "general tests", "[dewalls]" ) {
                 REQUIRE( vector.backAzimuth() == UAngle(3, Angle::Degrees) );
             }
 
+            SECTION( "aUnit Degrees" ) {
+                parser.parseLine("#units a=Degrees");
+                parser.parseLine("A B 1 2/3 4");
+                REQUIRE( vector.frontAzimuth() == UAngle(2, Angle::Degrees) );
+                REQUIRE( vector.backAzimuth() == UAngle(3, Angle::Degrees) );
+            }
+
             SECTION( "abUnit" ) {
                 parser.parseLine("#units ab=grads");
                 parser.parseLine("A B 1 2/3 4");
