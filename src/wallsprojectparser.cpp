@@ -16,7 +16,7 @@ typedef UnitizedDouble<Angle> UAngle;
 
 // STATUS BITS
 //   2^0 : Type = Book
-//   2^1 : ?
+//   2^1 : Detached (this item and any descendants are not processed)
 //   2^2 : ?
 //   2^3 : Name defines segment
 //   2^4 : 1 = Feet, 0 = Meters
